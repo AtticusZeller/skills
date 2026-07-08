@@ -1,0 +1,75 @@
+# AtticusZeller Skills
+
+Personal agent skills and bootstrap helpers for development machines.
+
+## Install
+
+List available personal skills:
+
+```bash
+npx skills add AtticusZeller/skills --list --full-depth
+```
+
+Install the development-machine bootstrap skill globally:
+
+```bash
+npx skills add AtticusZeller/skills --skill bootstrap-dev-machine -g -y --full-depth
+```
+
+Install the personal skills maintenance skill globally:
+
+```bash
+npx skills add AtticusZeller/skills --skill manage-personal-skills -g -y --full-depth
+```
+
+Install all personal skills:
+
+```bash
+npx skills add AtticusZeller/skills --skill '*' -g -y --full-depth
+```
+
+## External Global Skills
+
+This repository does not vendor third-party skills. The usual external global skills are recorded in `manifests/global-skills.json`.
+
+Dry-run the install commands:
+
+```bash
+bash scripts/install-global-skills.sh --dry-run
+```
+
+Install them:
+
+```bash
+bash scripts/install-global-skills.sh
+```
+
+The script runs `npx skills add <repo> --skill <skill> -g -y` for each manifest entry. For Context7, it also runs:
+
+```bash
+npx ctx7 setup --cli --claude --codex -y
+```
+
+If Context7 requires authentication, complete its login flow; no token is stored in this repository.
+
+## Repository Maintenance
+
+Validate before committing:
+
+```bash
+bash scripts/validate-skills.sh
+npx skills add . --list --full-depth
+```
+
+Publish updates:
+
+```bash
+git status --short
+git add .
+git commit -m "Update personal skills"
+git push
+```
+
+## Safety
+
+Do not commit secrets, tokens, PATs, private subscriptions, SSH keys, node credentials, API keys, or private machine config.

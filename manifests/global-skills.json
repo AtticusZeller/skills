@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "description": "External global skills commonly installed on AtticusZeller development machines. Third-party skill sources are referenced, not vendored.",
+  "context7Setup": {
+    "enabled": true,
+    "command": "npx ctx7 setup --cli --claude --codex -y"
+  },
+  "packages": [
+    {
+      "repo": "trailofbits/skills",
+      "skills": ["modern-python", "gh-cli"]
+    },
+    {
+      "repo": "huggingface/skills",
+      "skills": ["hf-cli"]
+    },
+    {
+      "repo": "fvadicamo/dev-agent-skills",
+      "skills": ["git-commit"]
+    },
+    {
+      "repo": "upstash/context7",
+      "skills": ["context7-cli", "find-docs"]
+    },
+    {
+      "repo": "forrestchang/andrej-karpathy-skills",
+      "skills": ["karpathy-guidelines"]
+    },
+    {
+      "repo": "KKKKhazix/khazix-skills",
+      "skills": ["neat-freak"]
+    }
+  ]
+}

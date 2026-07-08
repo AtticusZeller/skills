@@ -1,0 +1,4 @@
+interface:
+  display_name: "Manage Personal Skills"
+  short_description: "Publish and maintain personal agent skills"
+  default_prompt: "Use $manage-personal-skills to publish and maintain my personal skills repository."

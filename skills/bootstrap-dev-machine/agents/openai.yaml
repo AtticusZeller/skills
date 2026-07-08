@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bootstrap Dev Machine"
+  short_description: "Rebuild a GPU dev machine consistently"
+  default_prompt: "Use $bootstrap-dev-machine to configure a fresh GPU development machine."
