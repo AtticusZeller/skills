@@ -102,6 +102,21 @@ Install Context7 and global skills as requested by the user. Prefer non-interact
 npx ctx7 setup --cli --claude --codex -y
 ```
 
+Install the personal skills repository for future reuse:
+
+```bash
+npx skills add AtticusZeller/skills --list --full-depth
+npx skills add AtticusZeller/skills --skill bootstrap-dev-machine -g -y --full-depth
+npx skills add AtticusZeller/skills --skill manage-personal-skills -g -y --full-depth
+```
+
+If `/root/skills` is checked out, reinstall the usual external global skills from its manifest:
+
+```bash
+cd /root/skills
+bash scripts/install-global-skills.sh
+```
+
 ## Phase 5: Developer CLI Baseline
 
 Install or verify:
@@ -120,6 +135,7 @@ Create or update:
 ```text
 /root/AGENTS.md
 /root/README.md
+/root/skills
 ```
 
 `AGENTS.md` is for future agents and should contain operational rules, paths, guardrails, and validation commands. `README.md` is for the user and should explain how to use the configured machine.
