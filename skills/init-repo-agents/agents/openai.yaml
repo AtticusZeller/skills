@@ -1,0 +1,4 @@
+interface:
+  display_name: "Init Repo Agents"
+  short_description: "Bootstrap a repo's AGENTS.md, session lifecycle, and in-repo docs memory"
+  default_prompt: "Use $init-repo-agents to initialize agent baseline rules and docs memory for this repository."
