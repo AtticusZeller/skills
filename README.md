@@ -22,6 +22,12 @@ Install the personal skills maintenance skill globally:
 npx skills add AtticusZeller/skills --skill manage-personal-skills -g -y --full-depth
 ```
 
+Install the repository initialization skill globally:
+
+```bash
+npx skills add AtticusZeller/skills --skill init-repo-agents -g -y --full-depth
+```
+
 Install all personal skills:
 
 ```bash
