@@ -14,8 +14,9 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 1. Confirm the host shape: user, shell, PID 1, package manager, writable home, and whether `127.0.0.1:7890` is reachable.
 2. Read `references/bootstrap-phases.md` before installing or changing anything.
 3. If the host lacks systemd or `systemctl`, read `references/sbc-service-scripts.md` before configuring sing-box persistence.
-4. Execute one phase at a time and verify each phase before continuing.
-5. Run `scripts/check-dev-machine.sh` after setup or repair work. The script is read-only and should not modify the machine.
+4. Read `references/zsh-baseline.md` before installing or replacing the server shell configuration.
+5. Execute one phase at a time and verify each phase before continuing.
+6. Run `scripts/check-dev-machine.sh` after setup or repair work. The script is read-only and should not modify the machine.
 
 ## Rules
 
@@ -30,8 +31,10 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 
 - `references/bootstrap-phases.md`: staged setup plan with commands, validation points, and known DSW caveats.
 - `references/sbc-service-scripts.md`: reference model for `sbc-start`, `sbc-stop`, and `sbc-status` on machines without systemd.
+- `references/zsh-baseline.md`: installation and deployment workflow for zsh, Oh My Zsh, Powerlevel10k, and shell plugins.
+- `assets/zshrc.server`: reusable public server `.zshrc` template with proxy, CUDA, uv, NVM, PATH, and virtualenv defaults.
 - `scripts/check-dev-machine.sh`: read-only validation script for core commands, versions, paths, and proxy hints.
 
 ## Completion Criteria
 
-The machine is ready when the user can run `sbc version`, use the local proxy, run Codex/Claude, use Node 24 through nvm, use uv Python 3.12, and read `/root/AGENTS.md` plus `/root/README.md` for handoff details.
+The machine is ready when the user can run `sbc version`, use the local proxy, start the configured zsh baseline without errors, run Codex/Claude, use Node 24 through nvm, use uv Python 3.12, and read `/root/AGENTS.md` plus `/root/README.md` for handoff details.

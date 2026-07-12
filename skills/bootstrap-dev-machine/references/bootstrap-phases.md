@@ -119,7 +119,7 @@ cd /root/skills
 bash scripts/install-global-skills.sh
 ```
 
-## Phase 5: Developer CLI Baseline
+## Phase 5: Developer CLI And Shell Baseline
 
 Install or verify:
 
@@ -129,6 +129,22 @@ gh hf cc-switch nvitop wandb
 ```
 
 Use official release artifacts when official apt repositories are slow or blocked. Keep nvm-managed Node as the source of truth unless the user requests system symlinks.
+
+For zsh, read `zsh-baseline.md` and install the full baseline rather than only the `zsh` package:
+
+- Oh My Zsh and Powerlevel10k.
+- `zsh-autosuggestions`, `zsh-syntax-highlighting`, `ohmyzsh-full-autoupdate`, and `zsh-bat`.
+- The public `../assets/zshrc.server` template, with the previous `.zshrc` backed up.
+- A machine-local `.p10k.zsh` generated with `p10k configure`.
+
+The template supplies `$HOME/.local/bin`, optional CUDA paths, uv/uvx completions, NVM loading, `.venv` activation, and lower/upper-case proxy variables. Keep credentials and private service endpoints out of `.zshrc`.
+
+Validate shell startup before continuing:
+
+```bash
+zsh -n "$HOME/.zshrc"
+zsh -ic 'echo zsh-ready'
+```
 
 ## Phase 6: Handoff Docs
 

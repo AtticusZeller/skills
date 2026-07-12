@@ -1,0 +1,73 @@
+# Server zsh baseline. Keep credentials and machine-private endpoints elsewhere.
+typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
+
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+
+fpath=("$HOME/.zfunc" $fpath)
+
+plugins=(
+  command-not-found
+  extract
+  docker
+  history-substring-search
+  z
+  zsh-autosuggestions
+  zsh-syntax-highlighting
+  ohmyzsh-full-autoupdate
+  zsh-bat
+)
+
+source "$ZSH/oh-my-zsh.sh"
+[[ ! -f "$HOME/.p10k.zsh" ]] || source "$HOME/.p10k.zsh"
+
+typeset -U path
+path=("$HOME/.local/bin" $path)
+export PATH
+
+if [[ -d /usr/local/cuda ]]; then
+  path=("/usr/local/cuda/bin" $path)
+  export CUDA_HOME=/usr/local/cuda
+  export LD_LIBRARY_PATH="/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+fi
+
+if (( $+commands[uv] )); then
+  eval "$(uv generate-shell-completion zsh)"
+fi
+if (( $+commands[uvx] )); then
+  eval "$(uvx --generate-shell-completion zsh)"
+fi
+
+export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+[[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
+
+auto_activate_venv() {
+  local current_dir="$PWD"
+  while [[ "$current_dir" != "/" ]]; do
+    if [[ -d "$current_dir/.venv" ]]; then
+      source "$current_dir/.venv/bin/activate"
+      return
+    fi
+    current_dir="${current_dir:h}"
+  done
+}
+auto_activate_venv
+
+# Keep commands that do not resolve to an executable out of shell history.
+zshaddhistory() {
+  whence "${${(z)1}[1]}" >| /dev/null || return 1
+}
+
+proxy_url="${PROXY_URL:-http://127.0.0.1:7890}"
+export http_proxy="${http_proxy:-$proxy_url}"
+export https_proxy="${https_proxy:-$proxy_url}"
+export HTTP_PROXY="${HTTP_PROXY:-$http_proxy}"
+export HTTPS_PROXY="${HTTPS_PROXY:-$https_proxy}"
+export no_proxy="${no_proxy:-localhost,127.0.0.1}"
+export NO_PROXY="${NO_PROXY:-$no_proxy}"
+unset proxy_url

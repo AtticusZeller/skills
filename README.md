@@ -16,6 +16,8 @@ Install the development-machine bootstrap skill globally:
 npx skills add AtticusZeller/skills --skill bootstrap-dev-machine -g -y --full-depth
 ```
 
+This skill includes a public server `.zshrc` baseline plus setup guidance for Oh My Zsh, Powerlevel10k, shell plugins, CUDA, uv, NVM, and proxy variables.
+
 Install the personal skills maintenance skill globally:
 
 ```bash
