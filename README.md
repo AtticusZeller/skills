@@ -42,6 +42,16 @@ Install all personal skills:
 npx skills add AtticusZeller/skills --skill '*' -g -y --full-depth
 ```
 
+## Update Installed Skills
+
+Refresh installed skills from their recorded sources:
+
+```bash
+npx skills update
+```
+
+When prompted, choose `Global` to check and update all globally installed personal and third-party skills, including skills from `AtticusZeller/skills`.
+
 ## External Global Skills
 
 This repository does not vendor third-party skills. The usual external global skills are recorded in `manifests/global-skills.json`.
