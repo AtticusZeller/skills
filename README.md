@@ -28,6 +28,12 @@ Install the repository initialization skill globally:
 npx skills add AtticusZeller/skills --skill init-repo-agents -g -y --full-depth
 ```
 
+Install the GitHub fork workflow skill globally:
+
+```bash
+npx skills add AtticusZeller/skills --skill git-fork-workflow -g -y --full-depth
+```
+
 Install all personal skills:
 
 ```bash
@@ -65,6 +71,7 @@ Validate before committing:
 ```bash
 bash scripts/validate-skills.sh
 npx skills add . --list --full-depth
+bash scripts/install-global-skills.sh --dry-run
 ```
 
 Publish updates:

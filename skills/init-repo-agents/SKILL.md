@@ -1,6 +1,6 @@
 ---
 name: init-repo-agents
-description: Initialize repository-level agent collaboration scaffolding for a new or existing project. Use this whenever the user wants to set up AGENTS.md / CLAUDE.md baseline rules, bootstrap a repo's agent config, define the session lifecycle for a codebase, create the in-repo docs/ memory (plan.md / log.md / bug.md) so context stays portable across machines and CLIs, or seed a [[docs/<module>.md]] code-doc index. Trigger on phrases like "初始化这个仓库", "给项目配 AGENTS.md", "init repo agents", "bootstrap this project for agents", or "set up the project memory/docs". Prefer this skill over ad-hoc file creation whenever a project lacks agent baseline rules or an in-repo memory layer.
+description: Initialize repository-level agent collaboration scaffolding for a new or existing project. Use this whenever the user wants to set up AGENTS.md / CLAUDE.md baseline rules, bootstrap a repo's agent config, define the session lifecycle for a codebase, create the in-repo docs/ memory (plan.md / log.md / bug.md) so context stays portable across machines and CLIs, or seed a docs/module-name.md code-doc index. Trigger on phrases like "初始化这个仓库", "给项目配 AGENTS.md", "init repo agents", "bootstrap this project for agents", or "set up the project memory/docs". Prefer this skill over ad-hoc file creation whenever a project lacks agent baseline rules or an in-repo memory layer.
 ---
 
 # Init Repo Agents

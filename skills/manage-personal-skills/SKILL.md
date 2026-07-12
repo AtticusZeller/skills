@@ -33,6 +33,7 @@ scripts/validate-skills.sh
 ```bash
 bash scripts/validate-skills.sh
 npx skills add . --list --full-depth
+bash scripts/install-global-skills.sh --dry-run
 ```
 
 6. Publish with `git` and `gh` only after confirming no secrets are staged.

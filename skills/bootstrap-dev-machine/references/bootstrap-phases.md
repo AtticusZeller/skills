@@ -108,6 +108,8 @@ Install the personal skills repository for future reuse:
 npx skills add AtticusZeller/skills --list --full-depth
 npx skills add AtticusZeller/skills --skill bootstrap-dev-machine -g -y --full-depth
 npx skills add AtticusZeller/skills --skill manage-personal-skills -g -y --full-depth
+npx skills add AtticusZeller/skills --skill init-repo-agents -g -y --full-depth
+npx skills add AtticusZeller/skills --skill git-fork-workflow -g -y --full-depth
 ```
 
 If `/root/skills` is checked out, reinstall the usual external global skills from its manifest:
