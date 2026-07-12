@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+state_dir="${HOME}/.local/state/sbc"
+pid_file="${state_dir}/sbc.pid"
+log_file="${state_dir}/sbc.log"
+config="${SBC_CONFIG:-${HOME}/.config/sing-box/config.json}"
+tool_python="${SBC_TOOL_PYTHON:-${HOME}/.local/share/uv/tools/sing-box-cli/bin/python}"
+
+mkdir -p "${state_dir}"
+
+if [[ -f "${pid_file}" ]]; then
+  pid="$(<"${pid_file}")"
+  if [[ -n "${pid}" ]] && kill -0 "${pid}" 2>/dev/null; then
+    echo "sbc is already running: pid ${pid}"
+    exit 0
+  fi
+  rm -f "${pid_file}"
+fi
+
+if [[ ! -f "${config}" ]]; then
+  echo "missing sing-box config: ${config}" >&2
+  exit 1
+fi
+
+if [[ -n "${SBC_BINARY:-}" ]]; then
+  binary="${SBC_BINARY}"
+elif [[ -x "${tool_python}" ]]; then
+  binary="$("${tool_python}" -c 'from sing_box_bin import get_bin_path; print(get_bin_path())')"
+else
+  echo "cannot resolve sing-box binary; reinstall sing-box-cli or set SBC_BINARY" >&2
+  exit 1
+fi
+
+if [[ ! -x "${binary}" ]]; then
+  echo "sing-box binary is not executable: ${binary}" >&2
+  exit 1
+fi
+
+nohup "${binary}" run -c "${config}" >>"${log_file}" 2>&1 &
+pid="$!"
+echo "${pid}" >"${pid_file}"
+
+sleep 0.2
+if ! kill -0 "${pid}" 2>/dev/null; then
+  rm -f "${pid_file}"
+  echo "sbc failed to start; inspect ${log_file}" >&2
+  exit 1
+fi
+
+echo "started sbc: pid ${pid}"
+echo "log: ${log_file}"

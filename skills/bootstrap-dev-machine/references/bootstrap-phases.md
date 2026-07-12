@@ -1,181 +1,60 @@
 # Bootstrap Phases
 
-Use these phases to configure a fresh Linux GPU/DSW-style development machine. Verify each phase before continuing.
+The normal path is the idempotent installer at `../scripts/bootstrap-dev-machine.sh`. Run it once, inspect its final validation and manual-follow-up summary, and rerun the same command after fixing any reported blocker.
 
-## Phase 0: Network And SSH Proxy
-
-Confirm the user has exposed a local HTTP proxy on `127.0.0.1:7890`, commonly via SSH forwarding or an existing local proxy.
-
-Set shell proxy variables when network access is needed:
+The installer supports a read-only preview:
 
 ```bash
-export http_proxy=http://127.0.0.1:7890
-export https_proxy=http://127.0.0.1:7890
-export HTTP_PROXY=http://127.0.0.1:7890
-export HTTPS_PROXY=http://127.0.0.1:7890
+bash scripts/bootstrap-dev-machine.sh --dry-run
 ```
 
-Configure Git to use the same proxy:
+Do not manually replay individual phase commands unless the installer reports an unsupported host or a specific phase failure.
 
-```bash
-git config --global http.proxy http://127.0.0.1:7890
-git config --global https.proxy http://127.0.0.1:7890
-```
+## Inputs
 
-If Git still reports `127.0.0.1:8118`, remove or replace stale global proxy settings before retrying.
+The defaults match the DSW/container baseline:
 
-## Phase 1: Codex Entry Point
+- Proxy: `PROXY_URL=http://127.0.0.1:7890`
+- Python: `BOOTSTRAP_PYTHON_VERSION=3.12`
+- Node: `BOOTSTRAP_NODE_VERSION=24`
+- nvm installer: `BOOTSTRAP_NVM_VERSION=v0.40.5`
+- Personal skills checkout: `PERSONAL_SKILLS_DIR=$HOME/skills`
 
-Install or start Codex only after the proxy path is working. Verify network and Git before installing large toolchains:
+Use `--no-proxy` only when the host has direct network access. Use `--skip-packages`, `--skip-skills`, or `--skip-context7` when those layers are managed externally.
 
-```bash
-curl -I https://github.com
-git ls-remote https://github.com/nvm-sh/nvm HEAD
-```
+## Automated Phases
 
-When sandboxed network commands fail with DNS, connect, or registry errors, rerun the same important command with the required approval/escalation rather than changing mirrors blindly.
+The entry script performs these phases in order:
 
-## Phase 2: uv, Python, And sing-box
+1. Exports lower- and upper-case proxy variables and aligns Git proxy settings.
+2. Detects apt, dnf, or yum; installs required packages and attempts optional developer utilities.
+3. Installs uv, Python, sing-box-cli, nvitop, and Weights & Biases.
+4. Deploys `sbc-start`, `sbc-stop`, and `sbc-status` for non-systemd hosts.
+5. Installs nvm and Node, then sets the requested Node version as default.
+6. Installs Claude Code and the Hugging Face CLI; checks other developer CLIs.
+7. Installs Oh My Zsh, Powerlevel10k, plugins, and the public server `.zshrc`.
+8. Installs personal and external agent skills from the repository manifest.
+9. Runs `check-dev-machine.sh` and prints all remaining manual work together.
 
-Install uv from the official installer if missing:
+Each phase is safe to rerun: existing tools and clones are reused, and `.zshrc` is backed up only when the deployed template differs.
 
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
+## Intentionally Manual
 
-Install Python 3.12:
+The script cannot safely automate account or machine-private state:
 
-```bash
-uv python install 3.12
-uv python find 3.12
-```
+- sing-box subscription/configuration content;
+- GitHub, Hugging Face, Weights & Biases, and Context7 authentication;
+- interactive Powerlevel10k prompt choices;
+- handoff details specific to the machine;
+- cc-switch installation when no supported system package is available.
 
-Install sing-box-cli with official PyPI if a mirror is broken:
+These items appear once in the final summary rather than interrupting the automated phases.
 
-```bash
-env -u UV_DEFAULT_INDEX -u PIP_INDEX_URL \
-  uv tool install --python 3.12 --default-index https://pypi.org/simple sing-box-cli
-```
+## Failure Handling
 
-Use sing-box `mixed` inbound in DSW/tini hosts. Avoid TUN mode unless the user confirms the host supports route and network permissions.
+Required-phase failures stop immediately and identify the phase and line. Optional package or account-backed setup failures become warnings so independent phases can finish.
 
-## Phase 3: sing-box Persistence
+Use the focused references only after a failure:
 
-Do not use `sbc service enable` on hosts where PID 1 is `tini` or `systemctl` is missing. Use the `sbc-*` model described in `sbc-service-scripts.md`.
-
-Expected commands:
-
-```bash
-sbc-start
-sbc-status
-sbc-stop
-```
-
-Verify proxy operation with:
-
-```bash
-curl -I --proxy http://127.0.0.1:7890 https://www.google.com
-```
-
-## Phase 4: Agent Tooling
-
-Install Claude Code:
-
-```bash
-curl -fsSL https://claude.ai/install.sh | bash
-claude --version
-```
-
-Install nvm and Node 24:
-
-```bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.5/install.sh | bash
-. "$HOME/.nvm/nvm.sh"
-nvm install 24
-node -v
-npm -v
-```
-
-Install Context7 and global skills as requested by the user. Prefer non-interactive Context7 setup after login:
-
-```bash
-npx ctx7 setup --cli --claude --codex -y
-```
-
-Install the personal skills repository for future reuse:
-
-```bash
-npx skills add AtticusZeller/skills --list --full-depth
-npx skills add AtticusZeller/skills --skill bootstrap-dev-machine -g -y --full-depth
-npx skills add AtticusZeller/skills --skill manage-personal-skills -g -y --full-depth
-npx skills add AtticusZeller/skills --skill init-repo-agents -g -y --full-depth
-npx skills add AtticusZeller/skills --skill git-fork-workflow -g -y --full-depth
-```
-
-If `/root/skills` is checked out, reinstall the usual external global skills from its manifest:
-
-```bash
-cd /root/skills
-bash scripts/install-global-skills.sh
-```
-
-## Phase 5: Developer CLI And Shell Baseline
-
-Install or verify:
-
-```text
-zsh tmux bat fzf ripgrep fd tree htop jq ffmpeg
-gh hf cc-switch nvitop wandb
-```
-
-Use official release artifacts when official apt repositories are slow or blocked. Keep nvm-managed Node as the source of truth unless the user requests system symlinks.
-
-For zsh, read `zsh-baseline.md` and install the full baseline rather than only the `zsh` package:
-
-- Oh My Zsh and Powerlevel10k.
-- `zsh-autosuggestions`, `zsh-syntax-highlighting`, `ohmyzsh-full-autoupdate`, and `zsh-bat`.
-- The public `../assets/zshrc.server` template, with the previous `.zshrc` backed up.
-- A machine-local `.p10k.zsh` generated with `p10k configure`.
-
-The template supplies `$HOME/.local/bin`, optional CUDA paths, uv/uvx completions, NVM loading, `.venv` activation, and lower/upper-case proxy variables. Keep credentials and private service endpoints out of `.zshrc`.
-
-Validate shell startup before continuing:
-
-```bash
-zsh -n "$HOME/.zshrc"
-zsh -ic 'echo zsh-ready'
-```
-
-## Phase 6: Handoff Docs
-
-Create or update:
-
-```text
-/root/AGENTS.md
-/root/README.md
-/root/skills
-```
-
-`AGENTS.md` is for future agents and should contain operational rules, paths, guardrails, and validation commands. `README.md` is for the user and should explain how to use the configured machine.
-
-Never include secrets, tokens, private subscriptions, SSH keys, or account credentials in either file.
-
-## Phase 7: Final Validation
-
-Run the read-only checker:
-
-```bash
-bash /root/.codex/skills/bootstrap-dev-machine/scripts/check-dev-machine.sh
-```
-
-Also verify:
-
-```bash
-sbc version
-uv --version
-bash -lc 'source "$HOME/.nvm/nvm.sh" && node -v && npm -v'
-claude --version
-gh --version
-hf --version
-npx ctx7 --version
-```
+- `zsh-baseline.md` for shell customization and startup diagnosis.
+- `sbc-service-scripts.md` for sing-box helper behavior and configuration boundaries.

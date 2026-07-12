@@ -7,16 +7,15 @@ description: Guide a Codex agent through configuring a fresh GPU/DSW-style Linux
 
 ## Overview
 
-Use this skill to rebuild the same development-machine baseline on a fresh Linux GPU/DSW host. Treat the workflow as staged and verifiable: establish network/proxy first, install agent tooling second, configure sing-box and developer CLIs third, then write handoff docs and validate.
+Use this skill to rebuild the same development-machine baseline on a fresh Linux GPU/DSW host. The normal path is one idempotent installer run followed by one review of its validation and manual-follow-up summary.
 
 ## Workflow
 
 1. Confirm the host shape: user, shell, PID 1, package manager, writable home, and whether `127.0.0.1:7890` is reachable.
-2. Read `references/bootstrap-phases.md` before installing or changing anything.
-3. If the host lacks systemd or `systemctl`, read `references/sbc-service-scripts.md` before configuring sing-box persistence.
-4. Read `references/zsh-baseline.md` before installing or replacing the server shell configuration.
-5. Execute one phase at a time and verify each phase before continuing.
-6. Run `scripts/check-dev-machine.sh` after setup or repair work. The script is read-only and should not modify the machine.
+2. Preview once with `bash scripts/bootstrap-dev-machine.sh --dry-run` when the host is unfamiliar or already configured.
+3. Run `bash scripts/bootstrap-dev-machine.sh` once. Prefer environment variables or its skip flags over manually replaying phase commands.
+4. Inspect the final validation and consolidated manual-follow-up list.
+5. Read `references/bootstrap-phases.md` only for inputs, phase boundaries, or a failed phase. Read the focused zsh or sing-box reference only when that subsystem needs diagnosis or customization.
 
 ## Rules
 
@@ -26,14 +25,17 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 - Keep Git proxy, shell proxy variables, and install commands aligned to the user's active proxy endpoint.
 - Prefer official installers or official release artifacts. If a mirror fails with 403 or stale packages, override it explicitly rather than debugging the wrong layer.
 - Keep `/root/AGENTS.md` for agents and `/root/README.md` for users; do not mix operational rules with user-facing walkthroughs.
+- Keep executable setup logic in `scripts/` or `assets/`; Markdown should explain inputs, boundaries, and recovery rather than duplicate command sequences.
 
 ## Resources
 
-- `references/bootstrap-phases.md`: staged setup plan with commands, validation points, and known DSW caveats.
-- `references/sbc-service-scripts.md`: reference model for `sbc-start`, `sbc-stop`, and `sbc-status` on machines without systemd.
-- `references/zsh-baseline.md`: installation and deployment workflow for zsh, Oh My Zsh, Powerlevel10k, and shell plugins.
+- `scripts/bootstrap-dev-machine.sh`: idempotent one-shot installer and primary entry point.
+- `scripts/check-dev-machine.sh`: read-only validation script used by the installer.
+- `references/bootstrap-phases.md`: installer inputs, automated phases, manual boundaries, and failure handling.
+- `references/sbc-service-scripts.md`: behavior and configuration boundaries for the deployed sing-box helpers.
+- `references/zsh-baseline.md`: resulting shell state and focused startup diagnosis.
 - `assets/zshrc.server`: reusable public server `.zshrc` template with proxy, CUDA, uv, NVM, PATH, and virtualenv defaults.
-- `scripts/check-dev-machine.sh`: read-only validation script for core commands, versions, paths, and proxy hints.
+- `assets/sbc-{start,stop,status}`: executable user-level sing-box helpers for non-systemd hosts.
 
 ## Completion Criteria
 

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+state_dir="${HOME}/.local/state/sbc"
+pid_file="${state_dir}/sbc.pid"
+log_file="${state_dir}/sbc.log"
+
+if [[ -f "${pid_file}" ]]; then
+  pid="$(<"${pid_file}")"
+  if [[ -n "${pid}" ]] && kill -0 "${pid}" 2>/dev/null; then
+    echo "sbc is running: pid ${pid}"
+  else
+    echo "sbc is not running: stale pid file"
+  fi
+else
+  echo "sbc is not running"
+fi
+
+if [[ -f "${log_file}" ]]; then
+  echo "log: ${log_file}"
+  tail -n 20 "${log_file}"
+fi

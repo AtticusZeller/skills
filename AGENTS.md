@@ -39,5 +39,6 @@ npx skills add AtticusZeller/skills --list --full-depth
 
 - Keep `SKILL.md` concise; move detailed workflows into `references/`.
 - Use `scripts/` only for deterministic helpers that are useful to run directly.
+- Give repeatable multi-step setup workflows one idempotent executable entry point; keep Markdown focused on inputs, boundaries, and recovery.
 - Keep generated or local-machine artifacts out of the repo.
 - If adding an external skill dependency, update `manifests/global-skills.json` instead of vendoring it.

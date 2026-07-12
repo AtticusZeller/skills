@@ -32,7 +32,7 @@ check_version() {
 }
 
 echo "== Commands =="
-for cmd in git curl uv python3 sbc claude gh hf cc-switch nvitop wandb zsh tmux; do
+for cmd in git curl uv python3 sbc codex claude gh hf cc-switch nvitop wandb zsh tmux; do
   check_cmd "$cmd"
 done
 
@@ -52,6 +52,7 @@ echo "== Versions =="
 check_version "uv" uv --version
 check_version "python3" python3 --version
 check_version "sbc" sbc version
+check_version "codex" codex --version
 check_version "claude" claude --version
 check_version "gh" gh --version
 check_version "hf" hf --version
