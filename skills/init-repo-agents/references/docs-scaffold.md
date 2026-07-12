@@ -1,6 +1,6 @@
 # docs/ Memory Scaffold
 
-This reference defines the in-repo memory layer that `init-repo-agents` creates. The point of keeping these files inside the repo (instead of a CLI's global memory) is portability: the same context follows the project across machines and across agents.
+This reference defines the in-repo memory layer and root command handoff that `init-repo-agents` creates. The point of keeping these files inside the repo (instead of a CLI's global memory) is portability: the same context follows the project across machines and across agents.
 
 Create each file only if it is absent. Never overwrite an existing file — if it exists, leave it untouched and report that it was already present.
 
@@ -20,14 +20,14 @@ The shared, forward-looking plan that user and agent both read. Newest entry on 
 
 ## docs/log.md
 
-Append-only record of completed tasks, newest on top. Distinct from `plan.md`: `plan.md` looks forward, `log.md` looks back.
+Append-only record of verified, completed tasks, newest on top. A candidate implementation does not belong here until all required agent-run or user-run checks have passed. Distinct from `plan.md`: `plan.md` looks forward, `log.md` looks back.
 
 ```markdown
 # Development Log
 
-> 已完成任务记录。最新的在最上面。
+> 已验证完成的任务记录。最新的在最上面。
 
-<!-- 每完成一个任务，在本行下方追加一条 -->
+<!-- 每个任务通过全部必要验证后，在本行下方追加一条 -->
 ```
 
 ## docs/bug.md
@@ -68,12 +68,45 @@ Entry template (use when recording a bug later):
 **为什么有效**: [一两句底层机制]
 ~~~~
 
-## docs/<module>.md — 代码文档索引约定
+## Root `cmd.md` — command reference and user-test handoff
+
+Create root `cmd.md` if it is absent. This is a user-facing command interface, not a completion log. Keep stable, commonly reused commands under "常用命令". Keep at most one current manual verification handoff under "待用户验证"; do not accumulate stale task-specific commands there.
+
+```markdown
+# Command Reference
+
+> 项目常用命令与用户侧验证入口。命令应可直接复制执行。
+
+## 常用命令
+
+<!-- 按用途记录稳定命令，例如 lint、test、train、eval；优先引用 dev.sh 子命令 -->
+
+## 待用户验证
+
+- **状态**：None
+```
+
+When a required check depends on a real robot, VLA setup, dedicated hardware, user credentials, or another environment the agent cannot access, replace the "待用户验证" block with:
+
+```markdown
+## 待用户验证
+
+- **状态**：Pending
+- **验证目的**：<这次改动需要证明什么>
+- **前置条件**：<设备、环境、数据或服务要求>
+- **执行命令**：`<可直接复制的命令；多条命令按顺序列出>`
+- **通过标准**：<可观察、可判定的成功结果>
+- **失败时请回传**：<日志、输出、截图或设备现象>
+```
+
+Writing the handoff does not count as passing verification. Wait for the user's result. On failure, return to code and update the handoff for the next run; on success, clear the pending block during the normal `neat-freak` reconciliation and only then record the task in `docs/log.md`.
+
+## docs/<module>.md — code documentation index convention
 
 Do **not** generate module doc bodies during init. Instead:
 
 1. During init, do a shallow structural scan of the top-level source tree (e.g. `src/<pkg>/*/`) — directory names only, no deep code reading.
-2. Seed the "代码文档索引" section of `AGENTS.md` with one `[[docs/<module>.md]]` entry per notable module, each pointing at a doc to be written later.
+2. Seed the "Code Documentation Index" section of `AGENTS.md` with one `[[docs/<module>.md]]` entry per notable module, each pointing at a doc to be written later.
 
 Index entry format (goes into `AGENTS.md`, not into a docs file):
 
