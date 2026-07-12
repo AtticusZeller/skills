@@ -26,7 +26,7 @@ scripts/validate-skills.sh
 
 1. Read root `AGENTS.md` before changing the repository.
 2. For a new personal skill, create `skills/<skill-name>/SKILL.md` with valid `name` and `description` frontmatter.
-3. Put detailed reusable guidance in `references/` and deterministic helpers in `scripts/` inside the skill directory.
+3. Put detailed reusable guidance in `references/` and deterministic helpers in `scripts/` inside the skill directory. When a skill creates fixed or long files, store their exact bodies in `assets/` or explicit templates and make a script the only supported writer.
 4. For third-party skills, update `manifests/global-skills.json`; do not copy their source into this repository.
 5. Run validation before committing:
 
@@ -44,6 +44,7 @@ bash scripts/install-global-skills.sh --dry-run
 - Never vendor third-party skills; reference them in the manifest.
 - Keep root `README.md` human-facing and root `AGENTS.md` agent-facing.
 - Keep individual skill folders lean; do not add skill-local README files.
+- Never make an agent reconstruct, summarize, or copy fixed output from a Markdown fence. Fixed templates/assets require an executable, idempotent helper and a regression test for fidelity.
 - Keep `npx skills add AtticusZeller/skills --list --full-depth` working.
 
 ## Common Commands

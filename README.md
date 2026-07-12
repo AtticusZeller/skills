@@ -16,7 +16,7 @@ Install the development-machine bootstrap skill globally:
 npx skills add AtticusZeller/skills --skill bootstrap-dev-machine -g -y --full-depth
 ```
 
-This skill provides an idempotent one-shot installer for the full machine baseline, including a public server `.zshrc`, Oh My Zsh, Powerlevel10k, shell plugins, CUDA, uv, NVM, proxy variables, and non-systemd sing-box helpers.
+This skill provides an idempotent one-shot installer for the full machine baseline, including public machine handoff docs, a server `.zshrc`, Oh My Zsh, Powerlevel10k, shell plugins, CUDA, uv, Miniforge/conda, NVM, proxy variables, and non-systemd sing-box helpers.
 
 Install the personal skills maintenance skill globally:
 
@@ -29,6 +29,8 @@ Install the repository initialization skill globally:
 ```bash
 npx skills add AtticusZeller/skills --skill init-repo-agents -g -y --full-depth
 ```
+
+This skill renders repository agent rules and portable docs scaffolding through bundled idempotent scripts, then checks template fidelity and preservation of existing content.
 
 Install the GitHub fork workflow skill globally:
 

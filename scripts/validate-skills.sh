@@ -19,6 +19,36 @@ for skill_dir in "$repo_root"/skills/*; do
   env -u UV_DEFAULT_INDEX -u PIP_INDEX_URL \
     uv run --with pyyaml --default-index https://pypi.org/simple \
     python "$validator" "$skill_dir"
+
+  requires_script=false
+  if compgen -G "$skill_dir/references/*.template.*" >/dev/null ||
+    compgen -G "$skill_dir/assets/*" >/dev/null; then
+    requires_script=true
+  fi
+  if [[ "$requires_script" == true ]]; then
+    executable_found=false
+    for helper in "$skill_dir"/scripts/*; do
+      if [[ -f "$helper" && -x "$helper" ]]; then
+        executable_found=true
+        break
+      fi
+    done
+    if [[ "$executable_found" != true ]]; then
+      echo "Skill has fixed templates/assets but no executable helper: $skill_dir" >&2
+      exit 1
+    fi
+  fi
+
+  regression_found=false
+  for test_script in "$skill_dir"/scripts/test-*.sh; do
+    [[ -f "$test_script" ]] || continue
+    regression_found=true
+    bash "$test_script"
+  done
+  if [[ "$requires_script" == true && "$regression_found" != true ]]; then
+    echo "Skill has fixed templates/assets but no regression test: $skill_dir" >&2
+    exit 1
+  fi
 done
 
 npx skills add "$repo_root" --list --full-depth

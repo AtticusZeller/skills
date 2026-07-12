@@ -2,45 +2,18 @@
 
 This reference defines the in-repo memory layer and root command handoff that `init-repo-agents` creates. The point of keeping these files inside the repo (instead of a CLI's global memory) is portability: the same context follows the project across machines and across agents.
 
-Create each file only if it is absent. Never overwrite an existing file — if it exists, leave it untouched and report that it was already present.
+Create each file only through `scripts/init-repo-agents.sh`. The script installs the fixed bodies from `assets/`; agents must not reconstruct them from this reference. Never overwrite an existing file — if it exists, leave it untouched and report that it was already present.
 
 Write the file bodies in Chinese (user-facing docs); keep any code/identifiers in English.
 
-## docs/plan.md
+## Fixed scaffold assets
 
-The shared, forward-looking plan that user and agent both read. Newest entry on top. This is what a fresh session reads first to recover where things left off.
+- `assets/docs/plan.md` — shared forward-looking plan, newest entry on top.
+- `assets/docs/log.md` — append-only record of verified completed tasks, newest entry on top.
+- `assets/docs/bug.md` — reusable hard-won lessons about unusual bugs.
+- `assets/cmd.md` — stable command reference and current user-test handoff.
 
-```markdown
-# Development Plan
-
-> 用户和 agent 共同维护的当前计划。最新的在最上面。
-
-<!-- 新条目追加到本行下方，保持最新在最上 -->
-```
-
-## docs/log.md
-
-Append-only record of verified, completed tasks, newest on top. A candidate implementation does not belong here until all required agent-run or user-run checks have passed. Distinct from `plan.md`: `plan.md` looks forward, `log.md` looks back.
-
-```markdown
-# Development Log
-
-> 已验证完成的任务记录。最新的在最上面。
-
-<!-- 每个任务通过全部必要验证后，在本行下方追加一条 -->
-```
-
-## docs/bug.md
-
-Hard-won lessons: how a bug was triggered, how it was resolved, and why. Append-only. Keep entries lean — only record bugs likely to bite again (architecture/data-flow issues, obscure third-party pitfalls, environment/config conflicts, non-obvious root causes).
-
-```markdown
-# Bug Journal
-
-> 开发过程中的硬核经验：触发情况、解决方案、原因解释。
-
-<!-- 新 bug 追加到本行下方 -->
-```
+These files are executable inputs to the initializer, not examples for an agent to copy. Edit the assets when the initial scaffold must change, then update and run the regression test.
 
 Entry template (use when recording a bug later):
 
@@ -70,21 +43,7 @@ Entry template (use when recording a bug later):
 
 ## Root `cmd.md` — command reference and user-test handoff
 
-Create root `cmd.md` if it is absent. This is a user-facing command interface, not a completion log. Keep stable, commonly reused commands under "常用命令". Keep at most one current manual verification handoff under "待用户验证"; do not accumulate stale task-specific commands there.
-
-```markdown
-# Command Reference
-
-> 项目常用命令与用户侧验证入口。命令应可直接复制执行。
-
-## 常用命令
-
-<!-- 按用途记录稳定命令，例如 lint、test、train、eval；优先引用 dev.sh 子命令 -->
-
-## 待用户验证
-
-- **状态**：None
-```
+The initializer creates root `cmd.md` from `assets/cmd.md` if it is absent. This is a user-facing command interface, not a completion log. Keep stable, commonly reused commands under "常用命令". Keep at most one current manual verification handoff under "待用户验证"; do not accumulate stale task-specific commands there.
 
 When a required check depends on a real robot, VLA setup, dedicated hardware, user credentials, or another environment the agent cannot access, replace the "待用户验证" block with:
 

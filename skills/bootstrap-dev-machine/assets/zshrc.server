@@ -29,6 +29,15 @@ typeset -U path
 path=("$HOME/.local/bin" $path)
 export PATH
 
+conda_executable="$HOME/miniforge3/bin/conda"
+if [[ ! -x "$conda_executable" ]] && (( $+commands[conda] )); then
+  conda_executable="$commands[conda]"
+fi
+if [[ -x "$conda_executable" ]]; then
+  eval "$("$conda_executable" shell.zsh hook)"
+fi
+unset conda_executable
+
 if [[ -d /usr/local/cuda ]]; then
   path=("/usr/local/cuda/bin" $path)
   export CUDA_HOME=/usr/local/cuda

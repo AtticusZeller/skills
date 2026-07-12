@@ -7,6 +7,7 @@ asset_dir="${script_dir}/../assets"
 dry_run=false
 use_proxy=true
 skip_packages=false
+skip_conda=false
 skip_skills=false
 skip_context7=false
 
@@ -14,6 +15,8 @@ proxy_url="${PROXY_URL:-http://127.0.0.1:7890}"
 python_version="${BOOTSTRAP_PYTHON_VERSION:-3.12}"
 node_version="${BOOTSTRAP_NODE_VERSION:-24}"
 nvm_install_version="${BOOTSTRAP_NVM_VERSION:-v0.40.5}"
+miniforge_version="${BOOTSTRAP_MINIFORGE_VERSION:-26.3.2-3}"
+conda_prefix="${HOME}/miniforge3"
 
 warnings=0
 current_phase="startup"
@@ -27,6 +30,7 @@ Options:
   --dry-run              Print commands without changing the machine
   --no-proxy             Do not export or configure proxy settings
   --skip-packages        Skip system package installation
+  --skip-conda           Skip Miniforge (conda) installation
   --skip-skills          Skip personal and external agent skill installation
   --skip-context7        Install skills without running Context7 setup
   -h, --help             Show this help
@@ -36,6 +40,7 @@ Environment:
   BOOTSTRAP_PYTHON_VERSION  uv-managed Python version (default: 3.12)
   BOOTSTRAP_NODE_VERSION    nvm-managed Node major version (default: 24)
   BOOTSTRAP_NVM_VERSION     nvm installer tag (default: v0.40.5)
+  BOOTSTRAP_MINIFORGE_VERSION  Miniforge release tag (default: 26.3.2-3)
   PERSONAL_SKILLS_DIR    Skills repository checkout (default: $HOME/skills)
 EOF
 }
@@ -45,6 +50,7 @@ while (($#)); do
     --dry-run) dry_run=true ;;
     --no-proxy) use_proxy=false ;;
     --skip-packages) skip_packages=true ;;
+    --skip-conda) skip_conda=true ;;
     --skip-skills) skip_skills=true ;;
     --skip-context7) skip_context7=true ;;
     -h|--help)
@@ -70,6 +76,10 @@ done
 }
 [[ "${nvm_install_version}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
   echo "Invalid BOOTSTRAP_NVM_VERSION: ${nvm_install_version}" >&2
+  exit 2
+}
+[[ "${miniforge_version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+-[0-9]+$ ]] || {
+  echo "Invalid BOOTSTRAP_MINIFORGE_VERSION: ${miniforge_version}" >&2
   exit 2
 }
 
@@ -220,6 +230,57 @@ install_uv_tool() {
   run env -u UV_DEFAULT_INDEX -u PIP_INDEX_URL \
     uv tool install --python "${python_version}" \
     --default-index https://pypi.org/simple "${package}"
+}
+
+install_conda() {
+  phase "Miniforge (conda)"
+  if [[ "${skip_conda}" == true ]]; then
+    info "Miniforge installation skipped"
+    return
+  fi
+
+  local conda_bin="${conda_prefix}/bin/conda"
+  if [[ -x "${conda_bin}" ]]; then
+    info "Miniforge already installed: ${conda_prefix}"
+    return
+  fi
+  if [[ -e "${conda_prefix}" ]]; then
+    die "Cannot install Miniforge over existing path: ${conda_prefix}"
+  fi
+
+  local installer_name="Miniforge3-${miniforge_version}-$(uname)-$(uname -m).sh"
+  local installer_url="https://github.com/conda-forge/miniforge/releases/download/${miniforge_version}/${installer_name}"
+  if [[ "${dry_run}" == true ]]; then
+    print_command curl -fsSL "${installer_url}" -o "<temporary-installer>"
+    print_command curl -fsSL "${installer_url}.sha256" -o "<temporary-checksum>"
+    print_command sha256sum -c "<temporary-checksum>"
+    print_command bash "<temporary-installer>" -b -p "${conda_prefix}"
+    print_command "${conda_bin}" config --set auto_activate_base false
+    return
+  fi
+
+  local tmp_dir installer checksum
+  tmp_dir="$(mktemp -d)"
+  installer="${tmp_dir}/${installer_name}"
+  checksum="${installer}.sha256"
+  if ! curl -fsSL "${installer_url}" -o "${installer}"; then
+    rm -rf "${tmp_dir}"
+    die "Failed to download Miniforge installer"
+  fi
+  if ! curl -fsSL "${installer_url}.sha256" -o "${checksum}"; then
+    rm -rf "${tmp_dir}"
+    die "Failed to download Miniforge checksum"
+  fi
+  if ! (cd "${tmp_dir}" && sha256sum -c "$(basename "${checksum}")"); then
+    rm -rf "${tmp_dir}"
+    die "Miniforge installer checksum verification failed"
+  fi
+  if ! bash "${installer}" -b -p "${conda_prefix}"; then
+    rm -rf "${tmp_dir}"
+    die "Miniforge installation failed"
+  fi
+  rm -rf "${tmp_dir}"
+  "${conda_bin}" config --set auto_activate_base false
 }
 
 install_python_tools() {
@@ -411,6 +472,20 @@ install_agent_skills() {
   fi
 }
 
+deploy_machine_handoff() {
+  phase "Machine handoff"
+  local -a args=(
+    --target-home "${HOME}"
+    --proxy-url "${proxy_url}"
+    --python-version "${python_version}"
+    --node-version "${node_version}"
+  )
+  if [[ "${dry_run}" == true ]]; then
+    args+=(--dry-run)
+  fi
+  bash "${script_dir}/install-machine-handoff.sh" "${args[@]}"
+}
+
 validate_machine() {
   phase "Validation"
   if [[ "${dry_run}" == true ]]; then
@@ -428,9 +503,6 @@ print_summary() {
     echo "Bootstrap completed with ${warnings} warning(s)."
   fi
 
-  if [[ ! -f "${HOME}/AGENTS.md" || ! -f "${HOME}/README.md" ]]; then
-    manual "Create or update ~/AGENTS.md and ~/README.md with machine handoff details"
-  fi
   manual "Authenticate gh, hf, wandb, and other account-backed CLIs as needed"
 
   if ((${#manual_actions[@]})); then
@@ -445,11 +517,13 @@ print_summary() {
 
 configure_proxy
 install_system_packages
+install_conda
 install_python_tools
 deploy_sbc_helpers
 install_node
 install_developer_clis
 install_zsh_baseline
 install_agent_skills
+deploy_machine_handoff
 validate_machine
 print_summary

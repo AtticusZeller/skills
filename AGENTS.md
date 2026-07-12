@@ -40,5 +40,7 @@ npx skills add AtticusZeller/skills --list --full-depth
 - Keep `SKILL.md` concise; move detailed workflows into `references/`.
 - Use `scripts/` only for deterministic helpers that are useful to run directly.
 - Give repeatable multi-step setup workflows one idempotent executable entry point; keep Markdown focused on inputs, boundaries, and recovery.
+- Fixed or long generated files must live in `assets/` or explicit templates and be deployed by a deterministic script. Never instruct an agent to reconstruct, summarize, or copy executable output from a Markdown fence.
+- Any skill with fixed templates or deployable assets must include an executable helper and a regression check that proves template fidelity and idempotency.
 - Keep generated or local-machine artifacts out of the repo.
 - If adding an external skill dependency, update `manifests/global-skills.json` instead of vendoring it.

@@ -9,15 +9,15 @@ description: Initialize repository-level agent collaboration scaffolding for a n
 
 Use this skill to give any repository a portable, self-contained agent baseline in a single pass. The output lives **inside the repo** (`AGENTS.md`, mirrored `CLAUDE.md`, and `docs/`) rather than in a CLI-specific global memory, so the same context follows the project across machines and across agents (Codex, Claude Code, etc.).
 
-The skill does five things, in order: confirm the user's global skills are present, write the agent baseline rules (including the session lifecycle and verification gate), scaffold the in-repo memory files, create the `cmd.md` command and user-test handoff, and seed a lazy code-doc index. It deliberately does **not** deep-read the codebase to auto-generate module docs — those are filled incrementally as work happens, to avoid re-reading a large repo up front.
+The skill confirms the user's global skills, gathers the small set of project facts needed by the template, and then delegates all fixed file generation to `scripts/init-repo-agents.sh`. The script renders the complete baseline rules, scaffolds the in-repo memory files, creates `cmd.md`, and seeds a lazy code-doc index. It deliberately does **not** deep-read the codebase to auto-generate module docs — those are filled incrementally as work happens, to avoid re-reading a large repo up front.
 
 Treat running this skill as a setup task: it is idempotent and must never clobber content the user already wrote.
 
 ## Workflow
 
-Execute these steps in order. Confirm with the user before overwriting anything that already exists.
+Execute these steps in order. Resolve every bundled path relative to this `SKILL.md`, not relative to the target repository.
 
-1. **Idempotent detection.** Check whether `AGENTS.md`, `CLAUDE.md`, `docs/`, and `cmd.md` already exist. If they do, switch to incremental top-up mode: only add missing sections/files, and never overwrite existing user content. Report what already exists before proceeding.
+1. **Inspect without rewriting.** Identify the target repository root and check whether `AGENTS.md`, `CLAUDE.md`, `docs/`, and `cmd.md` exist. Do not manually merge or rewrite them. The initializer updates only its complete managed block and preserves each file's existing suffix independently; fixed docs assets are create-if-absent.
 
 2. **Verify global skills.** Confirm the user's personal global skills are installed:
 
@@ -33,37 +33,56 @@ Execute these steps in order. Confirm with the user before overwriting anything 
 
    Note: `grill` is not a globally installed skill, so its workflow is embedded directly in `references/AGENTS.template.md` and needs no install.
 
-3. **Lightweight alignment (grill).** Ask the user, one question at a time, only for facts you cannot get by reading the repo or its docs:
+3. **Lightweight alignment (grill).** Ask the user, one question at a time, only for arguments you cannot get by reading the repo or its docs:
    - Project name and one-line purpose.
    - Primary language and toolchain (e.g. Python + uv/ruff/ty, Node + pnpm).
    - The unified entry point (prefer `dev.sh`) and whether experiments are driven by YAML configs (e.g. `experiments/<name>.yaml`).
-   - The handful of top-level modules that matter most.
 
    Give a recommended answer + one-line why for each question. Skip questions the code already answers.
 
-4. **Write AGENTS.md (+ mirror CLAUDE.md).** Read the English `references/AGENTS.template.md`, fill the `{{PLACEHOLDER}}` fields with project-specific facts (overview, toolchain, entry point, module index), and write the rendered English content to the repo root `AGENTS.md`. Then mirror the identical content to `CLAUDE.md` so Claude Code and Codex both read the same baseline. Keep the two files byte-identical.
+4. **Preview the deterministic initializer.** Run the bundled script with `--dry-run` and the aligned inputs:
 
-5. **Scaffold docs/ memory and command handoff.** Following `references/docs-scaffold.md`, create `docs/plan.md`, `docs/log.md`, `docs/bug.md`, and root `cmd.md` if they are absent, each with its header and maintenance convention. The `docs/` files are the portable, in-repo memory layer; `cmd.md` is the stable command reference and the handoff surface when required verification can only run in the user's environment. Do not put this content in a CLI global memory.
+   ```bash
+   bash scripts/init-repo-agents.sh \
+     --target "$REPO_ROOT" \
+     --project-name "$PROJECT_NAME" \
+     --purpose "$ONE_LINE_PURPOSE" \
+     --toolchain "$PRIMARY_TOOLCHAIN" \
+     --entry-point "$ENTRY_POINT" \
+     --dry-run
+   ```
 
-6. **Seed the code-doc index.** Do a shallow directory scan of the top-level source tree (e.g. `src/<pkg>/*/`) — structure only, no deep code reading. Populate the "Code Documentation Index" section of `AGENTS.md` with `[[docs/<module>.md]]` entries pointing at docs to be written later, plus the convention line explaining that module docs are filled incrementally to avoid re-reading code. Do not generate module doc bodies now.
+   Add `--scan-root <relative-path>` only when the default `src/` detection is not the correct shallow module boundary. Review the reported creates/updates/skips before continuing.
 
-7. **Wrap up.** Summarize which files were created vs. topped-up, and give next-step pointers: run `grill` before large changes; after coding, pass the verification gate either with agent-run tests or a `cmd.md` user-test handoff; only then run `neat-freak` and `git-commit`; add a `docs/<module>.md` the first time a module is explored in depth; and — per section 6 of the template — adopt the `dev.sh` + YAML-driven experiments pattern (wrap common dev commands into `dev.sh` subcommands; keep complex experiment params in `experiments/<name>.yaml` with `dev.sh` options overriding them).
+5. **Generate and verify.** Run the same command without `--dry-run`, then run:
+
+   ```bash
+   bash scripts/check-repo-agents.sh --target "$REPO_ROOT"
+   ```
+
+   A failed check means initialization is incomplete. Fix the script, template, assets, or explicit inputs; never repair the generated baseline by manually summarizing the template.
+
+6. **Wrap up.** Summarize which files were created, updated, unchanged, or skipped, and give next-step pointers: run `grill` before large changes; after coding, pass the verification gate either with agent-run tests or a `cmd.md` user-test handoff; only then run `neat-freak` and `git-commit`; add a `docs/<module>.md` the first time a module is explored in depth; and adopt the `dev.sh` + YAML-driven experiments pattern from section 6 of the generated baseline.
 
 ## Rules
 
-- Idempotent and non-destructive: never overwrite existing `AGENTS.md`, `CLAUDE.md`, `docs/`, or `cmd.md` content. Top up only.
-- Keep `AGENTS.md` and `CLAUDE.md` byte-identical mirrors.
+- All fixed output must come from `scripts/init-repo-agents.sh`. Never handwrite, copy from a Markdown fence, summarize, compress, or perform a second-pass rewrite of `references/AGENTS.template.md`.
+- Idempotent and non-destructive: refresh only the initializer's managed block; preserve existing `AGENTS.md` and `CLAUDE.md` suffixes independently; create docs assets only when absent.
+- Fresh `AGENTS.md` and `CLAUDE.md` files must be byte-identical. Existing files may differ outside their byte-identical managed blocks.
 - Do not deep-read the codebase during init. Seed the index from a shallow structural scan only.
 - Keep memory in-repo (`docs/`), never in a CLI-specific global memory, so it is portable.
 - Language convention for generated files: agent-facing `AGENTS.md` and mirrored `CLAUDE.md` in English; user-facing `docs/`, `README.md`, and `cmd.md` in Chinese; code comments and agent-internal notes in English.
-- The session lifecycle in `AGENTS.template.md` is the top-level behavioral constraint — preserve it verbatim when filling the template.
+- The complete managed block in `AGENTS.template.md` is the top-level behavioral constraint. Its non-placeholder bytes must remain unchanged.
 - Preserve the verification gate: candidate code must pass all required checks before `neat-freak`, completion logging, or `git-commit`. When the agent cannot run a required check, write the exact handoff to `cmd.md` and wait for the user's result.
 
 ## Resources
 
-- `references/AGENTS.template.md`: the baseline `AGENTS.md` template — session lifecycle and verification gate (section 0) + the full generalized agent rules, with embedded grill workflow and named references to global skills. Fill placeholders; do not compress the rules.
-- `references/docs-scaffold.md`: templates and conventions for `docs/plan.md`, `docs/log.md`, `docs/bug.md`, root `cmd.md`, and the `[[docs/<module>.md]]` index.
+- `scripts/init-repo-agents.sh`: the only supported writer for the fixed baseline and scaffold.
+- `scripts/check-repo-agents.sh`: read-only structural and template-fidelity validation.
+- `references/AGENTS.template.md`: complete managed baseline template; scripts render its placeholders without model-authored rewriting.
+- `references/docs-scaffold.md`: maintenance conventions for the assets and future memory entries.
+- `assets/`: exact create-if-absent bodies for `docs/{plan,log,bug}.md` and root `cmd.md`.
 
 ## Completion Criteria
 
-The repo is initialized when: `AGENTS.md` exists with the session lifecycle, adaptive verification gate, and full baseline rules; `CLAUDE.md` mirrors it exactly; `docs/{plan,log,bug}.md` and root `cmd.md` exist with correct headers; `AGENTS.md` carries a seeded `[[docs/<module>.md]]` index; and nothing the user previously wrote was overwritten.
+The repo is initialized when `scripts/check-repo-agents.sh` passes: both agent files contain the same complete managed baseline, fixed scaffold files exist with correct headers, the module index is seeded, no placeholders remain, and pre-existing suffix content was preserved.
