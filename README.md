@@ -13,7 +13,7 @@ npx skills add AtticusZeller/skills --list --full-depth
 Install the development-machine bootstrap skill globally:
 
 ```bash
-npx skills add AtticusZeller/skills --skill bootstrap-dev-machine -g -y --full-depth
+npx skills add AtticusZeller/skills --skill bootstrap-dev-machine -g -a codex -a claude-code -a cursor -y --full-depth
 ```
 
 This skill provides an idempotent one-shot installer for the full machine baseline, including public machine handoff docs, a server `.zshrc`, Oh My Zsh, Powerlevel10k, shell plugins, CUDA, uv, Miniforge/conda, NVM, proxy variables, and non-systemd sing-box helpers.
@@ -27,13 +27,13 @@ bash "$HOME/.agents/skills/bootstrap-dev-machine/scripts/bootstrap-dev-machine.s
 Install the personal skills maintenance skill globally:
 
 ```bash
-npx skills add AtticusZeller/skills --skill manage-personal-skills -g -y --full-depth
+npx skills add AtticusZeller/skills --skill manage-personal-skills -g -a codex -a claude-code -a cursor -y --full-depth
 ```
 
 Install the repository initialization skill globally:
 
 ```bash
-npx skills add AtticusZeller/skills --skill init-repo-agents -g -y --full-depth
+npx skills add AtticusZeller/skills --skill init-repo-agents -g -a codex -a claude-code -a cursor -y --full-depth
 ```
 
 This skill renders repository agent rules and portable docs scaffolding through bundled idempotent scripts, then checks template fidelity and preservation of existing content.
@@ -41,14 +41,16 @@ This skill renders repository agent rules and portable docs scaffolding through 
 Install the GitHub fork workflow skill globally:
 
 ```bash
-npx skills add AtticusZeller/skills --skill git-fork-workflow -g -y --full-depth
+npx skills add AtticusZeller/skills --skill git-fork-workflow -g -a codex -a claude-code -a cursor -y --full-depth
 ```
 
 Install all personal skills:
 
 ```bash
-npx skills add AtticusZeller/skills --skill '*' -g -y --full-depth
+npx skills add AtticusZeller/skills --skill '*' -g -a codex -a claude-code -a cursor -y --full-depth
 ```
+
+These examples name the target agents explicitly. PromptScript supports project-level skills only, so do not use `-g` with `-a promptscript`.
 
 ## Update Installed Skills
 
