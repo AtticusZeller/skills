@@ -21,7 +21,7 @@ The defaults match the DSW/container baseline:
 - Conda distribution: Miniforge `BOOTSTRAP_MINIFORGE_VERSION=26.3.2-3` at `$HOME/miniforge3`
 - Personal skills checkout: `PERSONAL_SKILLS_DIR=$HOME/skills`
 
-Use `--no-proxy` only when the host has direct network access. Use `--skip-packages`, `--skip-conda`, `--skip-skills`, or `--skip-context7` when those layers are managed externally.
+Use `--no-proxy` only when the host has direct network access. Use `--skip-packages`, `--skip-conda`, `--skip-skills`, or `--skip-context7` when those layers are managed externally. On Alibaba Cloud DSW, add `--enable-dsw-persistent-prompt` to back up and append the OSS persistence convention to `~/.codex/AGENTS.md` exactly once.
 
 ## Automated Phases
 
@@ -37,7 +37,8 @@ The entry script performs these phases in order:
 8. Installs Oh My Zsh, Powerlevel10k, plugins, and the public server `.zshrc`.
 9. Installs personal and external agent skills from the repository manifest.
 10. Creates public machine-level `AGENTS.md` and `README.md` from bundled templates when they are absent.
-11. Runs `check-dev-machine.sh` and prints all remaining manual work together.
+11. When explicitly enabled, backs up and appends the Alibaba Cloud DSW OSS persistence prompt to `~/.codex/AGENTS.md`.
+12. Runs `check-dev-machine.sh` and prints all remaining manual work together.
 
 Each phase is safe to rerun: existing tools and clones are reused, and `.zshrc` is backed up only when the deployed template differs.
 

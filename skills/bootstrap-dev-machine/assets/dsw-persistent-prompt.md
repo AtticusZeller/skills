@@ -1,0 +1,1 @@
+This is an Alibaba Cloud DSW environment with persistent OSS mounted at `/mnt/data`. Store model weights, datasets, checkpoints, rollout/replay data, and important experiment outputs under `/mnt/data/atticux/<project>/`; keep source code, `.venv`, temporary files, and rebuildable caches under `$HOME`. Before writing important data, verify the mount with `findmnt -T /mnt/data`.

@@ -10,6 +10,7 @@ skip_packages=false
 skip_conda=false
 skip_skills=false
 skip_context7=false
+enable_dsw_persistent_prompt=false
 
 proxy_url="${PROXY_URL:-http://127.0.0.1:7890}"
 python_version="${BOOTSTRAP_PYTHON_VERSION:-3.12}"
@@ -33,6 +34,8 @@ Options:
   --skip-conda           Skip Miniforge (conda) installation
   --skip-skills          Skip personal and external agent skill installation
   --skip-context7        Install skills without running Context7 setup
+  --enable-dsw-persistent-prompt
+                        Append the Alibaba Cloud DSW storage prompt to ~/.codex/AGENTS.md
   -h, --help             Show this help
 
 Environment:
@@ -53,6 +56,7 @@ while (($#)); do
     --skip-conda) skip_conda=true ;;
     --skip-skills) skip_skills=true ;;
     --skip-context7) skip_context7=true ;;
+    --enable-dsw-persistent-prompt) enable_dsw_persistent_prompt=true ;;
     -h|--help)
       usage
       exit 0
@@ -486,6 +490,20 @@ deploy_machine_handoff() {
   bash "${script_dir}/install-machine-handoff.sh" "${args[@]}"
 }
 
+deploy_dsw_persistent_prompt() {
+  phase "DSW persistent storage prompt"
+  if [[ "${enable_dsw_persistent_prompt}" != true ]]; then
+    info "DSW persistent storage prompt skipped"
+    return
+  fi
+
+  local -a args=(--target-home "${HOME}")
+  if [[ "${dry_run}" == true ]]; then
+    args+=(--dry-run)
+  fi
+  bash "${script_dir}/install-dsw-persistent-prompt.sh" "${args[@]}"
+}
+
 validate_machine() {
   phase "Validation"
   if [[ "${dry_run}" == true ]]; then
@@ -525,5 +543,6 @@ install_developer_clis
 install_zsh_baseline
 install_agent_skills
 deploy_machine_handoff
+deploy_dsw_persistent_prompt
 validate_machine
 print_summary

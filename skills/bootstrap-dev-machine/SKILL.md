@@ -13,7 +13,7 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 
 1. Confirm the host shape: user, shell, PID 1, package manager, writable home, and whether `127.0.0.1:7890` is reachable.
 2. Preview once with `bash scripts/bootstrap-dev-machine.sh --dry-run` when the host is unfamiliar or already configured.
-3. Run `bash scripts/bootstrap-dev-machine.sh` once. Prefer environment variables or its skip flags over manually replaying phase commands.
+3. Run `bash scripts/bootstrap-dev-machine.sh` once. On Alibaba Cloud DSW, add `--enable-dsw-persistent-prompt` to append the persistent-storage rule to `~/.codex/AGENTS.md`. Prefer environment variables or its skip flags over manually replaying phase commands.
 4. Inspect the final validation and consolidated manual-follow-up list.
 5. Read `references/bootstrap-phases.md` only for inputs, phase boundaries, or a failed phase. Read the focused zsh or sing-box reference only when that subsystem needs diagnosis or customization.
 
@@ -27,12 +27,14 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 - Keep `/root/AGENTS.md` for agents and `/root/README.md` for users; do not mix operational rules with user-facing walkthroughs.
 - Let `scripts/install-machine-handoff.sh` create the public machine handoff from bundled templates. Never recreate or summarize those templates manually; preserve existing handoff files unchanged.
 - Keep executable setup logic in `scripts/` or `assets/`; Markdown should explain inputs, boundaries, and recovery rather than duplicate command sequences.
+- Keep the DSW persistent-storage prompt opt-in; its installer must back up an existing Codex `AGENTS.md` and append the asset exactly once.
 
 ## Resources
 
 - `scripts/bootstrap-dev-machine.sh`: idempotent one-shot installer and primary entry point.
 - `scripts/check-dev-machine.sh`: read-only validation script used by the installer.
 - `scripts/install-machine-handoff.sh`: deterministic create-if-absent installer for machine-level `AGENTS.md` and `README.md`.
+- `scripts/install-dsw-persistent-prompt.sh`: optional, idempotent installer for the Alibaba Cloud DSW rule in `~/.codex/AGENTS.md`.
 - `references/bootstrap-phases.md`: installer inputs, automated phases, manual boundaries, and failure handling.
 - `references/sbc-service-scripts.md`: behavior and configuration boundaries for the deployed sing-box helpers.
 - `references/zsh-baseline.md`: resulting shell state and focused startup diagnosis.
