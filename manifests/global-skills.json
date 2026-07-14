@@ -29,6 +29,10 @@
     {
       "repo": "KKKKhazix/khazix-skills",
       "skills": ["neat-freak"]
+    },
+    {
+      "repo": "wandb/skills",
+      "skills": ["wandb-primary"]
     }
   ]
 }

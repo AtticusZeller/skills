@@ -78,7 +78,11 @@ Install them:
 bash scripts/install-global-skills.sh
 ```
 
-The script runs `npx skills add <repo> --skill <skill> -g -y` for each manifest entry. For Context7, it also runs:
+The script runs `npx skills add <repo> --skill <skill> -g -a codex -a claude-code -a cursor -y` for each manifest entry.
+
+The Skills CLI uses the shared `~/.agents/skills` directory for Codex and Cursor. The explicit agent flags limit the requested installation targets, but shared skills may also appear in listings for other agents that consume the universal directory, such as GitHub Copilot.
+
+For Context7, it also runs:
 
 ```bash
 npx ctx7 setup --cli --claude --codex -y

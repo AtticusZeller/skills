@@ -34,10 +34,12 @@ run_cmd() {
   fi
 }
 
+agent_args=(-a codex -a claude-code -a cursor)
+
 install_skill() {
   local repo="$1"
   local skill="$2"
-  run_cmd npx skills add "$repo" --skill "$skill" -g -y
+  run_cmd npx skills add "$repo" --skill "$skill" -g "${agent_args[@]}" -y
 }
 
 install_skill trailofbits/skills modern-python
@@ -48,6 +50,7 @@ install_skill upstash/context7 context7-cli
 install_skill upstash/context7 find-docs
 install_skill forrestchang/andrej-karpathy-skills karpathy-guidelines
 install_skill KKKKhazix/khazix-skills neat-freak
+install_skill wandb/skills wandb-primary
 
 if [[ "$run_context7" == true ]]; then
   run_cmd npx ctx7 setup --cli --claude --codex -y
