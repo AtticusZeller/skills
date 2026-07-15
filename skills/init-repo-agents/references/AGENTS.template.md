@@ -78,6 +78,7 @@ flowchart TD
 3. If acceptance depends on a real robot, VLA setup, dedicated hardware, user credentials, or another environment unavailable to the agent, update the pending-verification section in root `cmd.md` with prerequisites, copyable commands, pass criteria, and the evidence to return on failure. Then stop and wait for the user to run it.
 4. Any failed required check returns the task to `code`, followed by the full verification gate again. Do not reuse results invalidated by a fix.
 5. Only after every required check passes may the agent run `neat-freak`, record completion in `docs/log.md`, and invoke `git-commit`. During verification, update only the `cmd.md` content required for testing; do not begin broad documentation synchronization.
+6. **Commit only the session patch:** stage and commit solely the hunks that implement or document the current session's verified task. Do not include pre-existing changes, unrelated files, drive-by cleanup, or any other work outside the session's scope. Inspect the staged diff before committing; if the intended patch cannot be isolated safely, stop and ask the user.
 
 ## 2. Alignment · Prerequisite for Coding (Embedded Grill Workflow)
 
