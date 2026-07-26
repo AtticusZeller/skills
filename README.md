@@ -38,6 +38,27 @@ npx skills add AtticusZeller/skills --skill init-repo-agents -g -a codex -a clau
 
 This skill renders repository agent rules and portable docs scaffolding through bundled idempotent scripts, then checks template fidelity and preservation of existing content.
 
+The generated lifecycle has three coding paths:
+
+- Type B: fast small change, agent verification plus user verification by default.
+- Type C−: mandatory pre-code intent alignment and user verification; defer
+  Explain Diff review and record the cognitive debt.
+- Type C: mandatory pre-code intent alignment, user verification, and
+  `explain-diff-html` review with all five quiz questions passed before commit.
+
+Install Geoffrey Litt's mirrored Explain Diff skills globally:
+
+```bash
+npx skills add AtticusZeller/skills \
+  --skill explain-diff-html explain-diff-notion \
+  -g -a codex claude-code cursor -y --full-depth
+```
+
+The skill bodies are direct mirrors of Geoffrey Litt's official Explain Diff Gist:
+`https://gist.github.com/geoffreylitt/a29df1b5f9865506e8952488eac3d524`.
+The HTML variant powers the default understanding gate; the Notion variant is
+available when Notion tools are connected.
+
 Install the GitHub fork workflow skill globally:
 
 ```bash
@@ -62,9 +83,33 @@ npx skills update
 
 When prompted, choose `Global` to check and update all globally installed personal and third-party skills, including skills from `AtticusZeller/skills`.
 
+Install or update the required personal skills and refresh an already initialized
+repository:
+
+```bash
+bash "$HOME/.agents/skills/init-repo-agents/scripts/update-repo-agents.sh" \
+  --target /path/to/repo \
+  --refresh-skill
+```
+
+Use `--dry-run` first to preview the managed-block and newly introduced scaffold
+changes. Existing repository-specific content and module-index entries are
+preserved.
+
+Synchronize both mirrored skills from the official Gist:
+
+```bash
+bash scripts/sync-explain-diff-gist.sh
+```
+
+The weekly GitHub Actions workflow performs the same synchronization and commits
+changed upstream skill bodies directly to this public repository.
+
 ## External Global Skills
 
-This repository does not vendor third-party skills. The usual external global skills are recorded in `manifests/global-skills.json`.
+External global skills are normally referenced through
+`manifests/global-skills.json`. Geoffrey Litt's two Explain Diff variants are the
+explicit mirrored exception described above.
 
 Dry-run the install commands:
 

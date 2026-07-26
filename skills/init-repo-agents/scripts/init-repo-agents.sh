@@ -13,6 +13,7 @@ toolchain=""
 entry_point="dev.sh"
 scan_root=""
 dry_run=false
+update_mode=false
 
 managed_begin="<!-- init-repo-agents:managed:begin -->"
 managed_end="<!-- init-repo-agents:managed:end -->"
@@ -24,13 +25,14 @@ Usage: init-repo-agents.sh [options]
 
 Create or update deterministic repository agent scaffolding.
 
-Required:
+Required for first-time initialization:
   --project-name <name>  Project name used in AGENTS.md
   --purpose <text>       One-line project purpose
   --toolchain <text>     Primary language and toolchain
 
 Options:
   --target <dir>         Target repository root (default: current directory)
+  --update               Reuse facts and module index from the existing AGENTS.md
   --entry-point <path>   Unified command entry point (default: dev.sh)
   --scan-root <path>     Directory whose immediate children are modules
   --dry-run              Report changes without writing files
@@ -97,6 +99,10 @@ while (($#)); do
       dry_run=true
       shift
       ;;
+    --update)
+      update_mode=true
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -113,6 +119,35 @@ done
 target="$(cd "$target" && pwd)"
 [[ -w "$target" ]] || die "Target directory is not writable: ${target}"
 [[ -f "$template" ]] || die "Missing template: ${template}"
+
+if [[ "$update_mode" == true ]]; then
+  [[ -f "${target}/AGENTS.md" && ! -L "${target}/AGENTS.md" ]] ||
+    die "--update requires an initialized regular AGENTS.md in ${target}"
+  [[ -z "$project_name" && -z "$purpose" && -z "$toolchain" &&
+    "$entry_point" == "dev.sh" && -z "$scan_root" ]] ||
+    die "--update cannot be combined with project facts, --entry-point, or --scan-root"
+
+  project_name="$(
+    sed -n 's/^# \(.*\) · Agent Collaboration Guide$/\1/p' \
+      "${target}/AGENTS.md" | head -n 1
+  )"
+  purpose="$(
+    awk '/^> / { sub(/^> /, ""); print; exit }' "${target}/AGENTS.md"
+  )"
+  toolchain="$(
+    sed -n 's/^\*\*Primary toolchain:\*\* //p' "${target}/AGENTS.md" |
+      head -n 1
+  )"
+  entry_point="$(
+    awk '
+      /^- \*\*`[^`]+` \(conventionally `dev\.sh`\)\*\* wraps/ {
+        split($0, fields, "`")
+        print fields[2]
+        exit
+      }
+    ' "${target}/AGENTS.md"
+  )"
+fi
 
 validate_input() {
   local label="$1"
@@ -145,6 +180,8 @@ tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
 rendered="${tmp_dir}/AGENTS.rendered.md"
 module_index="${tmp_dir}/module-index.md"
+module_begin="<!-- init-repo-agents:module-index:begin -->"
+module_end="<!-- init-repo-agents:module-index:end -->"
 
 is_module_dir() {
   local name="$1"
@@ -169,7 +206,27 @@ immediate_dirs() {
 }
 
 module_dirs=()
-if [[ -n "$scan_root" ]]; then
+if [[ "$update_mode" == true ]]; then
+  awk -v begin="$module_begin" -v end="$module_end" '
+    $0 == begin {
+      begin_count++
+      inside = 1
+      next
+    }
+    $0 == end {
+      end_count++
+      inside = 0
+      next
+    }
+    inside { print }
+    END {
+      if (begin_count != 1 || end_count != 1 || inside) {
+        exit 1
+      }
+    }
+  ' "${target}/AGENTS.md" >"$module_index" ||
+    die "Existing AGENTS.md has a malformed module index"
+elif [[ -n "$scan_root" ]]; then
   while IFS= read -r -d '' dir; do
     module_dirs+=("$dir")
   done < <(immediate_dirs "$scan_root" | sort -z)
@@ -189,7 +246,10 @@ elif [[ -d "${target}/src" ]]; then
   fi
 fi
 
-if ((${#module_dirs[@]} == 0)); then
+if [[ "$update_mode" == true ]]; then
+  [[ -s "$module_index" ]] ||
+    die "Existing AGENTS.md has an empty module index"
+elif ((${#module_dirs[@]} == 0)); then
   printf '%s\n' \
     '- No modules were discovered during the shallow initialization scan.' \
     >"$module_index"
@@ -296,6 +356,7 @@ for required_asset in \
   "${asset_dir}/docs/plan.md" \
   "${asset_dir}/docs/log.md" \
   "${asset_dir}/docs/bug.md" \
+  "${asset_dir}/docs/cognitive-debt.md" \
   "${asset_dir}/cmd.md"; do
   [[ -f "$required_asset" ]] || die "Missing scaffold asset: ${required_asset}"
 done
@@ -327,6 +388,7 @@ if [[ "$dry_run" == true ]]; then
   report_asset_action "${target}/docs/plan.md"
   report_asset_action "${target}/docs/log.md"
   report_asset_action "${target}/docs/bug.md"
+  report_asset_action "${target}/docs/cognitive-debt.md"
   report_asset_action "${target}/cmd.md"
   info "Dry run completed; no target files were changed"
   exit 0
@@ -362,6 +424,9 @@ install_managed_file "$claude_output" "${target}/CLAUDE.md"
 install_asset_if_absent "${asset_dir}/docs/plan.md" "${target}/docs/plan.md"
 install_asset_if_absent "${asset_dir}/docs/log.md" "${target}/docs/log.md"
 install_asset_if_absent "${asset_dir}/docs/bug.md" "${target}/docs/bug.md"
+install_asset_if_absent \
+  "${asset_dir}/docs/cognitive-debt.md" \
+  "${target}/docs/cognitive-debt.md"
 install_asset_if_absent "${asset_dir}/cmd.md" "${target}/cmd.md"
 
 info "Repository agent scaffolding completed"

@@ -5,6 +5,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 skill_dir="$(cd "${script_dir}/.." && pwd)"
 init_script="${script_dir}/init-repo-agents.sh"
 check_script="${script_dir}/check-repo-agents.sh"
+update_script="${script_dir}/update-repo-agents.sh"
 golden="${skill_dir}/tests/golden/AGENTS.md"
 managed_begin="<!-- init-repo-agents:managed:begin -->"
 
@@ -44,6 +45,10 @@ cmp -s "${fresh}/AGENTS.md" "$golden" ||
   fail "Fresh AGENTS.md differs from the golden output"
 cmp -s "${fresh}/docs/plan.md" "${skill_dir}/assets/docs/plan.md" ||
   fail "plan.md was not installed verbatim"
+cmp -s \
+  "${fresh}/docs/cognitive-debt.md" \
+  "${skill_dir}/assets/docs/cognitive-debt.md" ||
+  fail "cognitive-debt.md was not installed verbatim"
 cmp -s "${fresh}/cmd.md" "${skill_dir}/assets/cmd.md" ||
   fail "cmd.md was not installed verbatim"
 pass "fresh generation matches the golden output and assets"
@@ -94,6 +99,32 @@ cmp -s "${existing}/AGENTS.md" "${tmp_dir}/existing-agents.before" ||
 cmp -s "${existing}/CLAUDE.md" "${tmp_dir}/existing-claude.before" ||
   fail "Managed-block refresh changed the CLAUDE.md suffix"
 pass "existing independent suffixes are preserved without duplication"
+
+updatable="${tmp_dir}/updatable"
+cp -R "$fresh" "$updatable"
+rm "${updatable}/docs/cognitive-debt.md"
+for name in AGENTS.md CLAUDE.md; do
+  sed \
+    -e 's/- \[\[docs\/core\.md\]\] — core module (`src\/example\/core\/`)/- [[docs\/custom-system.md]] — manually curated module (`src\/custom\/`)/' \
+    -e '/^### Understanding Gate (Between Verification and Wrap-Up)$/d' \
+    "${updatable}/${name}" >"${updatable}/${name}.tmp"
+  mv "${updatable}/${name}.tmp" "${updatable}/${name}"
+done
+cp "${updatable}/AGENTS.md" "${tmp_dir}/updatable.before"
+bash "$update_script" --target "$updatable" --dry-run
+cmp -s "${updatable}/AGENTS.md" "${tmp_dir}/updatable.before" ||
+  fail "Updater dry run changed AGENTS.md"
+bash "$update_script" --target "$updatable"
+grep -Fq '### Understanding Gate (Between Verification and Wrap-Up)' \
+  "${updatable}/AGENTS.md" ||
+  fail "Updater did not restore the current managed baseline"
+grep -Fq '[[docs/custom-system.md]]' "${updatable}/AGENTS.md" ||
+  fail "Updater did not preserve the curated module index"
+cmp -s \
+  "${updatable}/docs/cognitive-debt.md" \
+  "${skill_dir}/assets/docs/cognitive-debt.md" ||
+  fail "Updater did not install a newly introduced scaffold asset"
+pass "updater refreshes the baseline while preserving repository facts and index"
 
 compressed="${tmp_dir}/compressed"
 cp -R "$fresh" "$compressed"

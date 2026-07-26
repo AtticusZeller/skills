@@ -190,6 +190,7 @@ check_header() {
 check_header "docs/plan.md" "# Development Plan"
 check_header "docs/log.md" "# Development Log"
 check_header "docs/bug.md" "# Bug Journal"
+check_header "docs/cognitive-debt.md" "# Cognitive Debt"
 check_header "cmd.md" "# Command Reference"
 
 if [[ -f "${target}/cmd.md" ]]; then

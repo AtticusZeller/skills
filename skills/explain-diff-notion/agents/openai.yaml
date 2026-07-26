@@ -1,0 +1,4 @@
+interface:
+  display_name: "Explain Diff Notion"
+  short_description: "Explain a code change in Notion with a quiz"
+  default_prompt: "Use $explain-diff-notion to create a Notion explanation and quiz for this verified change."

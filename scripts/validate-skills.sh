@@ -52,4 +52,5 @@ for skill_dir in "$repo_root"/skills/*; do
 done
 
 npx skills add "$repo_root" --list --full-depth
+bash "$repo_root/scripts/sync-explain-diff-gist.sh" --check
 bash "$repo_root/scripts/install-global-skills.sh" --dry-run

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Explain Diff HTML"
+  short_description: "Explain a code change as interactive HTML with a quiz"
+  default_prompt: "Use $explain-diff-html to explain this verified change and quiz me before delivery."

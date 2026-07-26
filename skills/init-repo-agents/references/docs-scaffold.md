@@ -2,7 +2,7 @@
 
 This reference defines the in-repo memory layer and root command handoff that `init-repo-agents` creates. The point of keeping these files inside the repo (instead of a CLI's global memory) is portability: the same context follows the project across machines and across agents.
 
-Create each file only through `scripts/init-repo-agents.sh`. The script installs the fixed bodies from `assets/`; agents must not reconstruct them from this reference. Never overwrite an existing file — if it exists, leave it untouched and report that it was already present.
+Create each file only through `scripts/init-repo-agents.sh`. The script installs the fixed bodies from `assets/`; agents must not reconstruct them from this reference. Never overwrite an existing file — if it exists, leave it untouched and report that it was already present. `scripts/update-repo-agents.sh` delegates to the same writer, so an update can add newly introduced assets without changing existing ones.
 
 Write the file bodies in Chinese (user-facing docs); keep any code/identifiers in English.
 
@@ -11,9 +11,15 @@ Write the file bodies in Chinese (user-facing docs); keep any code/identifiers i
 - `assets/docs/plan.md` — shared forward-looking plan, newest entry on top.
 - `assets/docs/log.md` — append-only record of verified completed tasks, newest entry on top.
 - `assets/docs/bug.md` — reusable hard-won lessons about unusual bugs.
+- `assets/docs/cognitive-debt.md` — explicitly deferred understanding with repayment evidence.
 - `assets/cmd.md` — stable command reference and current user-test handoff.
 
 These files are executable inputs to the initializer, not examples for an agent to copy. Edit the assets when the initial scaffold must change, then update and run the regression test.
+
+Use `docs/cognitive-debt.md` for Type C− work after both agent and user verification
+pass. Keep the entry Open until the human runs `explain-diff-html` against the
+recorded change and passes all five questions; then record the repayment evidence
+and mark it Repaid.
 
 Entry template (use when recording a bug later):
 

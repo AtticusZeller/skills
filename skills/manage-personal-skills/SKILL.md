@@ -7,7 +7,7 @@ description: Maintain and publish AtticusZeller's personal agent skills reposito
 
 ## Overview
 
-Use this skill to keep the `AtticusZeller/skills` repository installable, safe, and easy to reuse from fresh machines. The repository contains original personal skills plus a manifest of external global skills; it must not vendor third-party skill source or secrets.
+Use this skill to keep the `AtticusZeller/skills` repository installable, safe, and easy to reuse from fresh machines. The repository contains original personal skills, a manifest of external global skills, and explicitly approved deterministic upstream mirrors such as Geoffrey Litt's Explain Diff Gist.
 
 ## Repository Shape
 
@@ -27,7 +27,7 @@ scripts/validate-skills.sh
 1. Read root `AGENTS.md` before changing the repository.
 2. For a new personal skill, create `skills/<skill-name>/SKILL.md` with valid `name` and `description` frontmatter.
 3. Put detailed reusable guidance in `references/` and deterministic helpers in `scripts/` inside the skill directory. When a skill creates fixed or long files, store their exact bodies in `assets/` or explicit templates and make a script the only supported writer.
-4. For third-party skills, update `manifests/global-skills.json`; do not copy their source into this repository.
+4. For third-party skills, update `manifests/global-skills.json` by default. Mirror source only when the user explicitly approves it and a deterministic sync script, provenance, drift check, and regression validation are present.
 5. Run validation before committing:
 
 ```bash
@@ -41,7 +41,8 @@ bash scripts/install-global-skills.sh --dry-run
 ## Safety Rules
 
 - Never commit tokens, PATs, private subscriptions, SSH keys, node credentials, API keys, or machine-private config.
-- Never vendor third-party skills; reference them in the manifest.
+- Do not vendor third-party skills by default; use an explicitly approved,
+  deterministic upstream mirror only when the repository rules name the exception.
 - Keep root `README.md` human-facing and root `AGENTS.md` agent-facing.
 - Keep individual skill folders lean; do not add skill-local README files.
 - Never make an agent reconstruct, summarize, or copy fixed output from a Markdown fence. Fixed templates/assets require an executable, idempotent helper and a regression test for fidelity.
