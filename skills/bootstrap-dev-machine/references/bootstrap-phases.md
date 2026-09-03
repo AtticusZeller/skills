@@ -28,7 +28,7 @@ Use `--no-proxy` only when the host has direct network access. Use `--skip-packa
 The entry script performs these phases in order:
 
 1. Exports lower- and upper-case proxy variables and aligns Git proxy settings.
-2. Detects apt, dnf, or yum; installs required packages and attempts optional developer utilities.
+2. Detects apt, dnf, or yum; installs required packages including ripgrep (`rg`) and attempts optional developer utilities.
 3. Downloads the pinned Miniforge installer and matching checksum, verifies it, installs `conda` non-interactively, and disables automatic base activation.
 4. Installs uv, Python, sing-box-cli, nvitop, and Weights & Biases.
 5. Deploys `sbc-start`, `sbc-stop`, and `sbc-status` for non-systemd hosts.

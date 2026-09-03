@@ -187,17 +187,17 @@ install_system_packages() {
   local -a required optional
   if command -v apt-get >/dev/null 2>&1; then
     manager=apt-get
-    required=(zsh git curl wget unzip ca-certificates tmux)
-    optional=(bat fzf ripgrep fd-find tree htop jq ffmpeg gh fonts-powerline)
+    required=(zsh git curl wget unzip ca-certificates tmux ripgrep)
+    optional=(bat fzf fd-find tree htop jq ffmpeg gh fonts-powerline)
     run_root apt-get update
   elif command -v dnf >/dev/null 2>&1; then
     manager=dnf
-    required=(zsh git curl wget unzip ca-certificates tmux)
-    optional=(bat fzf ripgrep fd-find tree htop jq ffmpeg gh)
+    required=(zsh git curl wget unzip ca-certificates tmux ripgrep)
+    optional=(bat fzf fd-find tree htop jq ffmpeg gh)
   elif command -v yum >/dev/null 2>&1; then
     manager=yum
-    required=(zsh git curl wget unzip ca-certificates tmux)
-    optional=(bat fzf ripgrep fd-find tree htop jq ffmpeg gh)
+    required=(zsh git curl wget unzip ca-certificates tmux ripgrep)
+    optional=(bat fzf fd-find tree htop jq ffmpeg gh)
   else
     die "Unsupported package manager; use --skip-packages after installing base tools"
   fi

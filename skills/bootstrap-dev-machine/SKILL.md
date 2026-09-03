@@ -1,6 +1,6 @@
 ---
 name: bootstrap-dev-machine
-description: Guide a Codex agent through configuring a fresh GPU/DSW-style Linux development machine with SSH-forwarded proxy, Codex, uv/Python 3.12, Miniforge/conda, sing-box mixed proxy, Claude Code, nvm/Node 24, Context7, global development skills, zsh/tmux, Git/GitHub/Hugging Face tooling, and root-level AGENTS.md/README.md handoff docs. Use when the user asks to bootstrap, reproduce, migrate, audit, or repair this development environment on a new machine.
+description: Guide a Codex agent through configuring a fresh GPU/DSW-style Linux development machine with SSH-forwarded proxy, ripgrep, Codex, uv/Python 3.12, Miniforge/conda, sing-box mixed proxy, Claude Code, nvm/Node 24, Context7, global development skills, zsh/tmux, Git/GitHub/Hugging Face tooling, and root-level AGENTS.md/README.md handoff docs. Use when the user asks to bootstrap, reproduce, migrate, audit, or repair this development environment on a new machine.
 ---
 
 # Bootstrap Dev Machine
@@ -44,4 +44,4 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 
 ## Completion Criteria
 
-The machine is ready when the user can run `sbc version`, use the local proxy, start the configured zsh baseline without errors, run Codex/Claude, use Node 24 through nvm, use uv Python 3.12, manage environments with `conda`, and read `/root/AGENTS.md` plus `/root/README.md` for handoff details.
+The machine is ready when the user can run `rg`, `sbc version`, use the local proxy, start the configured zsh baseline without errors, run Codex/Claude, use Node 24 through nvm, use uv Python 3.12, manage environments with `conda`, and read `/root/AGENTS.md` plus `/root/README.md` for handoff details.
