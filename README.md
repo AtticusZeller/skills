@@ -36,15 +36,16 @@ Install the repository initialization skill globally:
 npx skills add AtticusZeller/skills --skill init-repo-agents -g -a codex -a claude-code -a cursor -y --full-depth
 ```
 
-This skill renders repository agent rules and portable docs scaffolding through bundled idempotent scripts, then checks template fidelity and preservation of existing content.
+This skill creates a human-owned collaboration baseline: the human decides intent,
+scope, architecture, interfaces, task decomposition, and acceptance; the agent
+implements and verifies. Tasks use `Change + Observable Evidence`, `CLAUDE.md`
+imports the authoritative `AGENTS.md`, and project context is organized under
+area-level `plan.md`, `log.md`, and `overview.md` files.
 
-The generated lifecycle has three coding paths:
-
-- Type B: fast small change, agent verification plus user verification by default.
-- Type C−: mandatory pre-code intent alignment and user verification; defer
-  Explain Diff review and record the cognitive debt.
-- Type C: mandatory pre-code intent alignment, user verification, and
-  `explain-diff-html` review with all five quiz questions passed before commit.
+The initializer is create-only and refuses to replace custom rule files. Existing
+repositories are updated through an inspected, user-confirmed patch rather than a
+managed block. Common Skills are recorded with explicit triggers and are never
+chained into an automatic lifecycle.
 
 Install Geoffrey Litt's mirrored Explain Diff skills globally:
 
@@ -56,8 +57,8 @@ npx skills add AtticusZeller/skills \
 
 The skill bodies are direct mirrors of Geoffrey Litt's official Explain Diff Gist:
 `https://gist.github.com/geoffreylitt/a29df1b5f9865506e8952488eac3d524`.
-The HTML variant powers the default understanding gate; the Notion variant is
-available when Notion tools are connected.
+The HTML variant is available when a user explicitly requests a rich diff
+explanation; the Notion variant is available when Notion tools are connected.
 
 Install the GitHub fork workflow skill globally:
 
@@ -83,18 +84,15 @@ npx skills update
 
 When prompted, choose `Global` to check and update all globally installed personal and third-party skills, including skills from `AtticusZeller/skills`.
 
-Install or update the required personal skills and refresh an already initialized
-repository:
+Reinstall the current repository-initialization Skill from a local checkout:
 
 ```bash
-bash "$HOME/.agents/skills/init-repo-agents/scripts/update-repo-agents.sh" \
-  --target /path/to/repo \
-  --refresh-skill
+npx skills add . --skill init-repo-agents \
+  -g -a codex -a claude-code -a cursor -y --full-depth
 ```
 
-Use `--dry-run` first to preview the managed-block and newly introduced scaffold
-changes. Existing repository-specific content and module-index entries are
-preserved.
+Use the Skill to audit and update an existing repository. Its initializer is only
+for a repository without custom `AGENTS.md` or `CLAUDE.md` files.
 
 Synchronize both mirrored skills from the official Gist:
 

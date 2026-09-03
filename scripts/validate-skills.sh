@@ -7,7 +7,8 @@ if [[ -s "$HOME/.nvm/nvm.sh" ]]; then
 fi
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-validator="/root/.codex/skills/.system/skill-creator/scripts/quick_validate.py"
+codex_root="${CODEX_HOME:-$HOME/.codex}"
+validator="$codex_root/skills/.system/skill-creator/scripts/quick_validate.py"
 
 if [[ ! -f "$validator" ]]; then
   echo "Missing validator: $validator" >&2

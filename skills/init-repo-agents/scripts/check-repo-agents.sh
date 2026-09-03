@@ -1,27 +1,15 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-skill_dir="$(cd "${script_dir}/.." && pwd)"
-template="${skill_dir}/references/AGENTS.template.md"
 target="."
-
-managed_begin="<!-- init-repo-agents:managed:begin -->"
-managed_end="<!-- init-repo-agents:managed:end -->"
-module_begin="<!-- init-repo-agents:module-index:begin -->"
-module_end="<!-- init-repo-agents:module-index:end -->"
 failures=0
 
 usage() {
   cat <<'EOF'
 Usage: check-repo-agents.sh [--target <dir>]
 
-Validate deterministic repository agent scaffolding without changing files.
+Validate repository agent scaffolding without changing files.
 EOF
-}
-
-info() {
-  printf '[INFO] %s\n' "$*"
 }
 
 ok() {
@@ -61,117 +49,38 @@ done
   exit 1
 }
 target="$(cd "$target" && pwd)"
-[[ -f "$template" ]] || {
-  printf '[ERROR] Missing template: %s\n' "$template" >&2
-  exit 1
-}
 
-tmp_dir="$(mktemp -d)"
-trap 'rm -rf "$tmp_dir"' EXIT
+agents="${target}/AGENTS.md"
+claude="${target}/CLAUDE.md"
 
-extract_managed_block() {
-  local source="$1"
-  local output="$2"
-  awk -v begin="$managed_begin" -v end="$managed_end" '
-    $0 == begin {
-      begin_count++
-      if (begin_count == 1) {
-        inside = 1
-      }
-    }
-    inside {
-      print
-    }
-    $0 == end {
-      end_count++
-      if (inside) {
-        inside = 0
-      }
-    }
-    END {
-      if (begin_count != 1 || end_count != 1 || inside) {
-        exit 1
-      }
-    }
-  ' "$source" >"$output"
-}
-
-check_managed_file() {
-  local name="$1"
-  local path="${target}/${name}"
-  local block="${tmp_dir}/${name}.managed"
-
-  if [[ ! -f "$path" || -L "$path" ]]; then
-    fail "${name} is missing or is not a regular file"
-    return
+if [[ ! -f "$agents" || -L "$agents" ]]; then
+  fail "AGENTS.md is missing or is not a regular file"
+else
+  required_rules=(
+    'Human sets the boundaries; agent implements and verifies within them.'
+    'Human owns intent, scope, architecture, interfaces, task decomposition, and acceptance criteria.'
+    'Task = Change + Observable Evidence'
+    'Do not add unrequested features, abstractions, dependencies, refactors, or cleanup.'
+    'Do not ask the user to run checks the agent can run.'
+    '## 5. Skills'
+  )
+  for rule in "${required_rules[@]}"; do
+    grep -Fq "$rule" "$agents" || fail "AGENTS.md is missing required rule: ${rule}"
+  done
+  if grep -Eq '\{\{[^}]+\}\}' "$agents"; then
+    fail "AGENTS.md contains unresolved placeholders"
   fi
-  if [[ "$(sed -n '1p' "$path")" != "$managed_begin" ]]; then
-    fail "${name} does not start with the managed block"
-    return
-  fi
-  if ! extract_managed_block "$path" "$block"; then
-    fail "${name} has a malformed or duplicated managed block"
-    return
-  fi
-  if grep -Eq '\{\{[^}]+\}\}' "$block"; then
-    fail "${name} contains unresolved placeholders"
-  fi
-  if [[ "$(grep -Fxc "$module_begin" "$block")" -ne 1 ||
-        "$(grep -Fxc "$module_end" "$block")" -ne 1 ]]; then
-    fail "${name} has malformed module-index boundaries"
-  fi
-}
+  if grep -Eqi 'Type A ·|Type B ·|Type C−|Type C ·|cognitive-debt|managed:begin|Embedded Grill|root `cmd\.md`'; then
+    fail "AGENTS.md contains a retired workflow"
+  fi <"$agents"
+fi
 
-check_managed_file "AGENTS.md"
-check_managed_file "CLAUDE.md"
-
-agents_block="${tmp_dir}/AGENTS.md.managed"
-claude_block="${tmp_dir}/CLAUDE.md.managed"
-if [[ -f "$agents_block" && -f "$claude_block" ]]; then
-  if cmp -s "$agents_block" "$claude_block"; then
-    ok "AGENTS.md and CLAUDE.md managed blocks are byte-identical"
-  else
-    fail "AGENTS.md and CLAUDE.md managed blocks differ"
-  fi
-
-  template_static="${tmp_dir}/template-static.md"
-  awk -v begin="$managed_begin" -v end="$managed_end" '
-    $0 == begin { inside = 1 }
-    inside && $0 !~ /\{\{[^}]+\}\}/ { print }
-    $0 == end { exit }
-  ' "$template" >"$template_static"
-
-  if awk '
-    NR == FNR {
-      expected[++count] = $0
-      next
-    }
-    matched < count && $0 == expected[matched + 1] {
-      matched++
-    }
-    END {
-      if (matched != count) {
-        exit 1
-      }
-    }
-  ' "$template_static" "$agents_block"; then
-    ok "managed block preserves every static template line in order"
-  else
-    fail "managed block is missing or rewrites static template content"
-  fi
-
-  grep -Eq '^# .+ · Agent Collaboration Guide$' "$agents_block" ||
-    fail "project name was not rendered"
-  grep -Eq '^\*\*Primary toolchain:\*\* .+' "$agents_block" ||
-    fail "primary toolchain was not rendered"
-  grep -Eq '^- \*\*`.+` \(conventionally `dev\.sh`\)\*\* wraps' "$agents_block" ||
-    fail "entry point was not rendered"
-
-  if cmp -s "${target}/AGENTS.md" "${target}/CLAUDE.md"; then
-    info "fresh-file mirror is byte-identical"
-  else
-    info "full files differ only by independently preserved repository content"
-  fi
+if [[ ! -f "$claude" || -L "$claude" ]]; then
+  fail "CLAUDE.md is missing or is not a regular file"
+elif [[ "$(cat "$claude")" != '@AGENTS.md' ]]; then
+  fail "CLAUDE.md must contain only @AGENTS.md"
+else
+  ok "CLAUDE.md imports the authoritative AGENTS.md"
 fi
 
 check_header() {
@@ -187,18 +96,10 @@ check_header() {
   fi
 }
 
-check_header "docs/plan.md" "# Development Plan"
-check_header "docs/log.md" "# Development Log"
-check_header "docs/bug.md" "# Bug Journal"
-check_header "docs/cognitive-debt.md" "# Cognitive Debt"
-check_header "cmd.md" "# Command Reference"
-
-if [[ -f "${target}/cmd.md" ]]; then
-  grep -Fq '## 常用命令' "${target}/cmd.md" ||
-    fail "cmd.md is missing the common-command section"
-  grep -Fq '## 待用户验证' "${target}/cmd.md" ||
-    fail "cmd.md is missing the user-verification section"
-fi
+check_header "docs/AGENTS.md" "# Documentation Rules"
+check_header "docs/workspace/plan.md" "# Workspace Plan"
+check_header "docs/workspace/log.md" "# Workspace Log"
+check_header "docs/workspace/overview.md" "# Workspace 概览"
 
 if ((failures > 0)); then
   printf '[ERROR] Repository agent scaffold validation failed with %d issue(s)\n' \

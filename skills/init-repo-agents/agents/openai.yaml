@@ -1,4 +1,4 @@
 interface:
   display_name: "Init Repo Agents"
-  short_description: "Bootstrap a repo's AGENTS.md, session lifecycle, and in-repo docs memory"
-  default_prompt: "Use $init-repo-agents to collect project inputs, preview and run its bundled init-repo-agents.sh, then require check-repo-agents.sh to pass. Never recreate or summarize the template manually."
+  short_description: "Create or refresh human-owned repository agent rules and docs contracts"
+  default_prompt: "Use $init-repo-agents to establish one authoritative AGENTS.md, a CLAUDE.md import, concise area-based docs, and explicit Skill routing. Preserve custom rules and verify observable behavior."

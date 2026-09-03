@@ -1,70 +1,49 @@
 ---
 name: init-repo-agents
-description: Initialize or update repository-level agent collaboration scaffolding for a new or existing project. Use whenever the user wants to set up or refresh AGENTS.md / CLAUDE.md baseline rules, bootstrap a repo's agent config, define Type B / C− / C alignment, verification, and Explain Diff understanding gates, track cognitive debt, create portable in-repo docs memory, create a cmd.md user-test handoff, or seed a docs/module-name.md code-doc index. Trigger on phrases like "初始化这个仓库", "更新仓库 AGENTS.md", "给项目配 AGENTS.md", "init repo agents", "update repo agents", or "set up the project memory/docs". Prefer this skill over ad-hoc edits to its managed block.
+description: Initialize or refresh repository-level AGENTS.md, CLAUDE.md, documentation contracts, and explicit Skill routing around a human-owned task model. Use when a user asks to initialize, create, audit, or update repository agent rules or portable project context.
 ---
 
 # Init Repo Agents
 
-## Overview
+## Outcome
 
-Use this skill to give any repository a portable, self-contained agent baseline in a single pass. The output lives **inside the repo** (`AGENTS.md`, mirrored `CLAUDE.md`, and `docs/`) rather than in a CLI-specific global memory, so the same context follows the project across machines and across agents (Codex, Claude Code, etc.).
+Give a repository one current, portable collaboration contract:
 
-The skill confirms the user's global skills, gathers the small set of project facts needed by the template, and then delegates all fixed file generation to `scripts/init-repo-agents.sh`. The script renders the complete baseline rules, scaffolds the in-repo memory files, creates `cmd.md`, and seeds a lazy code-doc index. It deliberately does **not** deep-read the codebase to auto-generate module docs — those are filled incrementally as work happens, to avoid re-reading a large repo up front.
+- `AGENTS.md` is the authoritative agent-facing rule file;
+- `CLAUDE.md` imports `AGENTS.md` instead of copying it;
+- `docs/AGENTS.md` defines concise human-facing plan, log, and overview documents;
+- repository rules name the commonly used Skills and their actual triggers.
 
-Treat running this skill as a setup task: it is idempotent and must never clobber content the user already wrote.
+The baseline is about how confirmed work is performed. It does not classify sessions or decide what the
+human should build.
+
+## Mental Model
+
+Human owns intent, scope, architecture, interfaces, task decomposition, and acceptance criteria. Agent
+owns implementation, local technical decisions, debugging, testing, and evidence collection.
+
+Every implementation task is `Task = Change + Observable Evidence`. Before implementation, make the
+Change, Verification, and Done conditions explicit and obtain confirmation for unresolved human-owned
+decisions. Once confirmed, continue autonomously inside that scope.
+
+Two implementation rules are non-negotiable:
+
+- Do not add unrequested features, abstractions, dependencies, refactors, or cleanup.
+- Do not ask the user to run checks the agent can run.
 
 ## Workflow
 
-Execute these steps in order. Resolve every bundled path relative to this `SKILL.md`, not relative to the target repository.
-
-1. **Choose init or update.** Identify the target repository root and inspect `AGENTS.md`, `CLAUDE.md`, `docs/`, and `cmd.md` without rewriting them.
-   - If the managed block is absent, follow the initialization workflow below.
-   - If the repository was already initialized and the user wants the latest global baseline, run the bundled updater. It recovers project facts and the module index from the current managed block, refreshes only that block, preserves both files' independent suffixes, and creates only newly introduced scaffold assets.
-
-   To preview from the currently installed skill:
-
-   ```bash
-   bash scripts/update-repo-agents.sh --target "$REPO_ROOT" --dry-run
-   ```
-
-   To install or update both required global personal skills and then refresh the
-   repository:
-
-   ```bash
-   bash scripts/update-repo-agents.sh \
-     --target "$REPO_ROOT" \
-     --refresh-skill
-   ```
-
-   After a successful update, skip to Wrap up.
-
-2. **Verify global skills.** Confirm the user's personal global skills are installed:
-
-   ```bash
-   npx skills add AtticusZeller/skills --list --full-depth
-   ```
-
-   The baseline rules reference global skills — confirm the ones this project will lean on are present: `explain-diff-html`, `neat-freak`, `karpathy-guidelines`, `modern-python` (for Python projects), `find-docs` / `context7-cli` (`ctx7`), `git-commit`, `gh-cli`. If Explain Diff is missing, install the mirrored personal skills:
-
-   ```bash
-   npx skills add AtticusZeller/skills \
-     --skill explain-diff-html explain-diff-notion \
-     -g -a codex claude-code cursor -y --full-depth
-   ```
-
-   For missing external skills, use the sources recorded in this repository's
-   `manifests/global-skills.json` when the repository checkout is available.
-
-   Note: `grill` is not a globally installed skill, so its workflow is embedded directly in `references/AGENTS.template.md` and needs no install.
-
-3. **Lightweight setup alignment (grill).** Ask the smallest useful batch of related questions for arguments you cannot get by reading the repo or its docs, and iterate only when answers expose another gap:
-   - Project name and one-line purpose.
-   - Primary language and toolchain (e.g. Python + uv/ruff/ty, Node + pnpm).
-   - The unified entry point (prefer `dev.sh`) and whether experiments are driven by YAML configs (e.g. `experiments/<name>.yaml`).
-
-   Give a recommended answer + one-line why for each choice. Skip factual questions the code already answers, incorporate multiple answers from one response, and do not re-ask resolved questions.
-
-4. **Preview the deterministic initializer.** Run the bundled script with `--dry-run` and the aligned inputs:
+1. **Inspect the repository.** Read the active rule chain, `README.md`, existing docs contracts, primary
+   entry point, toolchain metadata, and available repository-local Skills. Treat existing content as
+   evidence, not as permission to overwrite it.
+2. **Resolve project facts.** Determine project name, one-line purpose, toolchain, and unified entry point
+   from the repository. Ask only when a human-owned choice remains unresolved.
+3. **Define the change.** State Change, Verification, and Done. For an existing rule set, explain which
+   rules will be retained, removed, or added. Get explicit confirmation before changing governance.
+4. **Route Skills explicitly.** Record only Skills that are available and regularly relevant to the
+   repository. Give each one a concrete trigger. A Skill supplies execution guidance; it does not expand
+   task scope or authorization.
+5. **Initialize a new repository.** Preview the deterministic initializer, inspect its output, then run it:
 
    ```bash
    bash scripts/init-repo-agents.sh \
@@ -76,39 +55,64 @@ Execute these steps in order. Resolve every bundled path relative to this `SKILL
      --dry-run
    ```
 
-   Add `--scan-root <relative-path>` only when the default `src/` detection is not the correct shallow module boundary. Review the reported creates/updates/skips before continuing.
+   Repeat without `--dry-run`, then run `scripts/check-repo-agents.sh --target "$REPO_ROOT"`.
+6. **Update an existing repository manually and surgically.** Do not run the initializer over custom
+   `AGENTS.md` or `CLAUDE.md`. Patch the authoritative rule file according to the confirmed change,
+   preserve repository-specific constraints, keep `CLAUDE.md` as a short import when supported, and
+   update docs only when their contract is affected.
+7. **Verify.** Run the checker for generated scaffolding, repository-native lint/tests, link checks, and
+   searches for removed workflow terms or dead paths. Inspect the final diff and report limitations.
 
-5. **Generate and verify.** Run the same command without `--dry-run`, then run:
+## Generated Baseline
 
-   ```bash
-   bash scripts/check-repo-agents.sh --target "$REPO_ROOT"
-   ```
+`scripts/init-repo-agents.sh` is create-only and idempotent. It refuses to replace custom rule files. It
+creates:
 
-   A failed check means initialization is incomplete. Fix the script, template, assets, or explicit inputs; never repair the generated baseline by manually summarizing the template.
+- `AGENTS.md` from `references/AGENTS.template.md`;
+- `CLAUDE.md` containing only `@AGENTS.md`;
+- `docs/AGENTS.md`;
+- `docs/workspace/plan.md`, `log.md`, and `overview.md`.
 
-6. **Wrap up.** Summarize which files were created, updated, unchanged, or skipped. Explain the generated lifecycle: Type B is the fast path with user verification by default; Type C− requires pre-code alignment and user verification, then records cognitive debt and commits without immediate Explain Diff; Type C adds the `explain-diff-html` five-question human review before closeout. Add a `docs/<module>.md` the first time a module is explored in depth.
+It does not create a root command notebook, bug journal, understanding-debt ledger, workflow classifier,
+or managed block. Add project-specific documentation areas only when the repository actually needs them.
 
-## Rules
+## Common Skill Routing
 
-- All fixed output must come from `scripts/init-repo-agents.sh`. Never handwrite, copy from a Markdown fence, summarize, compress, or perform a second-pass rewrite of `references/AGENTS.template.md`.
-- Idempotent and non-destructive: refresh only the initializer's managed block; preserve existing `AGENTS.md` and `CLAUDE.md` suffixes independently; create docs assets only when absent.
-- Update mode must recover project facts and preserve the existing module index; it must not force the user through initialization questions again.
-- Fresh `AGENTS.md` and `CLAUDE.md` files must be byte-identical. Existing files may differ outside their byte-identical managed blocks.
-- Do not deep-read the codebase during init. Seed the index from a shallow structural scan only.
-- Keep memory in-repo (`docs/`), never in a CLI-specific global memory, so it is portable.
-- Language convention for generated files: agent-facing `AGENTS.md` and mirrored `CLAUDE.md` in English; user-facing `docs/`, `README.md`, and `cmd.md` in Chinese; code comments and agent-internal notes in English.
-- The complete managed block in `AGENTS.template.md` is the top-level behavioral constraint. Its non-placeholder bytes must remain unchanged.
-- Preserve the lifecycle distinctions: Type B skips alignment and understanding review; Type C− and C require explicit pre-code alignment; Type C− records cognitive debt instead of immediate understanding review; Type C must pass `explain-diff-html`; Type C− and C require user-run verification, and Type B requires it by default.
+When installed and applicable, prefer these standard routes in generated or updated rules:
+
+- `karpathy-guidelines` for implementation, review, and refactoring discipline;
+- `context7-cli` or `find-docs` for current library, framework, SDK, API, CLI, or cloud documentation;
+- `gh-cli` for GitHub URLs, issues, pull requests, and authenticated repository operations;
+- `modern-python` for Python project initialization or tooling migration;
+- `skill-creator` for creating or materially updating a reusable Skill;
+- `neat-freak` for an explicitly requested knowledge or workspace closeout;
+- `git-commit` only when the user asks to commit;
+- `explain-diff-html` only when the user asks for a rich diff explanation.
+
+Also list repository-local Skills whose task triggers are part of normal project work. Do not chain any of
+these Skills into an automatic lifecycle.
+
+## Constraints
+
+- Never run the legacy managed-block updater or restore its lifecycle.
+- Never overwrite custom `AGENTS.md`, `CLAUDE.md`, or existing docs assets.
+- Keep the template generic; repository-specific algorithm, deployment, hardware, or experiment rules
+  belong in that repository's confirmed additions.
+- Keep agent-facing rules and Skill instructions in English. Keep generated human-facing docs in the
+  repository's chosen documentation language; the bundled starter uses concise Chinese.
+- Do not install, commit, push, delete, or publish anything unless the user's request authorizes it.
 
 ## Resources
 
-- `scripts/init-repo-agents.sh`: the only supported writer for the fixed baseline and scaffold.
-- `scripts/update-repo-agents.sh`: refreshes the global skill on request and updates an initialized repository without recollecting facts.
-- `scripts/check-repo-agents.sh`: read-only structural and template-fidelity validation.
-- `references/AGENTS.template.md`: complete managed baseline template; scripts render its placeholders without model-authored rewriting.
-- `references/docs-scaffold.md`: maintenance conventions for the assets and future memory entries.
-- `assets/`: exact create-if-absent bodies for `docs/{plan,log,bug}.md` and root `cmd.md`.
+- `references/AGENTS.template.md` — fixed baseline for a new repository.
+- `references/docs-scaffold.md` — plan/log/overview contracts and routing guidance.
+- `scripts/init-repo-agents.sh` — create-only deterministic initializer.
+- `scripts/check-repo-agents.sh` — semantic scaffold checker.
+- `scripts/test-init-repo-agents.sh` — fidelity, idempotency, refusal, and checker regression tests.
+- `assets/docs/` — exact create-if-absent documentation bodies.
 
 ## Completion Criteria
 
-The repo is initialized when `scripts/check-repo-agents.sh` passes: both agent files contain the same complete managed baseline, fixed scaffold files exist with correct headers, the module index is seeded, no placeholders remain, and pre-existing suffix content was preserved.
+The task is complete when the intended repository has one authoritative rule source, Skill routes match
+the available workflows, docs have no competing current answer, all relevant checks pass, and every
+unverified or intentionally untouched state is reported explicitly.
