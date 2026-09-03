@@ -1,6 +1,6 @@
 # Development Machine
 
-This machine uses the public `bootstrap-dev-machine` baseline: uv/Python, Miniforge/conda, nvm/Node, shell tooling, agent CLIs, shared skills, and non-systemd sing-box helpers.
+This machine uses the public `bootstrap-dev-machine` baseline: uv/Python, Miniforge/conda/mamba, nvm/Node, shell tooling, agent CLIs, shared skills, and non-systemd sing-box helpers.
 
 ## Quick Start
 
@@ -22,7 +22,7 @@ Use `sbc run` for foreground diagnosis.
 ## Toolchain
 
 - Python `{{PYTHON_VERSION}}` is managed by uv.
-- Conda defaults to Miniforge at `~/miniforge3`; `--skip-conda` keeps an externally managed installation instead.
+- Conda/Mamba defaults to Miniforge at `~/miniforge3`; `--skip-conda` keeps an externally managed installation instead.
 - Node `{{NODE_VERSION}}` is managed by nvm.
 - Load nvm before using Node in non-interactive shells:
 
@@ -58,6 +58,7 @@ sbc-status
 uv --version
 uv python find {{PYTHON_VERSION}}
 conda --version
+mamba --version
 bash -lc 'source "$HOME/.nvm/nvm.sh" && node -v && npm -v'
 claude --version
 gh --version

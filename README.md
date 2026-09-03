@@ -16,7 +16,7 @@ Install the development-machine bootstrap skill globally:
 npx skills add AtticusZeller/skills --skill bootstrap-dev-machine -g -a codex -a claude-code -a cursor -y --full-depth
 ```
 
-This skill provides an idempotent one-shot installer for the full machine baseline, including public machine handoff docs, a server `.zshrc`, ripgrep (`rg`) for agent-friendly code and document search, Oh My Zsh, Powerlevel10k, shell plugins, CUDA, uv, Miniforge/conda, NVM, proxy variables, and non-systemd sing-box helpers.
+This skill provides an idempotent one-shot installer for the full machine baseline, including public machine handoff docs, a server `.zshrc`, ripgrep (`rg`) for agent-friendly code and document search, Oh My Zsh, Powerlevel10k, shell plugins, CUDA, uv, Miniforge/conda/mamba, NVM, proxy variables, and non-systemd sing-box helpers.
 
 On Alibaba Cloud DSW, run its installer with `--enable-dsw-persistent-prompt` to back up and append the OSS persistence rule to `~/.codex/AGENTS.md`:
 

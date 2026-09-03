@@ -18,7 +18,7 @@ The defaults match the DSW/container baseline:
 - Python: `BOOTSTRAP_PYTHON_VERSION=3.12`
 - Node: `BOOTSTRAP_NODE_VERSION=24`
 - nvm installer: `BOOTSTRAP_NVM_VERSION=v0.40.5`
-- Conda distribution: Miniforge `BOOTSTRAP_MINIFORGE_VERSION=26.3.2-3` at `$HOME/miniforge3`
+- Conda/Mamba distribution: Miniforge `BOOTSTRAP_MINIFORGE_VERSION=26.3.2-3` at `$HOME/miniforge3`
 - Personal skills checkout: `PERSONAL_SKILLS_DIR=$HOME/skills`
 
 Use `--no-proxy` only when the host has direct network access. Use `--skip-packages`, `--skip-conda`, `--skip-skills`, or `--skip-context7` when those layers are managed externally. On Alibaba Cloud DSW, add `--enable-dsw-persistent-prompt` to back up and append the OSS persistence convention to `~/.codex/AGENTS.md` exactly once.
@@ -29,7 +29,7 @@ The entry script performs these phases in order:
 
 1. Exports lower- and upper-case proxy variables and aligns Git proxy settings.
 2. Detects apt, dnf, or yum; installs required packages including ripgrep (`rg`) and attempts optional developer utilities.
-3. Downloads the pinned Miniforge installer and matching checksum, verifies it, installs `conda` non-interactively, and disables automatic base activation.
+3. Downloads the pinned Miniforge installer and matching checksum, verifies it, installs `conda` and `mamba` non-interactively, initializes their zsh hooks, and disables automatic base activation.
 4. Installs uv, Python, sing-box-cli, nvitop, and Weights & Biases.
 5. Deploys `sbc-start`, `sbc-stop`, and `sbc-status` for non-systemd hosts.
 6. Installs nvm and Node, then sets the requested Node version as default.

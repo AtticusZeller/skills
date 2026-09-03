@@ -237,14 +237,16 @@ install_uv_tool() {
 }
 
 install_conda() {
-  phase "Miniforge (conda)"
+  phase "Miniforge (conda/mamba)"
   if [[ "${skip_conda}" == true ]]; then
     info "Miniforge installation skipped"
     return
   fi
 
   local conda_bin="${conda_prefix}/bin/conda"
+  local mamba_bin="${conda_prefix}/bin/mamba"
   if [[ -x "${conda_bin}" ]]; then
+    [[ -x "${mamba_bin}" ]] || die "Miniforge installation is missing mamba: ${mamba_bin}"
     info "Miniforge already installed: ${conda_prefix}"
     return
   fi
@@ -284,6 +286,7 @@ install_conda() {
     die "Miniforge installation failed"
   fi
   rm -rf "${tmp_dir}"
+  [[ -x "${mamba_bin}" ]] || die "Miniforge installation completed but mamba is missing: ${mamba_bin}"
   "${conda_bin}" config --set auto_activate_base false
 }
 

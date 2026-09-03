@@ -9,7 +9,7 @@ The main installer owns shell installation and deployment. This reference descri
 - zsh, Oh My Zsh, and Powerlevel10k;
 - `zsh-autosuggestions`, `zsh-syntax-highlighting`, `ohmyzsh-full-autoupdate`, and `zsh-bat`;
 - `assets/zshrc.server` as `~/.zshrc`, with a timestamped backup when content changes;
-- `$HOME/.local/bin`, optional CUDA paths, uv/uvx completion, Miniforge/conda initialization, and NVM loading;
+- `$HOME/.local/bin`, optional CUDA paths, uv/uvx completion, Miniforge/conda/mamba initialization, and NVM loading;
 - startup activation of the nearest parent `.venv`;
 - lower- and upper-case proxy variables using `PROXY_URL`.
 

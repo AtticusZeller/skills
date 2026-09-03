@@ -1,6 +1,6 @@
 ---
 name: bootstrap-dev-machine
-description: Guide a Codex agent through configuring a fresh GPU/DSW-style Linux development machine with SSH-forwarded proxy, ripgrep, Codex, uv/Python 3.12, Miniforge/conda, sing-box mixed proxy, Claude Code, nvm/Node 24, Context7, global development skills, zsh/tmux, Git/GitHub/Hugging Face tooling, and root-level AGENTS.md/README.md handoff docs. Use when the user asks to bootstrap, reproduce, migrate, audit, or repair this development environment on a new machine.
+description: Guide a Codex agent through configuring a fresh GPU/DSW-style Linux development machine with SSH-forwarded proxy, ripgrep, Codex, uv/Python 3.12, Miniforge/conda/mamba, sing-box mixed proxy, Claude Code, nvm/Node 24, Context7, global development skills, zsh/tmux, Git/GitHub/Hugging Face tooling, and root-level AGENTS.md/README.md handoff docs. Use when the user asks to bootstrap, reproduce, migrate, audit, or repair this development environment on a new machine.
 ---
 
 # Bootstrap Dev Machine
@@ -38,10 +38,10 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 - `references/bootstrap-phases.md`: installer inputs, automated phases, manual boundaries, and failure handling.
 - `references/sbc-service-scripts.md`: behavior and configuration boundaries for the deployed sing-box helpers.
 - `references/zsh-baseline.md`: resulting shell state and focused startup diagnosis.
-- `assets/zshrc.server`: reusable public server `.zshrc` template with proxy, CUDA, uv, conda, NVM, PATH, and virtualenv defaults.
+- `assets/zshrc.server`: reusable public server `.zshrc` template with proxy, CUDA, uv, conda/mamba, NVM, PATH, and virtualenv defaults.
 - `assets/{AGENTS,README}.machine.template.md`: public machine handoff templates rendered by the installer.
 - `assets/sbc-{start,stop,status}`: executable user-level sing-box helpers for non-systemd hosts.
 
 ## Completion Criteria
 
-The machine is ready when the user can run `rg`, `sbc version`, use the local proxy, start the configured zsh baseline without errors, run Codex/Claude, use Node 24 through nvm, use uv Python 3.12, manage environments with `conda`, and read `/root/AGENTS.md` plus `/root/README.md` for handoff details.
+The machine is ready when the user can run `rg`, `mamba --version`, `sbc version`, use the local proxy, start the configured zsh baseline without errors, run Codex/Claude, use Node 24 through nvm, use uv Python 3.12, manage environments with `conda` and `mamba`, and read `/root/AGENTS.md` plus `/root/README.md` for handoff details.

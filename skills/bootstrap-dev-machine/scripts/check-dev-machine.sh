@@ -5,7 +5,7 @@ ok=0
 warn=0
 
 if [[ -d "$HOME/miniforge3/condabin" ]]; then
-  PATH="$HOME/miniforge3/condabin:$PATH"
+  PATH="$HOME/miniforge3/bin:$HOME/miniforge3/condabin:$PATH"
 fi
 
 check_cmd() {
@@ -36,7 +36,7 @@ check_version() {
 }
 
 echo "== Commands =="
-for cmd in git curl rg uv python3 conda sbc codex claude gh hf cc-switch nvitop wandb zsh tmux; do
+for cmd in git curl rg uv python3 conda mamba sbc codex claude gh hf cc-switch nvitop wandb zsh tmux; do
   check_cmd "$cmd"
 done
 
@@ -57,6 +57,7 @@ check_version "uv" uv --version
 check_version "rg" rg --version
 check_version "python3" python3 --version
 check_version "conda" conda --version
+check_version "mamba" mamba --version
 check_version "sbc" sbc version
 check_version "codex" codex --version
 check_version "claude" claude --version
@@ -76,6 +77,13 @@ elif command -v conda >/dev/null 2>&1; then
   printf 'INFO path    externally managed conda: %s\n' "$(command -v conda)"
 else
   check_path "$HOME/miniforge3/bin/conda"
+fi
+if [[ -x "$HOME/miniforge3/bin/mamba" ]]; then
+  check_path "$HOME/miniforge3/bin/mamba"
+elif command -v mamba >/dev/null 2>&1; then
+  printf 'INFO path    externally managed mamba: %s\n' "$(command -v mamba)"
+else
+  check_path "$HOME/miniforge3/bin/mamba"
 fi
 check_path "$HOME/.config/sing-box/config.json"
 check_path "$HOME/.local/bin/sbc-start"

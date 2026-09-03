@@ -25,7 +25,7 @@ This file records the public operational baseline installed by `bootstrap-dev-ma
 ## Toolchain
 
 - Python: uv-managed Python `{{PYTHON_VERSION}}`.
-- Conda: bootstrap defaults to Miniforge at `~/miniforge3` with base auto-activation disabled; `--skip-conda` preserves an externally managed installation.
+- Conda/Mamba: bootstrap defaults to Miniforge at `~/miniforge3` with base auto-activation disabled; `--skip-conda` preserves an externally managed installation.
 - Node: nvm-managed Node `{{NODE_VERSION}}`; source `~/.nvm/nvm.sh` in non-interactive shells.
 - Agent CLIs and shared skills are installed through the public bootstrap workflow.
 - Personal skills repository: `AtticusZeller/skills`.
@@ -40,6 +40,7 @@ sbc-status
 uv --version
 uv python find {{PYTHON_VERSION}}
 conda --version
+mamba --version
 bash -lc 'source "$HOME/.nvm/nvm.sh" && node -v && npm -v'
 claude --version
 gh --version
