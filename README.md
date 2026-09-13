@@ -133,6 +133,33 @@ npx ctx7 setup --cli --claude --codex -y
 
 If Context7 requires authentication, complete its login flow; no token is stored in this repository.
 
+## OfficeCLI
+
+[OfficeCLI](https://github.com/iOfficeAI/OfficeCLI) is intentionally **not** part
+of the manifest or `scripts/install-global-skills.sh`. It ships its own installer
+that places the binary and the `officecli` skill together, so the Skills CLI path
+would only duplicate it. Install it directly from upstream:
+
+```bash
+# macOS / Linux
+curl -fsSL https://d.officecli.ai/install.sh | bash
+
+# Windows (PowerShell)
+irm https://d.officecli.ai/install.ps1 | iex
+```
+
+Then run the upstream one-step setup, which copies the binary onto `PATH` and
+registers the skill with every AI coding agent it detects:
+
+```bash
+officecli install                      # binary + skills + MCP for all detected agents
+officecli install claude               # or target one agent
+officecli skills install               # skills only, no MCP
+```
+
+Agents can also read the skill body directly from `https://officecli.ai/SKILL.md`
+when the binary is missing.
+
 ## Repository Maintenance
 
 Validate before committing:
