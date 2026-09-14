@@ -58,6 +58,24 @@ This skill agrees a plan with the human first, then lets that plan govern
 implementation, an external code review, static checks, documentation sync, and
 closeout into `docs/<area>/log.md`.
 
+Install the disk cleanup skill globally:
+
+```bash
+npx skills add AtticusZeller/skills --skill disk-cleanup -g -a codex -a claude-code -a cursor -y --full-depth
+```
+
+This skill audits disk usage across the **whole filesystem** — not just `$HOME` —
+ranks every finding by how long it has gone unused, and returns a risk-tiered
+deletion plan that the human executes. The agent owns measure, rank, classify,
+and report; the human owns the decision. It never deletes anything itself.
+
+Ranking is by `mtime`, never `atime`: under ext4 `relatime` the access time is
+unreliable and any scan refreshes it, which inverts the ordering. The included
+`scripts/disk-triage.sh` is a read-only scanner — a regression test enforces
+that it contains no destructive command — and `references/classification.md`
+records the tier definitions, the never-delete list, and the owner's confirmed
+decision profile.
+
 Install Geoffrey Litt's mirrored Explain Diff skills globally:
 
 ```bash

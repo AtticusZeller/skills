@@ -1,0 +1,4 @@
+interface:
+  display_name: "Disk Cleanup"
+  short_description: "Audit disk usage, rank findings by how long they have gone unused, and produce a risk-tiered deletion plan the human executes."
+  default_prompt: "Use $disk-cleanup to triage my disk usage and give me a tiered deletion plan with exact paths and commands."
