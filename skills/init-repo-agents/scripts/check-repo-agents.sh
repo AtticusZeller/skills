@@ -70,9 +70,13 @@ else
   if grep -Eq '\{\{[^}]+\}\}' "$agents"; then
     fail "AGENTS.md contains unresolved placeholders"
   fi
-  if grep -Eqi 'Type A ·|Type B ·|Type C−|Type C ·|cognitive-debt|managed:begin|Embedded Grill|root `cmd\.md`'; then
+  if grep -Eqi 'Type A ·|Type B ·|Type C−|Type C ·|cognitive-debt|managed:begin|Embedded Grill'; then
     fail "AGENTS.md contains a retired workflow"
   fi <"$agents"
+fi
+
+if [[ -e "${target}/cmd.md" ]]; then
+  fail "root cmd.md is not allowed; use docs/cmd.md"
 fi
 
 if [[ ! -f "$claude" || -L "$claude" ]]; then
@@ -97,6 +101,7 @@ check_header() {
 }
 
 check_header "docs/AGENTS.md" "# Documentation Rules"
+check_header "docs/cmd.md" "# Commands"
 check_header "docs/workspace/plan.md" "# Workspace Plan"
 check_header "docs/workspace/log.md" "# Workspace Log"
 check_header "docs/workspace/overview.md" "# Workspace 概览"

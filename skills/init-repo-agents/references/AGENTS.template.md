@@ -101,6 +101,8 @@ as a confirmed fix.
 Use an available Skill whenever the task matches its description. Read its `SKILL.md` before acting. A
 Skill provides execution guidance; it does not expand scope or authorization.
 
+- `develop-feature` — build a non-trivial feature or capability under a human-confirmed plan that then
+  governs implementation, external review, gates, and closeout.
 - `karpathy-guidelines` — implementation, code review, and refactoring discipline.
 - `context7-cli` / `find-docs` — current library, framework, SDK, API, CLI, and cloud documentation.
 - `gh-cli` — GitHub URLs, issues, pull requests, and authenticated repository operations.
@@ -129,9 +131,12 @@ long command lines. Temporary overrides must not obscure the reproducible baseli
 Before editing anything under `docs/`, read `docs/AGENTS.md`. Documentation is human-facing project
 context, not a copy of source code, command output, or Git history.
 
+Do not create a repository-root `cmd.md`. Keep reusable project commands in `docs/cmd.md`.
+
 ## 7. Code and Language
 
 - Follow the repository's established formatter, linter, type checker, tests, and naming conventions.
+- Functions and classes must follow the single-responsibility principle to keep each unit easy to test.
 - Use Google-style docstrings in Python projects unless the repository declares another standard.
 - Comments explain why a coherent block exists, not what each statement does.
 - Write `AGENTS.md`, `CLAUDE.md`, Skill instructions, code comments, and docstrings in English.

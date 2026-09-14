@@ -11,7 +11,7 @@ Give a repository one current, portable collaboration contract:
 
 - `AGENTS.md` is the authoritative agent-facing rule file;
 - `CLAUDE.md` imports `AGENTS.md` instead of copying it;
-- `docs/AGENTS.md` defines concise human-facing plan, log, and overview documents;
+- `docs/AGENTS.md` defines concise human-facing plan, log, overview, and command documents;
 - repository rules name the commonly used Skills and their actual triggers.
 
 The baseline is about how confirmed work is performed. It does not classify sessions or decide what the
@@ -59,7 +59,8 @@ Two implementation rules are non-negotiable:
 6. **Update an existing repository manually and surgically.** Do not run the initializer over custom
    `AGENTS.md` or `CLAUDE.md`. Patch the authoritative rule file according to the confirmed change,
    preserve repository-specific constraints, keep `CLAUDE.md` as a short import when supported, and
-   update docs only when their contract is affected.
+   update docs only when their contract is affected. Keep reusable commands in `docs/cmd.md`; never
+   create a repository-root `cmd.md`.
 7. **Verify.** Run the checker for generated scaffolding, repository-native lint/tests, link checks, and
    searches for removed workflow terms or dead paths. Inspect the final diff and report limitations.
 
@@ -71,15 +72,18 @@ creates:
 - `AGENTS.md` from `references/AGENTS.template.md`;
 - `CLAUDE.md` containing only `@AGENTS.md`;
 - `docs/AGENTS.md`;
+- `docs/cmd.md` containing only the no-command placeholder;
 - `docs/workspace/plan.md`, `log.md`, and `overview.md`.
 
-It does not create a root command notebook, bug journal, understanding-debt ledger, workflow classifier,
-or managed block. Add project-specific documentation areas only when the repository actually needs them.
+It does not create a repository-root command notebook, bug journal, understanding-debt ledger, workflow
+classifier, or managed block. Add project-specific documentation areas only when the repository actually
+needs them.
 
 ## Common Skill Routing
 
 When installed and applicable, prefer these standard routes in generated or updated rules:
 
+- `develop-feature` for non-trivial feature work governed by a human-confirmed plan;
 - `karpathy-guidelines` for implementation, review, and refactoring discipline;
 - `context7-cli` or `find-docs` for current library, framework, SDK, API, CLI, or cloud documentation;
 - `gh-cli` for GitHub URLs, issues, pull requests, and authenticated repository operations;
@@ -105,7 +109,8 @@ these Skills into an automatic lifecycle.
 ## Resources
 
 - `references/AGENTS.template.md` — fixed baseline for a new repository.
-- `references/docs-scaffold.md` — plan/log/overview contracts and routing guidance.
+- `references/docs-scaffold.md` — docs layout and existing-repository guidance; contracts live in
+  `assets/docs/AGENTS.md`.
 - `scripts/init-repo-agents.sh` — create-only deterministic initializer.
 - `scripts/check-repo-agents.sh` — semantic scaffold checker.
 - `scripts/test-init-repo-agents.sh` — fidelity, idempotency, refusal, and checker regression tests.

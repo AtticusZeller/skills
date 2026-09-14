@@ -47,6 +47,7 @@ cmp -s "${fresh}/AGENTS.md" "${tmp_dir}/expected-agents.md" ||
   fail "CLAUDE.md does not import AGENTS.md"
 for relative in \
   docs/AGENTS.md \
+  docs/cmd.md \
   docs/workspace/plan.md \
   docs/workspace/log.md \
   docs/workspace/overview.md; do
@@ -112,6 +113,14 @@ printf '\n## Repository-Specific Rules\n\nKeep generated data out of Git.\n' \
   >>"${extended}/AGENTS.md"
 bash "$check_script" --target "$extended" >/dev/null
 pass "checker accepts confirmed repository-specific additions"
+
+root_commands="${tmp_dir}/root-commands"
+cp -R "$fresh" "$root_commands"
+printf '# Commands\n' >"${root_commands}/cmd.md"
+if bash "$check_script" --target "$root_commands" >/dev/null 2>&1; then
+  fail "Checker accepted a root cmd.md"
+fi
+pass "checker rejects a root command notebook"
 
 missing_rule="${tmp_dir}/missing-rule"
 cp -R "$fresh" "$missing_rule"

@@ -116,6 +116,7 @@ validate_input "Entry point" "$entry_point"
 
 required_assets=(
   "docs/AGENTS.md"
+  "docs/cmd.md"
   "docs/workspace/plan.md"
   "docs/workspace/log.md"
   "docs/workspace/overview.md"

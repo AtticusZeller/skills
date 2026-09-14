@@ -40,12 +40,23 @@ This skill creates a human-owned collaboration baseline: the human decides inten
 scope, architecture, interfaces, task decomposition, and acceptance; the agent
 implements and verifies. Tasks use `Change + Observable Evidence`, `CLAUDE.md`
 imports the authoritative `AGENTS.md`, and project context is organized under
-area-level `plan.md`, `log.md`, and `overview.md` files.
+area-level `plan.md`, `log.md`, and `overview.md` files. Reusable commands live
+in `docs/cmd.md`, never in a repository-root command notebook.
 
 The initializer is create-only and refuses to replace custom rule files. Existing
 repositories are updated through an inspected, user-confirmed patch rather than a
 managed block. Common Skills are recorded with explicit triggers and are never
 chained into an automatic lifecycle.
+
+Install the plan-driven feature development skill globally:
+
+```bash
+npx skills add AtticusZeller/skills --skill develop-feature -g -a codex -a claude-code -a cursor -y --full-depth
+```
+
+This skill agrees a plan with the human first, then lets that plan govern
+implementation, an external code review, static checks, documentation sync, and
+closeout into `docs/<area>/log.md`.
 
 Install Geoffrey Litt's mirrored Explain Diff skills globally:
 

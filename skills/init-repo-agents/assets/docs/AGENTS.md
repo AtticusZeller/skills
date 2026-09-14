@@ -2,20 +2,91 @@
 
 These rules apply to every file under `docs/`.
 
-Documentation is human-facing project context. Organize it into first-level area directories. Every area
-must contain `plan.md`, `log.md`, and `overview.md`; keep root-level documentation limited to this rule
-file unless the repository explicitly defines another public document.
+## Purpose and Layout
 
-`plan.md` contains confirmed, unfinished work only. Each task must define Task, Change, Verification, and
-Done so completion is observable. Remove accepted work from the plan and summarize it in the area log.
+Documentation is human-facing project context. Keep only information that helps a reader understand an
+area, resume an approved task, or assess completed work without reconstructing the discussion.
 
-`log.md` records completed substantial changes, newest first. Each entry states the background and
-purpose, implementation idea, component changes, a few important file paths, and verification results.
-Compress changes with the same intent instead of reproducing commit history or terminal output.
+First-level documentation directories are project areas:
 
-`overview.md` stores durable responsibilities, boundaries, information flow, non-obvious design choices,
-limitations, and discussion conclusions. Do not copy source inventories, commands, or details obvious
-from reading the code.
+- `docs/workspace/` for project-level orchestration, governance, and cross-area work;
+- `docs/<area>/` only for a stable project boundary that needs its own plan and history.
 
-Write for humans in the repository's chosen documentation language. Keep the explanation concise and at
-the design level.
+Every area directory must contain `plan.md`, `log.md`, and `overview.md`. Add another topic file only
+when one coherent subject cannot remain clear inside `overview.md`.
+
+Do not create root-level human documentation alongside this file, except `docs/cmd.md`. Keep planning,
+change summaries, and durable understanding inside the applicable area directory. Never create a
+repository-root `cmd.md`.
+
+## `cmd.md` Contract
+
+`docs/cmd.md` stores reusable, copyable project commands. Keep each command beside a short purpose,
+prerequisites, and observable expected result. Do not store terminal output, one-off debugging history,
+or checks the Agent can run itself. When no command needs long-term retention, write only
+`当前没有需要长期保留的命令。`.
+
+## `plan.md` Contract
+
+`plan.md` contains confirmed, unfinished work only. A chunk is one coherent transaction and may contain
+multiple dependent tasks. Remove the chunk after acceptance and summarize the result in `log.md`.
+
+Each task uses this structure:
+
+```markdown
+## <事务名称>
+
+### Task: <可观察目标>
+
+**Change**
+
+- <要实现或修改什么>
+
+**Verification**
+
+1. <Agent 可以实际运行的检查>
+
+**Done**
+
+- <可以直接观察和判断的验收结果>
+```
+
+`Task = Change + Observable Evidence`. Do not use “完成实现”“测试通过” or another circular claim as
+the Done condition. When no work is approved, write only `当前没有已确认、未完成的事务。`.
+
+## `log.md` Contract
+
+`log.md` records completed substantial changes, newest first. One entry may compress several commits of
+the same intent. It is a change summary, not a commit list, terminal transcript, daily journal, or test
+dump.
+
+Each entry contains:
+
+```markdown
+## YYYY-MM-DD · <改动名称>
+
+- **背景与目的：** <为什么需要这次改动；新增能力或解决的问题>
+- **实现思路：** <方案和关键边界>
+- **组件变化：** <新增、替换或移除的模块>
+- **主要文件：** <少量关键路径及其职责>
+- **验证：** <检查方式和观察到的结果>
+```
+
+Keep the explanation at design level. Mention only files needed to locate the change; omit routine code
+details and exhaustive path lists.
+
+## Understanding Notes
+
+`overview.md` and topic notes may preserve conclusions from human-agent discussions. Keep:
+
+- responsibilities and boundaries;
+- architecture and information flow;
+- non-obvious design rationale or distinctions;
+- verified limitations, uncertainty, and evidence boundaries.
+
+Do not copy directory trees, class/function inventories, command output, historical commit
+sequences, or facts that a quick code read or command reveals. Do not turn an upstream claim into local
+verification. Use a date or pinned revision only when the conclusion is snapshot-sensitive.
+
+Write human documentation in concise Chinese. Keep identifiers, paths, interface names, and established
+technical terms in their original form when translation would reduce precision.
