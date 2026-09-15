@@ -47,7 +47,7 @@ while i < len(lines):
             i += 1
             while i < len(lines):
                 next_line = lines[i]
-                if next_line.startswith((" ", "\t")) or not next_line.strip():
+                if next_line.startswith((" ", "\t", "- ")) or not next_line.strip():
                     i += 1
                     continue
                 break
