@@ -203,8 +203,39 @@ serena setup claude-code
 ```
 
 The generated MCP entries start Serena from the agent's current project and use
-the client-specific context. Restart the agents after setup, then verify Serena
-with `/mcp`. Update it later with:
+the client-specific context. Restart the agents after setup and verify registration
+with `/mcp`.
+
+Keep Serena's project metadata outside repositories, retain automatic language
+detection, disable its dashboard and memory tools, and keep the normal interactive
+symbol-editing workflow by applying the global baseline:
+
+```bash
+bash skills/bootstrap-dev-machine/scripts/configure-serena.sh
+```
+
+This updates only the following global settings in `~/.serena/serena_config.yml`
+and preserves Serena's other defaults and registered projects:
+
+```yaml
+language_backend: LSP
+web_dashboard: false
+web_dashboard_open_on_launch: false
+base_modes:
+  - interactive
+  - editing
+  - no-memories
+project_serena_folder_location: "/home/<user>/.serena/projects/$projectFolderName/.serena"
+```
+
+With `--project-from-cwd`, Serena finds the current repository, detects its
+languages, and selects the corresponding language servers automatically. A
+project-specific `language_servers` override is only needed when auto-detection
+is wrong or the project requires a non-default server. `planning` and `one-shot`
+remain opt-in modes: planning removes write tools, while one-shot changes the
+interaction policy without restricting editing tools.
+
+Update Serena later with:
 
 ```bash
 uv tool upgrade serena-agent

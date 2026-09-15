@@ -370,6 +370,8 @@ install_serena() {
     run serena init
   fi
 
+  run bash "${script_dir}/configure-serena.sh"
+
   if [[ "${dry_run}" == true ]]; then
     run serena setup codex
     run serena setup claude-code

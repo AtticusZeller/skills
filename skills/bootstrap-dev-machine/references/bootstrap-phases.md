@@ -34,12 +34,12 @@ The entry script performs these phases in order:
 5. Deploys `sbc-start`, `sbc-stop`, and `sbc-status` for non-systemd hosts.
 6. Installs nvm and Node, then sets the requested Node version as default.
 7. Installs Claude Code and the Hugging Face CLI; checks other developer CLIs.
-8. Installs Serena with Python 3.13, initializes its language-server backend, and registers its global MCP entry for Codex and Claude Code.
+8. Installs Serena with Python 3.13, applies the global LSP baseline, centralizes project metadata under `~/.serena/projects/`, and registers its global MCP entry for Codex and Claude Code. Language-server selection remains automatic.
 9. Installs Oh My Zsh, Powerlevel10k, plugins, and the public server `.zshrc`.
 10. Installs personal and external agent skills from the repository manifest.
 11. Creates public machine-level `AGENTS.md` and `README.md` from bundled templates when they are absent.
 12. When explicitly enabled, backs up and appends the Alibaba Cloud DSW OSS persistence prompt to `~/.codex/AGENTS.md`.
-13. Runs `check-dev-machine.sh` and prints all remaining manual work together.
+13. Runs `check-dev-machine.sh`, verifies the global Serena baseline and MCP registrations, and prints all remaining manual work together.
 
 Each phase is safe to rerun: existing tools and clones are reused, and `.zshrc` is backed up only when the deployed template differs.
 

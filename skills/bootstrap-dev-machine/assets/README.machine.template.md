@@ -43,6 +43,8 @@ npm -v
 - Codex skills: `~/.codex/skills`
 - Claude rules and skills: `~/.claude/`
 - Serena configuration: `~/.serena/`
+- Serena project metadata: `~/.serena/projects/<project>/.serena`
+- Serena defaults: automatic LSP detection, dashboard off, memory tools off
 
 ## Personal Skills
 

@@ -28,12 +28,13 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 - Let `scripts/install-machine-handoff.sh` create the public machine handoff from bundled templates. Never recreate or summarize those templates manually; preserve existing handoff files unchanged.
 - Keep executable setup logic in `scripts/` or `assets/`; Markdown should explain inputs, boundaries, and recovery rather than duplicate command sequences.
 - Keep the DSW persistent-storage prompt opt-in; its installer must back up an existing Codex `AGENTS.md` and append the asset exactly once.
-- Install Serena from the released `serena-agent` package with Python 3.13, initialize its language-server backend, and register its global MCP entry for both Codex and Claude Code.
+- Install Serena from the released `serena-agent` package with Python 3.13, apply the shared global LSP baseline, and register its global MCP entry for both Codex and Claude Code. Keep language detection automatic and project metadata outside repositories.
 
 ## Resources
 
 - `scripts/bootstrap-dev-machine.sh`: idempotent one-shot installer and primary entry point.
 - `scripts/check-dev-machine.sh`: read-only validation script used by the installer.
+- `scripts/configure-serena.sh`: idempotently applies the global Serena baseline while preserving unrelated settings and registered projects.
 - `scripts/install-machine-handoff.sh`: deterministic create-if-absent installer for machine-level `AGENTS.md` and `README.md`.
 - `scripts/install-dsw-persistent-prompt.sh`: optional, idempotent installer for the Alibaba Cloud DSW rule in `~/.codex/AGENTS.md`.
 - `references/bootstrap-phases.md`: installer inputs, automated phases, manual boundaries, and failure handling.

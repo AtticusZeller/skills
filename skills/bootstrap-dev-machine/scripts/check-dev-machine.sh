@@ -127,6 +127,33 @@ else
   warn=$((warn + 1))
 fi
 
+serena_config="$HOME/.serena/serena_config.yml"
+if [[ ! -f "$serena_config" ]]; then
+  printf 'WARN config  Serena global config missing\n'
+  warn=$((warn + 1))
+elif python3 - "$serena_config" "$HOME" <<'PY'
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+home = sys.argv[2]
+text = path.read_text()
+required = (
+    "language_backend: LSP",
+    "web_dashboard: false",
+    "web_dashboard_open_on_launch: false",
+    "base_modes:\n  - interactive\n  - editing\n  - no-memories",
+    f'project_serena_folder_location: "{home}/.serena/projects/$projectFolderName/.serena"',
+)
+raise SystemExit(0 if all(item in text for item in required) else 1)
+PY
+then
+  printf 'OK   config  Serena global baseline\n'
+else
+  printf 'WARN config  Serena global baseline differs\n'
+  warn=$((warn + 1))
+fi
+
 if command -v zsh >/dev/null 2>&1 && [[ -f "$HOME/.zshrc" ]]; then
   if zsh -n "$HOME/.zshrc"; then
     printf 'OK   syntax  %s\n' "$HOME/.zshrc"
