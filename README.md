@@ -76,6 +76,25 @@ that it contains no destructive command — and `references/classification.md`
 records the tier definitions, the never-delete list, and the owner's confirmed
 decision profile.
 
+Install the delegated worker skill globally:
+
+```bash
+npx skills add AtticusZeller/skills --skill delegate-worker -g -a codex -a claude-code -a cursor -y --full-depth
+```
+
+This skill runs a separate Claude Code process on a third-party provider
+configured in cc-switch, such as DeepSeek, and treats it as a worker. A native
+subagent cannot do this because it always inherits its caller's provider. The
+calling agent writes the brief, chooses a permission profile, and decides whether
+to start a new worker, resume one, or fork one. It verifies the worker's report
+before relaying it. `scripts/delegate-worker.sh` keeps each worker's session,
+briefs, and results under `~/.local/state/delegate-worker/`. By default a
+worker inherits the caller's `CLAUDE.md`, plugins, skills, MCP servers, and
+hooks. A repository `AGENTS.md` that Claude Code would not discover is passed to
+it explicitly, and `--bare` creates a clean-room worker instead. A stub-based regression
+test covers session flags, permissions, contract fidelity, and failure exit
+codes.
+
 Install Geoffrey Litt's mirrored Explain Diff skills globally:
 
 ```bash

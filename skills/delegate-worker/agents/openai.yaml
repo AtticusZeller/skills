@@ -1,0 +1,4 @@
+interface:
+  display_name: "Delegate Worker"
+  short_description: "Run a Claude Code worker on a cc-switch provider such as DeepSeek, resume or fork its session, and verify its report."
+  default_prompt: "Use $delegate-worker to have a DeepSeek worker handle this task, then verify its report before telling me the result."
