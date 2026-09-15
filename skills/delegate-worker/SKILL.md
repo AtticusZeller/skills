@@ -1,6 +1,6 @@
 ---
 name: delegate-worker
-description: Delegate a bounded task to a Claude Code worker running on a third-party provider configured in cc-switch (for example DeepSeek), keep that worker's session for follow-ups, and verify its report before relaying it. Use when the user asks to have DeepSeek or another cc-switch provider do the work, wants a cheaper external worker to explore, draft, or perform mechanical edits, asks to continue, correct, or fork a previously delegated worker, or asks whether to reuse an existing worker. Do not use for native same-provider subagents, work that needs claude.ai connectors or MCP servers, or tasks the user wants done directly.
+description: Delegate a bounded task to a Claude Code worker running on a third-party provider configured in cc-switch (for example DeepSeek), keep that worker's session for follow-ups, and verify its report before relaying it. Use when the user asks to have DeepSeek or another cc-switch provider do the work, wants a cheaper external worker to explore, draft, or perform mechanical edits, asks to continue, correct, or fork a previously delegated worker, or asks whether to reuse an existing worker. Do not use for native same-provider subagents, work that needs claude.ai connectors, or tasks the user wants done directly.
 ---
 
 # Delegate Worker
