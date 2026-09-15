@@ -181,6 +181,35 @@ npx ctx7 setup --cli --claude --codex -y
 
 If Context7 requires authentication, complete its login flow; no token is stored in this repository.
 
+## Serena
+
+[Serena](https://github.com/oraios/serena) is a global MCP tool rather than a
+Skill. It gives coding agents language-server-backed symbol search, reference
+lookup, rename, and symbol-level editing, so it belongs in the development-machine
+baseline alongside the agent CLIs.
+
+Install and initialize the released package with uv:
+
+```bash
+uv tool install -p 3.13 serena-agent
+serena init
+```
+
+Register Serena globally for both local agents:
+
+```bash
+serena setup codex
+serena setup claude-code
+```
+
+The generated MCP entries start Serena from the agent's current project and use
+the client-specific context. Restart the agents after setup, then verify Serena
+with `/mcp`. Update it later with:
+
+```bash
+uv tool upgrade serena-agent
+```
+
 ## OfficeCLI
 
 [OfficeCLI](https://github.com/iOfficeAI/OfficeCLI) is intentionally **not** part

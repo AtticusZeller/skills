@@ -36,7 +36,7 @@ check_version() {
 }
 
 echo "== Commands =="
-for cmd in git curl rg uv python3 conda mamba sbc codex claude gh hf cc-switch nvitop wandb zsh tmux; do
+for cmd in git curl rg uv python3 conda mamba sbc codex claude serena gh hf cc-switch nvitop wandb zsh tmux; do
   check_cmd "$cmd"
 done
 
@@ -61,6 +61,7 @@ check_version "mamba" mamba --version
 check_version "sbc" sbc version
 check_version "codex" codex --version
 check_version "claude" claude --version
+check_version "serena" serena --version
 check_version "gh" gh --version
 check_version "hf" hf --version
 check_version "cc-switch" cc-switch --version
@@ -102,6 +103,29 @@ check_path "$HOME/README.md"
 check_path "$HOME/.codex/AGENTS.md"
 check_path "$HOME/.agents/skills"
 check_path "$HOME/.claude/rules/context7.md"
+
+echo
+echo "== Serena MCP =="
+if command -v codex >/dev/null 2>&1 && codex mcp get serena >/dev/null 2>&1; then
+  printf 'OK   MCP     Codex serena\n'
+else
+  printf 'WARN MCP     Codex serena missing\n'
+  warn=$((warn + 1))
+fi
+claude_serena_configured=false
+if command -v claude >/dev/null 2>&1; then
+  probe_dir="$(mktemp -d)"
+  if (cd "$probe_dir" && claude mcp get serena >/dev/null 2>&1); then
+    claude_serena_configured=true
+  fi
+  rm -rf -- "$probe_dir"
+fi
+if [[ "$claude_serena_configured" == true ]]; then
+  printf 'OK   MCP     Claude Code serena\n'
+else
+  printf 'WARN MCP     Claude Code serena missing\n'
+  warn=$((warn + 1))
+fi
 
 if command -v zsh >/dev/null 2>&1 && [[ -f "$HOME/.zshrc" ]]; then
   if zsh -n "$HOME/.zshrc"; then

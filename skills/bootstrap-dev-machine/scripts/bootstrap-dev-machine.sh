@@ -227,12 +227,13 @@ install_system_packages() {
 install_uv_tool() {
   local command="$1"
   local package="$2"
+  local tool_python_version="${3:-${python_version}}"
   if command -v "${command}" >/dev/null 2>&1; then
     info "${command} already installed"
     return
   fi
   run env -u UV_DEFAULT_INDEX -u PIP_INDEX_URL \
-    uv tool install --python "${python_version}" \
+    uv tool install --python "${tool_python_version}" \
     --default-index https://pypi.org/simple "${package}"
 }
 
@@ -356,6 +357,50 @@ install_developer_clis() {
   if ! command -v cc-switch >/dev/null 2>&1; then
     warn "cc-switch is not installed automatically"
     manual "Install cc-switch from its official release if needed"
+  fi
+}
+
+install_serena() {
+  phase "Serena semantic-code MCP"
+  install_uv_tool serena serena-agent 3.13
+
+  if [[ -f "${HOME}/.serena/serena_config.yml" ]]; then
+    info "Serena already initialized"
+  else
+    run serena init
+  fi
+
+  if [[ "${dry_run}" == true ]]; then
+    run serena setup codex
+    run serena setup claude-code
+    return
+  fi
+
+  if ! command -v codex >/dev/null 2>&1; then
+    warn "Cannot configure Serena MCP because Codex is unavailable"
+    manual "After installing Codex, run: serena setup codex"
+  elif codex mcp get serena >/dev/null 2>&1; then
+    info "Serena MCP already configured for Codex"
+  else
+    run serena setup codex
+  fi
+
+  if ! command -v claude >/dev/null 2>&1; then
+    warn "Cannot configure Serena MCP because Claude Code is unavailable"
+    manual "After installing Claude Code, run: serena setup claude-code"
+  else
+    local probe_dir claude_serena_configured=false
+    probe_dir="$(mktemp -d)"
+    if (cd "${probe_dir}" && claude mcp get serena >/dev/null 2>&1); then
+      claude_serena_configured=true
+    fi
+    rm -rf -- "${probe_dir}"
+
+    if [[ "${claude_serena_configured}" == true ]]; then
+      info "Serena MCP already configured for Claude Code"
+    else
+      run serena setup claude-code
+    fi
   fi
 }
 
@@ -543,6 +588,7 @@ install_python_tools
 deploy_sbc_helpers
 install_node
 install_developer_clis
+install_serena
 install_zsh_baseline
 install_agent_skills
 deploy_machine_handoff
