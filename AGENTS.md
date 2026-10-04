@@ -11,9 +11,7 @@ npx skills add AtticusZeller/skills --list --full-depth
 - Personal skills live under `skills/<skill-name>/`.
 - Every skill must contain a valid `SKILL.md` with `name` and `description` frontmatter.
 - Skill names use lowercase letters, digits, and hyphens only.
-- Do not copy third-party skill source into this repository, except the explicitly
-  maintained Geoffrey Litt Explain Diff mirror under
-  `skills/explain-diff-{html,notion}/`.
+- Do not copy third-party skill source into this repository.
 - Third-party global skills are listed in `manifests/global-skills.json` and installed by `scripts/install-global-skills.sh`.
 - Do not commit tokens, PATs, private subscriptions, SSH keys, node credentials, API keys, or machine-private config.
 - Do not add README files inside individual skill folders; put human-facing repo docs in the root `README.md`.

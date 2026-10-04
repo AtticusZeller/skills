@@ -7,7 +7,7 @@ description: Maintain and publish AtticusZeller's personal agent skills reposito
 
 ## Overview
 
-Use this skill to keep the `AtticusZeller/skills` repository installable, safe, and easy to reuse from fresh machines. The repository contains original personal skills, a manifest of external global skills, and explicitly approved deterministic upstream mirrors such as Geoffrey Litt's Explain Diff Gist.
+Use this skill to keep the `AtticusZeller/skills` repository installable, safe, and easy to reuse from fresh machines. The repository contains original personal skills and a manifest of external global skills.
 
 ## Repository Shape
 

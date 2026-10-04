@@ -36,7 +36,7 @@ check_version() {
 }
 
 echo "== Commands =="
-for cmd in git curl rg uv python3 conda mamba sbc codex claude serena gh hf cc-switch nvitop wandb zsh tmux; do
+for cmd in git curl rg uv python3 conda mamba sbc codex claude gh hf cc-switch nvitop wandb zsh tmux; do
   check_cmd "$cmd"
 done
 
@@ -61,7 +61,6 @@ check_version "mamba" mamba --version
 check_version "sbc" sbc version
 check_version "codex" codex --version
 check_version "claude" claude --version
-check_version "serena" serena --version
 check_version "gh" gh --version
 check_version "hf" hf --version
 check_version "cc-switch" cc-switch --version
@@ -103,56 +102,6 @@ check_path "$HOME/README.md"
 check_path "$HOME/.codex/AGENTS.md"
 check_path "$HOME/.agents/skills"
 check_path "$HOME/.claude/rules/context7.md"
-
-echo
-echo "== Serena MCP =="
-if command -v codex >/dev/null 2>&1 && codex mcp get serena >/dev/null 2>&1; then
-  printf 'OK   MCP     Codex serena\n'
-else
-  printf 'WARN MCP     Codex serena missing\n'
-  warn=$((warn + 1))
-fi
-claude_serena_configured=false
-if command -v claude >/dev/null 2>&1; then
-  probe_dir="$(mktemp -d)"
-  if (cd "$probe_dir" && claude mcp get serena >/dev/null 2>&1); then
-    claude_serena_configured=true
-  fi
-  rm -rf -- "$probe_dir"
-fi
-if [[ "$claude_serena_configured" == true ]]; then
-  printf 'OK   MCP     Claude Code serena\n'
-else
-  printf 'WARN MCP     Claude Code serena missing\n'
-  warn=$((warn + 1))
-fi
-
-serena_config="$HOME/.serena/serena_config.yml"
-if [[ ! -f "$serena_config" ]]; then
-  printf 'WARN config  Serena global config missing\n'
-  warn=$((warn + 1))
-elif python3 - "$serena_config" "$HOME" <<'PY'
-import pathlib
-import sys
-
-path = pathlib.Path(sys.argv[1])
-home = sys.argv[2]
-text = path.read_text()
-required = (
-    "language_backend: LSP",
-    "web_dashboard: false",
-    "web_dashboard_open_on_launch: false",
-    "base_modes:\n  - interactive\n  - editing\n  - no-memories",
-    f'project_serena_folder_location: "{home}/.serena/projects/$projectFolderName/.serena"',
-)
-raise SystemExit(0 if all(item in text for item in required) else 1)
-PY
-then
-  printf 'OK   config  Serena global baseline\n'
-else
-  printf 'WARN config  Serena global baseline differs\n'
-  warn=$((warn + 1))
-fi
 
 if command -v zsh >/dev/null 2>&1 && [[ -f "$HOME/.zshrc" ]]; then
   if zsh -n "$HOME/.zshrc"; then

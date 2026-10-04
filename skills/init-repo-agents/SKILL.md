@@ -85,13 +85,12 @@ When installed and applicable, prefer these standard routes in generated or upda
 
 - `develop-feature` for non-trivial feature work governed by a human-confirmed plan;
 - `karpathy-guidelines` for implementation, review, and refactoring discipline;
-- `context7-cli` or `find-docs` for current library, framework, SDK, API, CLI, or cloud documentation;
+- `context7-cli` for current library, framework, SDK, API, CLI, or cloud documentation;
 - `gh-cli` for GitHub URLs, issues, pull requests, and authenticated repository operations;
 - `modern-python` for Python project initialization or tooling migration;
 - `skill-creator` for creating or materially updating a reusable Skill;
 - `neat-freak` for an explicitly requested knowledge or workspace closeout;
-- `git-commit` only when the user asks to commit;
-- `explain-diff-html` only when the user asks for a rich diff explanation.
+- `git-commit` only when the user asks to commit.
 
 Also list repository-local Skills whose task triggers are part of normal project work. Do not chain any of
 these Skills into an automatic lifecycle.

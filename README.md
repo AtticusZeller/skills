@@ -76,44 +76,6 @@ that it contains no destructive command — and `references/classification.md`
 records the tier definitions, the never-delete list, and the owner's confirmed
 decision profile.
 
-Install the delegated worker skill globally:
-
-```bash
-npx skills add AtticusZeller/skills --skill delegate-worker -g -a codex -a claude-code -a cursor -y --full-depth
-```
-
-This skill runs a separate Claude Code process on a third-party provider
-configured in cc-switch, such as DeepSeek, and treats it as a worker. A native
-subagent cannot do this because it always inherits its caller's provider. The
-calling agent writes the brief, chooses a permission profile, and decides whether
-to start a new worker, resume one, or fork one. It verifies the worker's report
-before relaying it. `scripts/delegate-worker.sh` keeps each worker's session,
-briefs, and results under `~/.local/state/delegate-worker/`. By default a
-worker inherits the caller's `CLAUDE.md`, plugins, skills, MCP servers, and
-hooks. A repository `AGENTS.md` that Claude Code would not discover is passed to
-it explicitly, and `--bare` creates a clean-room worker instead. A stub-based regression
-test covers session flags, permissions, contract fidelity, and failure exit
-codes.
-
-Install Geoffrey Litt's mirrored Explain Diff skills globally:
-
-```bash
-npx skills add AtticusZeller/skills \
-  --skill explain-diff-html explain-diff-notion \
-  -g -a codex claude-code cursor -y --full-depth
-```
-
-The skill bodies are direct mirrors of Geoffrey Litt's official Explain Diff Gist:
-`https://gist.github.com/geoffreylitt/a29df1b5f9865506e8952488eac3d524`.
-The HTML variant is available when a user explicitly requests a rich diff
-explanation; the Notion variant is available when Notion tools are connected.
-
-Install the GitHub fork workflow skill globally:
-
-```bash
-npx skills add AtticusZeller/skills --skill git-fork-workflow -g -a codex -a claude-code -a cursor -y --full-depth
-```
-
 Install all personal skills:
 
 ```bash
@@ -142,20 +104,9 @@ npx skills add . --skill init-repo-agents \
 Use the Skill to audit and update an existing repository. Its initializer is only
 for a repository without custom `AGENTS.md` or `CLAUDE.md` files.
 
-Synchronize both mirrored skills from the official Gist:
-
-```bash
-bash scripts/sync-explain-diff-gist.sh
-```
-
-The weekly GitHub Actions workflow performs the same synchronization and commits
-changed upstream skill bodies directly to this public repository.
-
 ## External Global Skills
 
-External global skills are normally referenced through
-`manifests/global-skills.json`. Geoffrey Litt's two Explain Diff variants are the
-explicit mirrored exception described above.
+External global skills are referenced through `manifests/global-skills.json`.
 
 Dry-run the install commands:
 
@@ -180,66 +131,6 @@ npx ctx7 setup --cli --claude --codex -y
 ```
 
 If Context7 requires authentication, complete its login flow; no token is stored in this repository.
-
-## Serena
-
-[Serena](https://github.com/oraios/serena) is a global MCP tool rather than a
-Skill. It gives coding agents language-server-backed symbol search, reference
-lookup, rename, and symbol-level editing, so it belongs in the development-machine
-baseline alongside the agent CLIs.
-
-Install and initialize the released package with uv:
-
-```bash
-uv tool install -p 3.13 serena-agent
-serena init
-```
-
-Register Serena globally for both local agents:
-
-```bash
-serena setup codex
-serena setup claude-code
-```
-
-The generated MCP entries start Serena from the agent's current project and use
-the client-specific context. Restart the agents after setup and verify registration
-with `/mcp`.
-
-Keep Serena's project metadata outside repositories, retain automatic language
-detection, disable its dashboard and memory tools, and keep the normal interactive
-symbol-editing workflow by applying the global baseline:
-
-```bash
-bash skills/bootstrap-dev-machine/scripts/configure-serena.sh
-```
-
-This updates only the following global settings in `~/.serena/serena_config.yml`
-and preserves Serena's other defaults and registered projects:
-
-```yaml
-language_backend: LSP
-web_dashboard: false
-web_dashboard_open_on_launch: false
-base_modes:
-  - interactive
-  - editing
-  - no-memories
-project_serena_folder_location: "/home/<user>/.serena/projects/$projectFolderName/.serena"
-```
-
-With `--project-from-cwd`, Serena finds the current repository, detects its
-languages, and selects the corresponding language servers automatically. A
-project-specific `language_servers` override is only needed when auto-detection
-is wrong or the project requires a non-default server. `planning` and `one-shot`
-remain opt-in modes: planning removes write tools, while one-shot changes the
-interaction policy without restricting editing tools.
-
-Update Serena later with:
-
-```bash
-uv tool upgrade serena-agent
-```
 
 ## OfficeCLI
 

@@ -1,6 +1,6 @@
 ---
 name: bootstrap-dev-machine
-description: Guide a Codex agent through configuring a fresh GPU/DSW-style Linux development machine with SSH-forwarded proxy, ripgrep, Codex, uv/Python 3.12, Miniforge/conda/mamba, sing-box mixed proxy, Claude Code, Serena semantic-code MCP, nvm/Node 24, Context7, global development skills, zsh/tmux, Git/GitHub/Hugging Face tooling, and root-level AGENTS.md/README.md handoff docs. Use when the user asks to bootstrap, reproduce, migrate, audit, or repair this development environment on a new machine.
+description: Guide a Codex agent through configuring a fresh GPU/DSW-style Linux development machine with SSH-forwarded proxy, ripgrep, Codex, uv/Python 3.12, Miniforge/conda/mamba, sing-box mixed proxy, Claude Code, nvm/Node 24, Context7, global development skills, zsh/tmux, Git/GitHub/Hugging Face tooling, and root-level AGENTS.md/README.md handoff docs. Use when the user asks to bootstrap, reproduce, migrate, audit, or repair this development environment on a new machine.
 ---
 
 # Bootstrap Dev Machine
@@ -28,13 +28,11 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 - Let `scripts/install-machine-handoff.sh` create the public machine handoff from bundled templates. Never recreate or summarize those templates manually; preserve existing handoff files unchanged.
 - Keep executable setup logic in `scripts/` or `assets/`; Markdown should explain inputs, boundaries, and recovery rather than duplicate command sequences.
 - Keep the DSW persistent-storage prompt opt-in; its installer must back up an existing Codex `AGENTS.md` and append the asset exactly once.
-- Install Serena from the released `serena-agent` package with Python 3.13, apply the shared global LSP baseline, and register its global MCP entry for both Codex and Claude Code. Keep language detection automatic and project metadata outside repositories.
 
 ## Resources
 
 - `scripts/bootstrap-dev-machine.sh`: idempotent one-shot installer and primary entry point.
 - `scripts/check-dev-machine.sh`: read-only validation script used by the installer.
-- `scripts/configure-serena.sh`: idempotently applies the global Serena baseline while preserving unrelated settings and registered projects.
 - `scripts/install-machine-handoff.sh`: deterministic create-if-absent installer for machine-level `AGENTS.md` and `README.md`.
 - `scripts/install-dsw-persistent-prompt.sh`: optional, idempotent installer for the Alibaba Cloud DSW rule in `~/.codex/AGENTS.md`.
 - `references/bootstrap-phases.md`: installer inputs, automated phases, manual boundaries, and failure handling.
@@ -46,4 +44,4 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 
 ## Completion Criteria
 
-The machine is ready when the user can run `rg`, `mamba --version`, `sbc version`, use the local proxy, start the configured zsh baseline without errors, run Codex/Claude, use Serena from both agents, use Node 24 through nvm, use uv Python 3.12, manage environments with `conda` and `mamba`, and read `/root/AGENTS.md` plus `/root/README.md` for handoff details.
+The machine is ready when the user can run `rg`, `mamba --version`, `sbc version`, use the local proxy, start the configured zsh baseline without errors, run Codex/Claude, use Node 24 through nvm, use uv Python 3.12, manage environments with `conda` and `mamba`, and read `/root/AGENTS.md` plus `/root/README.md` for handoff details.

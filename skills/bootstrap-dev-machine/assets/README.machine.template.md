@@ -1,6 +1,6 @@
 # Development Machine
 
-This machine uses the public `bootstrap-dev-machine` baseline: uv/Python, Miniforge/conda/mamba, nvm/Node, shell tooling, agent CLIs, Serena semantic-code MCP, shared skills, and non-systemd sing-box helpers.
+This machine uses the public `bootstrap-dev-machine` baseline: uv/Python, Miniforge/conda/mamba, nvm/Node, shell tooling, agent CLIs, shared skills, and non-systemd sing-box helpers.
 
 ## Quick Start
 
@@ -42,9 +42,6 @@ npm -v
 - cross-agent skills: `~/.agents/skills`
 - Codex skills: `~/.codex/skills`
 - Claude rules and skills: `~/.claude/`
-- Serena configuration: `~/.serena/`
-- Serena project metadata: `~/.serena/projects/<project>/.serena`
-- Serena defaults: automatic LSP detection, dashboard off, memory tools off
 
 ## Personal Skills
 
@@ -64,9 +61,6 @@ conda --version
 mamba --version
 bash -lc 'source "$HOME/.nvm/nvm.sh" && node -v && npm -v'
 claude --version
-serena --version
-codex mcp get serena
-claude mcp get serena
 gh --version
 hf --version
 ```

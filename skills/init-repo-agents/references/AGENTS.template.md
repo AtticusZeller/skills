@@ -104,13 +104,12 @@ Skill provides execution guidance; it does not expand scope or authorization.
 - `develop-feature` — build a non-trivial feature or capability under a human-confirmed plan that then
   governs implementation, external review, gates, and closeout.
 - `karpathy-guidelines` — implementation, code review, and refactoring discipline.
-- `context7-cli` / `find-docs` — current library, framework, SDK, API, CLI, and cloud documentation.
+- `context7-cli` — current library, framework, SDK, API, CLI, and cloud documentation.
 - `gh-cli` — GitHub URLs, issues, pull requests, and authenticated repository operations.
 - `modern-python` — Python project initialization and tooling migration.
 - `skill-creator` — creating or materially updating a reusable Skill.
 - `neat-freak` — explicitly requested knowledge, documentation, or workspace closeout.
 - `git-commit` — only when the user asks to commit.
-- `explain-diff-html` — only when the user asks for a rich diff explanation.
 
 Add repository-local Skills here when their triggers are part of normal project work. Never turn Skill
 names into an automatic workflow chain.

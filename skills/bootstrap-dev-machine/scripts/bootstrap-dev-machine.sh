@@ -360,52 +360,6 @@ install_developer_clis() {
   fi
 }
 
-install_serena() {
-  phase "Serena semantic-code MCP"
-  install_uv_tool serena serena-agent 3.13
-
-  if [[ -f "${HOME}/.serena/serena_config.yml" ]]; then
-    info "Serena already initialized"
-  else
-    run serena init
-  fi
-
-  run bash "${script_dir}/configure-serena.sh"
-
-  if [[ "${dry_run}" == true ]]; then
-    run serena setup codex
-    run serena setup claude-code
-    return
-  fi
-
-  if ! command -v codex >/dev/null 2>&1; then
-    warn "Cannot configure Serena MCP because Codex is unavailable"
-    manual "After installing Codex, run: serena setup codex"
-  elif codex mcp get serena >/dev/null 2>&1; then
-    info "Serena MCP already configured for Codex"
-  else
-    run serena setup codex
-  fi
-
-  if ! command -v claude >/dev/null 2>&1; then
-    warn "Cannot configure Serena MCP because Claude Code is unavailable"
-    manual "After installing Claude Code, run: serena setup claude-code"
-  else
-    local probe_dir claude_serena_configured=false
-    probe_dir="$(mktemp -d)"
-    if (cd "${probe_dir}" && claude mcp get serena >/dev/null 2>&1); then
-      claude_serena_configured=true
-    fi
-    rm -rf -- "${probe_dir}"
-
-    if [[ "${claude_serena_configured}" == true ]]; then
-      info "Serena MCP already configured for Claude Code"
-    else
-      run serena setup claude-code
-    fi
-  fi
-}
-
 clone_if_missing() {
   local url="$1"
   local target="$2"
@@ -590,7 +544,6 @@ install_python_tools
 deploy_sbc_helpers
 install_node
 install_developer_clis
-install_serena
 install_zsh_baseline
 install_agent_skills
 deploy_machine_handoff
