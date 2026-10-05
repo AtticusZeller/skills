@@ -41,6 +41,7 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 - `references/zsh-baseline.md`: resulting shell state and focused startup diagnosis.
 - `references/tmux-baseline.md`: Oh my tmux paths, customization, and session-preserving reload.
 - `assets/zshrc.server`: reusable public server `.zshrc` template with proxy, CUDA, uv, conda/mamba, NVM, PATH, and virtualenv defaults.
+- `assets/tmux-defaults.conf`: mouse support and right-click menus enabled on fresh tmux installations.
 - `assets/{AGENTS,README}.machine.template.md`: public machine handoff templates rendered by the installer.
 - `assets/sbc-{start,stop,status}`: executable user-level sing-box helpers for non-systemd hosts.
 

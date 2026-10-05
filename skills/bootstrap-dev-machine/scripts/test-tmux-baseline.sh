@@ -3,6 +3,7 @@ set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 installer="${script_dir}/install-tmux-baseline.sh"
+defaults="${script_dir}/../assets/tmux-defaults.conf"
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
 unset XDG_CONFIG_HOME
@@ -18,12 +19,18 @@ bash "${installer}" --target-home "${home}" --dry-run
 [[ ! -e "${config}" ]]
 bash "${installer}" --target-home "${home}"
 [[ "$(readlink "${config}/tmux.conf")" == "${repo}/.tmux.conf" ]]
-cmp "${repo}/.tmux.conf.local" "${config}/tmux.conf.local"
+{
+  cat "${repo}/.tmux.conf.local"
+  printf '\n'
+  cat "${defaults}"
+} >"${tmp_dir}/expected.defaults"
+cmp "${tmp_dir}/expected.defaults" "${config}/tmux.conf.local"
 printf '# user customization\n' >>"${config}/tmux.conf.local"
+printf 'set -g mouse off\n' >>"${config}/tmux.conf.local"
 cp "${config}/tmux.conf.local" "${tmp_dir}/expected.local"
 bash "${installer}" --target-home "${home}"
 cmp "${tmp_dir}/expected.local" "${config}/tmux.conf.local"
-echo '[PASS] upstream template fidelity, idempotency, and local customization preservation'
+echo '[PASS] upstream and mouse defaults fidelity, idempotency, and local customization preservation'
 
 conflict_home="${tmp_dir}/conflict"
 mkdir -p "${conflict_home}/.config/tmux"
@@ -51,6 +58,6 @@ xdg_home="${tmp_dir}/xdg-home"
 mkdir -p "${xdg_home}/.local/share"
 cp -R "${repo}" "${xdg_home}/.local/share/oh-my-tmux"
 XDG_CONFIG_HOME="${tmp_dir}/xdg-config" bash "${installer}" --target-home "${xdg_home}"
-cmp "${repo}/.tmux.conf.local" "${tmp_dir}/xdg-config/tmux/tmux.conf.local"
+cmp "${tmp_dir}/expected.defaults" "${tmp_dir}/xdg-config/tmux/tmux.conf.local"
 [[ ! -e "${xdg_home}/.config" ]]
 echo '[PASS] XDG_CONFIG_HOME is respected'

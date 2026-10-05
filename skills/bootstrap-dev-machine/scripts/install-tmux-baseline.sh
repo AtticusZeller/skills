@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+defaults_file="${script_dir}/../assets/tmux-defaults.conf"
 target_home="${HOME}"
 dry_run=false
 while (($#)); do
@@ -66,7 +68,13 @@ if [[ ! -L "${config_file}" ]]; then
   ln -s "${repo_dir}/.tmux.conf" "${config_file}"
 fi
 if [[ ! -e "${local_file}" ]]; then
+  [[ -f "${defaults_file}" ]] || {
+    echo "Missing tmux defaults asset: ${defaults_file}" >&2
+    exit 1
+  }
   cp "${repo_dir}/.tmux.conf.local" "${local_file}"
+  printf '\n' >>"${local_file}"
+  cat "${defaults_file}" >>"${local_file}"
 fi
 echo "[INFO] Oh my tmux installed; local customizations preserved: ${local_file}"
 echo "[INFO] New tmux servers load it automatically; reload running servers with:"

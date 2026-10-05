@@ -24,7 +24,7 @@ Use `sbc run` for foreground diagnosis.
 - Python `{{PYTHON_VERSION}}` is managed by uv.
 - Conda/Mamba defaults to Miniforge at `~/miniforge3`; `--skip-conda` keeps an externally managed installation instead.
 - Node `{{NODE_VERSION}}` is managed by nvm.
-- Tmux uses Oh my tmux, with `Ctrl+b` and `Ctrl+a` prefixes. Customize `tmux.conf.local`; prefix then `r` reloads without ending sessions.
+- Tmux uses Oh my tmux, with `Ctrl+b` and `Ctrl+a` prefixes. Mouse support is enabled by default; right-click panes or status-line names for command menus. Customize `tmux.conf.local`; prefix then `r` reloads without ending sessions.
 - Load nvm before using Node in non-interactive shells:
 
 ```bash

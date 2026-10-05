@@ -35,7 +35,7 @@ The entry script performs these phases in order:
 6. Installs nvm and Node, then sets the requested Node version as default.
 7. Installs Claude Code and the Hugging Face CLI; checks other developer CLIs.
 8. Installs Oh My Zsh, Powerlevel10k, plugins, and the public server `.zshrc`.
-9. Installs Oh my tmux from upstream with an XDG configuration link and a create-if-absent local customization file; existing sessions are kept running.
+9. Installs Oh my tmux from upstream with an XDG configuration link and a create-if-absent local customization file with mouse and right-click menus enabled; existing sessions are kept running.
 10. Installs personal and external agent skills from the repository manifest.
 11. Creates public machine-level `AGENTS.md` and `README.md` from bundled templates when they are absent.
 12. When explicitly enabled, backs up and appends the Alibaba Cloud DSW OSS persistence prompt to `~/.codex/AGENTS.md`.
