@@ -1,6 +1,6 @@
 # Development Machine
 
-This machine uses the public `bootstrap-dev-machine` baseline: uv/Python, Miniforge/conda/mamba, nvm/Node, shell tooling, agent CLIs, shared skills, and non-systemd sing-box helpers.
+This machine uses the public `bootstrap-dev-machine` baseline: uv/Python, Miniforge/conda/mamba, nvm/Node, shell tooling, Oh my tmux, agent CLIs, shared skills, and non-systemd sing-box helpers.
 
 ## Quick Start
 
@@ -24,6 +24,7 @@ Use `sbc run` for foreground diagnosis.
 - Python `{{PYTHON_VERSION}}` is managed by uv.
 - Conda/Mamba defaults to Miniforge at `~/miniforge3`; `--skip-conda` keeps an externally managed installation instead.
 - Node `{{NODE_VERSION}}` is managed by nvm.
+- Tmux uses Oh my tmux, with `Ctrl+b` and `Ctrl+a` prefixes. Customize `tmux.conf.local`; prefix then `r` reloads without ending sessions.
 - Load nvm before using Node in non-interactive shells:
 
 ```bash
@@ -38,6 +39,8 @@ npm -v
 - sing-box helpers: `~/.local/bin/sbc-start`, `sbc-stop`, `sbc-status`
 - sing-box state: `~/.local/state/sbc/`
 - default Miniforge prefix: `~/miniforge3`
+- Oh my tmux checkout: `~/.local/share/oh-my-tmux`
+- tmux config and local customizations: `~/.config/tmux/tmux.conf` and `tmux.conf.local` (under `$XDG_CONFIG_HOME/tmux` when set)
 - personal skills checkout: `~/skills`
 - cross-agent skills: `~/.agents/skills`
 - Codex skills: `~/.codex/skills`

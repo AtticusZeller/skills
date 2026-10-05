@@ -33,15 +33,17 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 
 - `scripts/bootstrap-dev-machine.sh`: idempotent one-shot installer and primary entry point.
 - `scripts/check-dev-machine.sh`: read-only validation script used by the installer.
+- `scripts/install-tmux-baseline.sh`: idempotent Oh my tmux installer; run it directly for a tmux-only repair. Keeps local customizations and never stops sessions.
 - `scripts/install-machine-handoff.sh`: deterministic create-if-absent installer for machine-level `AGENTS.md` and `README.md`.
 - `scripts/install-dsw-persistent-prompt.sh`: optional, idempotent installer for the Alibaba Cloud DSW rule in `~/.codex/AGENTS.md`.
 - `references/bootstrap-phases.md`: installer inputs, automated phases, manual boundaries, and failure handling.
 - `references/sbc-service-scripts.md`: behavior and configuration boundaries for the deployed sing-box helpers.
 - `references/zsh-baseline.md`: resulting shell state and focused startup diagnosis.
+- `references/tmux-baseline.md`: Oh my tmux paths, customization, and session-preserving reload.
 - `assets/zshrc.server`: reusable public server `.zshrc` template with proxy, CUDA, uv, conda/mamba, NVM, PATH, and virtualenv defaults.
 - `assets/{AGENTS,README}.machine.template.md`: public machine handoff templates rendered by the installer.
 - `assets/sbc-{start,stop,status}`: executable user-level sing-box helpers for non-systemd hosts.
 
 ## Completion Criteria
 
-The machine is ready when the user can run `rg`, `mamba --version`, `sbc version`, use the local proxy, start the configured zsh baseline without errors, run Codex/Claude, use Node 24 through nvm, use uv Python 3.12, manage environments with `conda` and `mamba`, and read `/root/AGENTS.md` plus `/root/README.md` for handoff details.
+The machine is ready when the user can run `rg`, `mamba --version`, `sbc version`, use the local proxy, start the configured zsh and Oh my tmux baselines without errors, run Codex/Claude, use Node 24 through nvm, use uv Python 3.12, manage environments with `conda` and `mamba`, and read `/root/AGENTS.md` plus `/root/README.md` for handoff details.

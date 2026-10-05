@@ -35,10 +35,11 @@ The entry script performs these phases in order:
 6. Installs nvm and Node, then sets the requested Node version as default.
 7. Installs Claude Code and the Hugging Face CLI; checks other developer CLIs.
 8. Installs Oh My Zsh, Powerlevel10k, plugins, and the public server `.zshrc`.
-9. Installs personal and external agent skills from the repository manifest.
-10. Creates public machine-level `AGENTS.md` and `README.md` from bundled templates when they are absent.
-11. When explicitly enabled, backs up and appends the Alibaba Cloud DSW OSS persistence prompt to `~/.codex/AGENTS.md`.
-12. Runs `check-dev-machine.sh` and prints all remaining manual work together.
+9. Installs Oh my tmux from upstream with an XDG configuration link and a create-if-absent local customization file; existing sessions are kept running.
+10. Installs personal and external agent skills from the repository manifest.
+11. Creates public machine-level `AGENTS.md` and `README.md` from bundled templates when they are absent.
+12. When explicitly enabled, backs up and appends the Alibaba Cloud DSW OSS persistence prompt to `~/.codex/AGENTS.md`.
+13. Runs `check-dev-machine.sh` and prints all remaining manual work together.
 
 Each phase is safe to rerun: existing tools and clones are reused, and `.zshrc` is backed up only when the deployed template differs.
 
@@ -61,4 +62,5 @@ Required-phase failures stop immediately and identify the phase and line. Option
 Use the focused references only after a failure:
 
 - `zsh-baseline.md` for shell customization and startup diagnosis.
+- `tmux-baseline.md` for configuration paths, conflicts, customization, and safe reload.
 - `sbc-service-scripts.md` for sing-box helper behavior and configuration boundaries.

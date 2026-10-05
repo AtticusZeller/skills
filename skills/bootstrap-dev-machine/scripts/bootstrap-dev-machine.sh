@@ -545,6 +545,12 @@ deploy_sbc_helpers
 install_node
 install_developer_clis
 install_zsh_baseline
+phase "tmux baseline"
+tmux_args=(--target-home "${HOME}")
+if [[ "${dry_run}" == true ]]; then
+  tmux_args+=(--dry-run)
+fi
+bash "${script_dir}/install-tmux-baseline.sh" "${tmux_args[@]}"
 install_agent_skills
 deploy_machine_handoff
 deploy_dsw_persistent_prompt
