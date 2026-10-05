@@ -4,8 +4,6 @@ This file records the public operational baseline installed by `bootstrap-dev-ma
 
 ## Environment Shape
 
-- Host style: Linux GPU/DSW container. PID 1 may be `tini`, not systemd.
-- Do not rely on `systemctl` or `sbc service enable`; use foreground commands or the installed `sbc-*` helpers.
 - User-facing shell configuration lives in `~/.zshrc` and `~/.p10k.zsh`.
 
 ## Network and Proxy
@@ -51,4 +49,3 @@ hf --version
 
 - Never write tokens, private subscriptions, SSH keys, PATs, node credentials, API keys, or machine-private config into public docs or scripts.
 - Prefer official installers and release artifacts.
-- On DSW/tini hosts, solve service persistence with user-level scripts instead of systemd.
