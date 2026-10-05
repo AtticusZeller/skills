@@ -28,6 +28,12 @@ This file records the public operational baseline installed by `bootstrap-dev-ma
 - Agent CLIs and shared skills are installed through the public bootstrap workflow.
 - Personal skills repository: `AtticusZeller/skills`.
 
+## Python Environment
+
+- Prefer uv for Python execution, environments, and dependency management unless the project explicitly requires another workflow (for example, Conda/Mamba).
+- Run Python scripts, tests, and tools from the project root with `uv run`, for example `uv run python script.py`, `uv run pytest`, and `uv run ruff check .`.
+- For uv-managed projects, use `uv add` to change dependencies and `uv sync` to synchronize the environment. Avoid bare `python`/`pip`, system-wide dependency installs, and manual virtualenv activation as the default workflow.
+
 ## Validation
 
 After environment changes, verify the relevant commands:
