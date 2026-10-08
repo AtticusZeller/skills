@@ -116,6 +116,28 @@ if command -v zsh >/dev/null 2>&1 && [[ -f "$HOME/.zshrc" ]]; then
 fi
 
 echo
+echo "== Terminal colours =="
+if [[ -n "${NO_COLOR:-}" ]]; then
+  printf 'WARN colour  NO_COLOR is nonempty; interactive apps may disable colours\n'
+  warn=$((warn + 1))
+fi
+if [[ -z "${TERM:-}" || "${TERM:-}" == dumb ]]; then
+  printf 'WARN colour  TERM is unset or dumb; launch interactive tmux from a real terminal\n'
+  warn=$((warn + 1))
+fi
+if command -v tmux >/dev/null 2>&1 && tmux show-environment -g >/dev/null 2>&1; then
+  tmux_no_color="$(tmux show-environment -g NO_COLOR 2>/dev/null || true)"
+  if [[ "$tmux_no_color" == NO_COLOR=?* ]]; then
+    printf 'WARN colour  tmux global environment has NO_COLOR; new panes inherit it\n'
+    warn=$((warn + 1))
+  fi
+  tmux_colorterm="$(tmux show-environment -g COLORTERM 2>/dev/null || true)"
+  if [[ "$tmux_colorterm" != COLORTERM=truecolor && "$tmux_colorterm" != COLORTERM=24bit ]]; then
+    printf 'INFO colour  tmux COLORTERM does not advertise truecolour; check client capabilities\n'
+  fi
+fi
+
+echo
 echo "== Proxy =="
 git_http="$(git config --global --get http.proxy || true)"
 git_https="$(git config --global --get https.proxy || true)"

@@ -61,3 +61,16 @@ XDG_CONFIG_HOME="${tmp_dir}/xdg-config" bash "${installer}" --target-home "${xdg
 cmp "${tmp_dir}/expected.defaults" "${tmp_dir}/xdg-config/tmux/tmux.conf.local"
 [[ ! -e "${xdg_home}/.config" ]]
 echo '[PASS] XDG_CONFIG_HOME is respected'
+
+if command -v tmux >/dev/null 2>&1; then
+  # Isolate the test from every user server and preserve intentional NO_COLOR.
+  socket="${tmp_dir}/test.sock"
+  trap 'tmux -S "$socket" kill-server 2>/dev/null || true; rm -rf "$tmp_dir"' EXIT
+  NO_COLOR=1 COLORTERM=truecolor tmux -S "$socket" -f "$defaults" new-session -d -s colours
+  [[ "$(tmux -S "$socket" show-options -gv mouse)" == on ]]
+  tracked_environment="$(tmux -S "$socket" show-options -gv update-environment)"
+  [[ " ${tracked_environment//$'\n'/ } " == *' COLORTERM '* ]]
+  [[ "$(tmux -S "$socket" show-environment -g NO_COLOR)" == NO_COLOR=1 ]]
+  [[ "$(tmux -S "$socket" show-environment -t colours COLORTERM)" == COLORTERM=truecolor ]]
+  echo '[PASS] tmux loads defaults, tracks COLORTERM, and preserves intentional NO_COLOR'
+fi

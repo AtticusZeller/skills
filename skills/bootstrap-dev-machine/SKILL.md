@@ -27,6 +27,7 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 - Keep `/root/AGENTS.md` for agents and `/root/README.md` for users; do not mix operational rules with user-facing walkthroughs.
 - Let `scripts/install-machine-handoff.sh` create the public machine handoff from bundled templates. Never recreate or summarize those templates manually; preserve existing handoff files unchanged.
 - Keep executable setup logic in `scripts/` or `assets/`; Markdown should explain inputs, boundaries, and recovery rather than duplicate command sequences.
+- Start interactive tmux servers from a real terminal. For missing application colours, inspect inherited `NO_COLOR`, `TERM`, and `COLORTERM` using `references/tmux-baseline.md`; preserve intentional colour preferences.
 - Keep the DSW persistent-storage prompt opt-in; its installer must back up an existing Codex `AGENTS.md` and append the asset exactly once.
 
 ## Resources
