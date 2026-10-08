@@ -24,8 +24,10 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 - Keep sing-box in `mixed` mode unless the user explicitly asks for TUN and confirms the host supports it.
 - Keep Git proxy, shell proxy variables, and install commands aligned to the user's active proxy endpoint.
 - Prefer official installers or official release artifacts. If a mirror fails with 403 or stale packages, override it explicitly rather than debugging the wrong layer.
-- Keep `/root/AGENTS.md` for agents and `/root/README.md` for users; do not mix operational rules with user-facing walkthroughs.
+- Keep machine `AGENTS.md` focused on execution defaults, configuration paths, and host-specific operational notes. Keep installation walkthroughs and validation commands in `README.md` or scripts; do not add generic collaboration rules or duplicate unrelated Skill instructions.
+- The machine template includes `Remote Machines (SSH)` for workstations that manage training, inference, or robot servers. Add confirmed host aliases only to local machine notes; keep machine-private connection details out of the public template.
 - Let `scripts/install-machine-handoff.sh` create the public machine handoff from bundled templates. Never recreate or summarize those templates manually; preserve existing handoff files unchanged.
+- The same installer creates `~/.codex/AGENTS.md` only when absent and adds an import to `~/.claude/CLAUDE.md`, preserving existing Claude rules. Both tools share the Codex global file; do not hardcode a workstation username. Restart Claude Code after setup and inspect `/memory` to confirm loading.
 - Keep executable setup logic in `scripts/` or `assets/`; Markdown should explain inputs, boundaries, and recovery rather than duplicate command sequences.
 - Start interactive tmux servers from a real terminal. For missing application colours, inspect inherited `NO_COLOR`, `TERM`, and `COLORTERM` using `references/tmux-baseline.md`; preserve intentional colour preferences.
 - Keep the DSW persistent-storage prompt opt-in; its installer must back up an existing Codex `AGENTS.md` and append the asset exactly once.
@@ -35,7 +37,7 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 - `scripts/bootstrap-dev-machine.sh`: idempotent one-shot installer and primary entry point.
 - `scripts/check-dev-machine.sh`: read-only validation script used by the installer.
 - `scripts/install-tmux-baseline.sh`: idempotent Oh my tmux installer; run it directly for a tmux-only repair. Keeps local customizations and never stops sessions.
-- `scripts/install-machine-handoff.sh`: deterministic create-if-absent installer for machine-level `AGENTS.md` and `README.md`.
+- `scripts/install-machine-handoff.sh`: deterministic installer for machine handoff and shared Codex/Claude global instructions; supports `--target-home` and `--dry-run` for focused configuration.
 - `scripts/install-dsw-persistent-prompt.sh`: optional, idempotent installer for the Alibaba Cloud DSW rule in `~/.codex/AGENTS.md`.
 - `references/bootstrap-phases.md`: installer inputs, automated phases, manual boundaries, and failure handling.
 - `references/sbc-service-scripts.md`: behavior and configuration boundaries for the deployed sing-box helpers.

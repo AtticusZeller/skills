@@ -14,7 +14,8 @@ usage() {
   cat <<'EOF'
 Usage: install-machine-handoff.sh [options]
 
-Install public machine-level AGENTS.md and README.md when absent.
+Install machine handoff and shared Codex/Claude global instructions.
+Existing AGENTS.md files are preserved; Claude receives one import.
 
 Options:
   --target-home <dir>     Home directory receiving the files (default: $HOME)
@@ -146,6 +147,31 @@ install_if_absent() {
 
 install_if_absent "$agents_rendered" "${target_home}/AGENTS.md"
 install_if_absent "$readme_rendered" "${target_home}/README.md"
+
+codex_agents="${target_home}/.codex/AGENTS.md"
+claude_rules="${target_home}/.claude/CLAUDE.md"
+# Relative to ~/.claude/CLAUDE.md, so it also works when home contains spaces.
+claude_import='@../.codex/AGENTS.md'
+if [[ "$dry_run" != true ]]; then
+  mkdir -p "${target_home}/.codex" "${target_home}/.claude"
+fi
+install_if_absent "$agents_rendered" "$codex_agents"
+if [[ -f "$claude_rules" ]] && {
+  grep -Fxq "$claude_import" "$claude_rules" ||
+  grep -Fxq "@${codex_agents}" "$claude_rules" ||
+  grep -Fxq '@~/.codex/AGENTS.md' "$claude_rules";
+}; then
+  info "Claude already imports ${codex_agents}"
+elif [[ "$dry_run" == true ]]; then
+  info "would append ${claude_import} to ${claude_rules}"
+else
+  [[ ! -e "$claude_rules" || -f "$claude_rules" ]] || die "Not a regular file: ${claude_rules}"
+  if [[ -s "$claude_rules" ]]; then
+    printf '\n' >>"$claude_rules"
+  fi
+  printf '%s\n' "$claude_import" >>"$claude_rules"
+  info "Claude now imports ${codex_agents}"
+fi
 
 if [[ "$dry_run" == true ]]; then
   info "Dry run completed; no handoff files were changed"

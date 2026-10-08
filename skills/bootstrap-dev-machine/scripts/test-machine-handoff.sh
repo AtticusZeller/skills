@@ -46,7 +46,7 @@ cmp -s "${fresh}/AGENTS.md" "${tmp_dir}/AGENTS.expected.md" ||
   fail "Rendered AGENTS.md does not preserve template fidelity"
 cmp -s "${fresh}/README.md" "${tmp_dir}/README.expected.md" ||
   fail "Rendered README.md does not preserve template fidelity"
-grep -Fq '`http://127.0.0.1:7890`' "${fresh}/AGENTS.md" ||
+grep -Fq '`http://127.0.0.1:7890`' "${fresh}/README.md" ||
   fail "Proxy URL was not rendered"
 grep -Fq 'Python `3.12`' "${fresh}/README.md" ||
   fail "Python version was not rendered"
@@ -56,6 +56,12 @@ if grep -Eq '\{\{[^}]+\}\}' "${fresh}/AGENTS.md" "${fresh}/README.md"; then
   fail "Rendered handoff contains unresolved placeholders"
 fi
 pass "fresh machine handoff is rendered deterministically"
+cmp -s "${fresh}/.codex/AGENTS.md" "${fresh}/AGENTS.md" ||
+  fail "Codex global instructions differ from the template"
+printf '@../.codex/AGENTS.md\n' >"${tmp_dir}/claude.expected"
+cmp -s "${fresh}/.claude/CLAUDE.md" "${tmp_dir}/claude.expected" ||
+  fail "Claude global import was not installed"
+cp "${fresh}/.claude/CLAUDE.md" "${tmp_dir}/claude.before"
 
 cp "${fresh}/AGENTS.md" "${tmp_dir}/agents.before"
 cp "${fresh}/README.md" "${tmp_dir}/readme.before"
@@ -65,12 +71,34 @@ cmp -s "${fresh}/AGENTS.md" "${tmp_dir}/agents.before" ||
 cmp -s "${fresh}/README.md" "${tmp_dir}/readme.before" ||
   fail "Second run changed README.md"
 pass "existing handoff files remain unchanged"
+cmp -s "${fresh}/.claude/CLAUDE.md" "${tmp_dir}/claude.before" ||
+  fail "Second run duplicated the Claude import"
+
+existing="${tmp_dir}/existing home"
+mkdir -p "${existing}/.codex" "${existing}/.claude"
+printf 'Custom Codex rules\n' >"${existing}/.codex/AGENTS.md"
+printf 'Custom Claude rules' >"${existing}/.claude/CLAUDE.md"
+run_installer "$existing"
+printf 'Custom Codex rules\n' >"${tmp_dir}/codex.custom"
+printf 'Custom Claude rules\n@../.codex/AGENTS.md\n' >"${tmp_dir}/claude.custom"
+cmp -s "${existing}/.codex/AGENTS.md" "${tmp_dir}/codex.custom" ||
+  fail "Existing Codex rules were overwritten"
+cmp -s "${existing}/.claude/CLAUDE.md" "${tmp_dir}/claude.custom" ||
+  fail "Existing Claude rules were not preserved"
+printf '@%s/.codex/AGENTS.md\n' "$existing" >"${existing}/.claude/CLAUDE.md"
+cp "${existing}/.claude/CLAUDE.md" "${tmp_dir}/claude.absolute"
+run_installer "$existing"
+cmp -s "${existing}/.claude/CLAUDE.md" "${tmp_dir}/claude.absolute" ||
+  fail "Existing absolute import was duplicated"
+pass "shared global instructions preserve custom rules and existing imports"
 
 dry_run="${tmp_dir}/dry-run"
 mkdir -p "$dry_run"
 run_installer "$dry_run" --dry-run
 [[ ! -e "${dry_run}/AGENTS.md" && ! -e "${dry_run}/README.md" ]] ||
   fail "Dry run wrote handoff files"
+[[ ! -e "${dry_run}/.codex" && ! -e "${dry_run}/.claude" ]] ||
+  fail "Dry run wrote global configuration"
 pass "handoff dry run does not write files"
 
 printf '[PASS] machine handoff regression suite completed\n'
