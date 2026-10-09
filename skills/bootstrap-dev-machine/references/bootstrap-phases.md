@@ -37,7 +37,7 @@ The entry script performs these phases in order:
 8. Installs Oh My Zsh, Powerlevel10k, plugins, and the public server `.zshrc`.
 9. Installs Oh my tmux from upstream with an XDG configuration link and a create-if-absent local customization file with mouse and right-click menus enabled; existing sessions are kept running.
 10. Installs personal and external agent skills from the repository manifest.
-11. Creates public machine-level `AGENTS.md` and `README.md` from bundled templates when they are absent.
+11. Creates `~/.codex/AGENTS.md` and `~/README.md` from bundled templates when absent, then adds one import of the shared global instructions to `~/.claude/CLAUDE.md`, preserving existing rules.
 12. When explicitly enabled, backs up and appends the Alibaba Cloud DSW OSS persistence prompt to `~/.codex/AGENTS.md`.
 13. Runs `check-dev-machine.sh` and prints all remaining manual work together.
 

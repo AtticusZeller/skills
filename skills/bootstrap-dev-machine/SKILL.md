@@ -1,6 +1,6 @@
 ---
 name: bootstrap-dev-machine
-description: Guide a Codex agent through configuring a fresh GPU/DSW-style Linux development machine with SSH-forwarded proxy, ripgrep, Codex, uv/Python 3.12, Miniforge/conda/mamba, sing-box mixed proxy, Claude Code, nvm/Node 24, Context7, global development skills, zsh/tmux, Git/GitHub/Hugging Face tooling, and root-level AGENTS.md/README.md handoff docs. Use when the user asks to bootstrap, reproduce, migrate, audit, or repair this development environment on a new machine.
+description: Guide a Codex agent through configuring a fresh GPU/DSW-style Linux development machine with SSH-forwarded proxy, ripgrep, Codex, uv/Python 3.12, Miniforge/conda/mamba, sing-box mixed proxy, Claude Code, nvm/Node 24, Context7, global development skills, zsh/tmux, Git/GitHub/Hugging Face tooling, shared Codex/Claude global instructions, and a machine README.md. Use when the user asks to bootstrap, reproduce, migrate, audit, or repair this development environment on a new machine.
 ---
 
 # Bootstrap Dev Machine
@@ -24,10 +24,10 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 - Keep sing-box in `mixed` mode unless the user explicitly asks for TUN and confirms the host supports it.
 - Keep Git proxy, shell proxy variables, and install commands aligned to the user's active proxy endpoint.
 - Prefer official installers or official release artifacts. If a mirror fails with 403 or stale packages, override it explicitly rather than debugging the wrong layer.
-- Keep machine `AGENTS.md` focused on execution defaults, configuration paths, and host-specific operational notes. Keep installation walkthroughs and validation commands in `README.md` or scripts; do not add generic collaboration rules or duplicate unrelated Skill instructions.
+- Keep `~/.codex/AGENTS.md` focused on execution defaults, configuration paths, and host-specific operational notes. Keep installation walkthroughs and validation commands in `~/README.md` or scripts; do not add generic collaboration rules or duplicate unrelated Skill instructions.
 - The machine template includes `Remote Machines (SSH)` for workstations that manage training, inference, or robot servers. Add confirmed host aliases only to local machine notes; keep machine-private connection details out of the public template.
 - Let `scripts/install-machine-handoff.sh` create the public machine handoff from bundled templates. Never recreate or summarize those templates manually; preserve existing handoff files unchanged.
-- The same installer creates `~/.codex/AGENTS.md` only when absent and adds an import to `~/.claude/CLAUDE.md`, preserving existing Claude rules. Both tools share the Codex global file; do not hardcode a workstation username. Restart Claude Code after setup and inspect `/memory` to confirm loading.
+- The installer creates `~/.codex/AGENTS.md` only when absent and adds one import to `~/.claude/CLAUDE.md`, preserving existing Claude rules. Both tools share the Codex global file. Do not hardcode a workstation username. Restart Claude Code after setup and inspect `/memory` to confirm loading.
 - Keep executable setup logic in `scripts/` or `assets/`; Markdown should explain inputs, boundaries, and recovery rather than duplicate command sequences.
 - Start interactive tmux servers from a real terminal. For missing application colours, inspect inherited `NO_COLOR`, `TERM`, and `COLORTERM` using `references/tmux-baseline.md`; preserve intentional colour preferences.
 - Keep the DSW persistent-storage prompt opt-in; its installer must back up an existing Codex `AGENTS.md` and append the asset exactly once.
@@ -50,4 +50,4 @@ Use this skill to rebuild the same development-machine baseline on a fresh Linux
 
 ## Completion Criteria
 
-The machine is ready when the user can run `rg`, `mamba --version`, `sbc version`, use the local proxy, start the configured zsh and Oh my tmux baselines without errors, run Codex/Claude, use Node 24 through nvm, use uv Python 3.12, manage environments with `conda` and `mamba`, and read `/root/AGENTS.md` plus `/root/README.md` for handoff details.
+The machine is ready when the user can run `rg`, `mamba --version`, `sbc version`, use the local proxy, start the configured zsh and Oh my tmux baselines without errors, run Codex/Claude, use Node 24 through nvm, use uv Python 3.12, manage environments with `conda` and `mamba`, and read `~/.codex/AGENTS.md` plus `~/README.md` for handoff details. Claude Code must import the shared global instructions from `~/.claude/CLAUDE.md`.

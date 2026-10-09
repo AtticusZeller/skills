@@ -15,7 +15,8 @@ usage() {
 Usage: install-machine-handoff.sh [options]
 
 Install machine handoff and shared Codex/Claude global instructions.
-Existing AGENTS.md files are preserved; Claude receives one import.
+Create ~/.codex/AGENTS.md and ~/README.md only when absent.
+Preserve existing global instructions and Claude rules; add one Claude import.
 
 Options:
   --target-home <dir>     Home directory receiving the files (default: $HOME)
@@ -145,7 +146,6 @@ install_if_absent() {
   info "installed ${destination}"
 }
 
-install_if_absent "$agents_rendered" "${target_home}/AGENTS.md"
 install_if_absent "$readme_rendered" "${target_home}/README.md"
 
 codex_agents="${target_home}/.codex/AGENTS.md"

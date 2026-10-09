@@ -46,6 +46,10 @@ npm -v
 - Codex skills: `~/.codex/skills`
 - Claude rules and skills: `~/.claude/`
 
+## Shared Agent Instructions
+
+Codex loads global instructions from `~/.codex/AGENTS.md`. Claude Code shares them through `@../.codex/AGENTS.md` in `~/.claude/CLAUDE.md`. The installer preserves existing rules and adds the import only when missing. Restart Claude Code after setup and inspect `/memory` to confirm loading.
+
 ## Personal Skills
 
 ```bash
