@@ -17,7 +17,8 @@ fi
 
 for skill_dir in "$repo_root"/skills/*; do
   [[ -d "$skill_dir" ]] || continue
-  env -u UV_DEFAULT_INDEX -u PIP_INDEX_URL \
+  # PYTHONUTF8 keeps Windows from decoding SKILL.md with the ANSI code page.
+  env -u UV_DEFAULT_INDEX -u PIP_INDEX_URL PYTHONUTF8=1 \
     uv run --with pyyaml --default-index https://pypi.org/simple \
     python "$validator" "$skill_dir"
 

@@ -30,11 +30,20 @@ while getopts ":o:t:h" opt; do
   esac
 done
 
+# Under Git Bash/MSYS/Cygwin, `/` is the shell's install directory with every
+# drive mounted below it: `du /` would walk whole drives, and /var, /usr and
+# /timeshift describe the shell, not the system. Only home triage applies.
+WINDOWS_SHELL=false
+case "$(uname -s)" in
+  MINGW* | MSYS* | CYGWIN*) WINDOWS_SHELL=true ;;
+esac
+
 emit() { printf '%s\n' "$*"; }
+linux_only() { emit "_Linux-only section; skipped under a Windows shell. Check drives with Settings > Storage or \`df -h\`._"; }
 hdr()  { emit ""; emit "$*"; emit ""; }
 sub()  { emit "### $*"; emit ""; }
 
-have_sudo() { sudo -n true 2>/dev/null; }
+have_sudo() { ! $WINDOWS_SHELL && sudo -n true 2>/dev/null; }
 
 # Sudo helper. Note: never chain this with `||` — `du` exits non-zero on any
 # unreadable subdirectory even under sudo, which would run the fallback too and
@@ -72,9 +81,13 @@ hdr "# Disk Triage Report"
 emit "Generated: $(date '+%Y-%m-%d %H:%M:%S')"
 emit "Home root: \`${HOME_ROOT}\`"
 emit "Age threshold: ${AGE_DAYS} days · Size threshold: ${BIG_MB} MB"
-$SUDO_OK || emit ""
-$SUDO_OK || emit "> **WARNING: sudo unavailable.** \`/var\`, \`/timeshift\` and \`/root\` are NOT covered."
-$SUDO_OK || emit "> This report is PARTIAL. Re-run with sudo for the full picture."
+if $WINDOWS_SHELL; then
+  emit ""
+  emit "> **Windows shell detected.** System-wide sections 2, 3 and 5 are skipped; this report covers the home root only."
+fi
+$SUDO_OK || $WINDOWS_SHELL || emit ""
+$SUDO_OK || $WINDOWS_SHELL || emit "> **WARNING: sudo unavailable.** \`/var\`, \`/timeshift\` and \`/root\` are NOT covered."
+$SUDO_OK || $WINDOWS_SHELL || emit "> This report is PARTIAL. Re-run with sudo for the full picture."
 
 # ── 1. Baseline ──────────────────────────────────────────────────────────────
 hdr "## 1. Baseline"
@@ -84,6 +97,9 @@ emit '```'
 
 # ── 2. Filesystem sweep ──────────────────────────────────────────────────────
 hdr "## 2. Filesystem sweep"
+if $WINDOWS_SHELL; then
+  linux_only
+else
 emit "Top level of \`/\`. The largest consumers are frequently outside \`\$HOME\`."
 emit ""
 emit "| Size | Path |"
@@ -93,10 +109,12 @@ if ! $SUDO_OK; then
   emit ""
   emit "_Unprivileged — \`/var\`, \`/timeshift\`, \`/root\` may be under-reported._"
 fi
+fi
 
 # ── 3. Subsystem drill-down ──────────────────────────────────────────────────
 hdr "## 3. Subsystem drill-down"
-for sysdir in /var /var/lib /var/log /opt /usr /snap; do
+$WINDOWS_SHELL && linux_only
+$WINDOWS_SHELL || for sysdir in /var /var/lib /var/log /opt /usr /snap; do
   s=$(cut_size "$sysdir") || continue
   [ -z "$s" ] && continue
   sub "\`${sysdir}\` — ${s}"
@@ -138,7 +156,9 @@ fi
 
 # ── 5. Timeshift ─────────────────────────────────────────────────────────────
 hdr "## 5. Timeshift snapshots"
-if [ -d /timeshift/snapshots ]; then
+if $WINDOWS_SHELL; then
+  linux_only
+elif [ -d /timeshift/snapshots ]; then
   emit "Total: $(cut_size /timeshift)"
   emit ""
   emit "| Size | Snapshot | Created |"

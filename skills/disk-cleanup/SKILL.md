@@ -64,7 +64,8 @@ derived from.
 ## Workflow
 
 Run `scripts/disk-triage.sh` first. It is read-only and produces the raw measurements; the phases
-below are how to turn those into a plan.
+below are how to turn those into a plan. Under a Windows shell (Git Bash, MSYS, Cygwin) it skips the
+Linux-only system sections and triages the home root only.
 
 ### 1. Measure the whole filesystem
 
