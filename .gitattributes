@@ -1,0 +1,2 @@
+# Shell scripts, templates, and deployed assets must keep LF endings on Windows checkouts.
+* text=auto eol=lf
