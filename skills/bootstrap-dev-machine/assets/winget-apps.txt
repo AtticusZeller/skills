@@ -1,0 +1,5 @@
+# GUI applications installed with winget by bootstrap-dev-machine.ps1.
+# One exact winget package ID per line; blank lines and comments are ignored.
+# Command-line tools belong in Scoop, not in this list.
+Microsoft.WindowsTerminal
+Microsoft.VisualStudioCode

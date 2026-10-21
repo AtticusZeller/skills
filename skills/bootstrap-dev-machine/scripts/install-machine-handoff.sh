@@ -8,6 +8,7 @@ target_home="${HOME}"
 proxy_url="${PROXY_URL:-http://127.0.0.1:7890}"
 python_version="${BOOTSTRAP_PYTHON_VERSION:-3.12}"
 node_version="${BOOTSTRAP_NODE_VERSION:-24}"
+platform=linux
 dry_run=false
 
 usage() {
@@ -22,7 +23,8 @@ Options:
   --target-home <dir>     Home directory receiving the files (default: $HOME)
   --proxy-url <url>       Public local proxy endpoint
   --python-version <ver>  uv-managed Python version
-  --node-version <ver>    nvm-managed Node major version
+  --node-version <ver>    Default Node major version
+  --platform <name>       Template set: linux or windows (default: linux)
   --dry-run               Report changes without writing files
   -h, --help              Show this help
 EOF
@@ -69,6 +71,11 @@ while (($#)); do
       node_version="$2"
       shift 2
       ;;
+    --platform)
+      require_value "$1" "$#"
+      platform="$2"
+      shift 2
+      ;;
     --dry-run)
       dry_run=true
       shift
@@ -99,6 +106,12 @@ validate_input() {
     die "${label} must not contain template delimiters"
 }
 
+case "$platform" in
+  linux) template_suffix="" ;;
+  windows) template_suffix=".windows" ;;
+  *) die "Unsupported platform: ${platform}" ;;
+esac
+
 validate_input "Proxy URL" "$proxy_url"
 validate_input "Python version" "$python_version"
 validate_input "Node version" "$node_version"
@@ -114,6 +127,8 @@ render_template() {
 
   [[ -f "$source" ]] || die "Missing handoff template: ${source}"
   while IFS= read -r line || [[ -n "$line" ]]; do
+    # Tolerate CRLF checkouts so rendered files stay LF on every platform.
+    line="${line%$'\r'}"
     line="${line//\{\{PROXY_URL\}\}/$proxy_url}"
     line="${line//\{\{PYTHON_VERSION\}\}/$python_version}"
     line="${line//\{\{NODE_VERSION\}\}/$node_version}"
@@ -127,8 +142,8 @@ render_template() {
 
 agents_rendered="${tmp_dir}/AGENTS.md"
 readme_rendered="${tmp_dir}/README.md"
-render_template "${asset_dir}/AGENTS.machine.template.md" "$agents_rendered"
-render_template "${asset_dir}/README.machine.template.md" "$readme_rendered"
+render_template "${asset_dir}/AGENTS.machine${template_suffix}.template.md" "$agents_rendered"
+render_template "${asset_dir}/README.machine${template_suffix}.template.md" "$readme_rendered"
 
 install_if_absent() {
   local source="$1"

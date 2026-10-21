@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# tmux is not part of the Windows baseline, and Git Bash symlinks are copies.
+case "$(uname -s)" in
+  MINGW* | MSYS* | CYGWIN*)
+    printf '[SKIP] tmux baseline regression suite requires a Linux host\n'
+    exit 0
+    ;;
+esac
+
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 installer="${script_dir}/install-tmux-baseline.sh"
 defaults="${script_dir}/../assets/tmux-defaults.conf"

@@ -103,6 +103,30 @@ cmp -s "${existing}/.claude/CLAUDE.md" "${tmp_dir}/claude.tilde" ||
   fail "Existing home-relative import was duplicated"
 pass "shared global instructions preserve custom rules and existing imports"
 
+windows="${tmp_dir}/windows"
+mkdir -p "$windows"
+run_installer "$windows" --platform windows
+for name in AGENTS README; do
+  sed \
+    -e 's|{{PROXY_URL}}|http://127.0.0.1:7890|g' \
+    -e 's|{{PYTHON_VERSION}}|3.12|g' \
+    -e 's|{{NODE_VERSION}}|24|g' \
+    "${asset_dir}/${name}.machine.windows.template.md" >"${tmp_dir}/${name}.windows.expected.md"
+done
+cmp -s "${windows}/.codex/AGENTS.md" "${tmp_dir}/AGENTS.windows.expected.md" ||
+  fail "Rendered Windows AGENTS.md does not preserve template fidelity"
+cmp -s "${windows}/README.md" "${tmp_dir}/README.windows.expected.md" ||
+  fail "Rendered Windows README.md does not preserve template fidelity"
+cmp -s "${windows}/.claude/CLAUDE.md" "${tmp_dir}/claude.expected" ||
+  fail "Windows handoff did not install the Claude global import"
+if grep -q $'\r' "${windows}/.codex/AGENTS.md" "${windows}/README.md"; then
+  fail "Rendered Windows handoff contains CRLF line endings"
+fi
+if run_installer "${tmp_dir}/fresh" --platform macos >/dev/null 2>&1; then
+  fail "Installer accepted an unsupported platform"
+fi
+pass "Windows handoff is rendered deterministically"
+
 dry_run="${tmp_dir}/dry-run"
 mkdir -p "$dry_run"
 run_installer "$dry_run" --dry-run
