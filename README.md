@@ -116,6 +116,8 @@ for a repository without custom `AGENTS.md` or `CLAUDE.md` files.
 
 External global skills are referenced through `manifests/global-skills.json`.
 
+The [Stop That Shit](https://github.com/lennney/stop-that-shit) upstream provides two separately installed skills: `stop-that-shit` (scope creep and overengineering control) and `stss` (reduce defensive filler while preserving meaningful qualifications). Both are installed by the external-skills script. The `stop-that-shit` skill is advisory on its own; machine-enforced Guard hooks require the upstream plugin/Guard setup and are **not** installed by this script.
+
 Dry-run the install commands:
 
 ```bash

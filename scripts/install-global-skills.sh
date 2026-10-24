@@ -50,6 +50,8 @@ install_skill upstash/context7 context7-cli
 install_skill forrestchang/andrej-karpathy-skills karpathy-guidelines
 install_skill KKKKhazix/khazix-skills neat-freak
 install_skill wandb/skills wandb-primary
+install_skill lennney/stop-that-shit stop-that-shit
+install_skill lennney/stop-that-shit stss
 
 if [[ "$run_context7" == true ]]; then
   run_cmd npx ctx7 setup --cli --claude --codex -y

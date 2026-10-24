@@ -33,6 +33,10 @@
     {
       "repo": "wandb/skills",
       "skills": ["wandb-primary"]
+    },
+    {
+      "repo": "lennney/stop-that-shit",
+      "skills": ["stop-that-shit", "stss"]
     }
   ]
 }
