@@ -1,0 +1,113 @@
+#!/usr/bin/env -S uv run --script --quiet
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["pyyaml>=6"]
+# ///
+"""Read-only snapshot of a machine's dynamic state in one SSH round trip.
+
+Usage: probe <alias> [gpu|disk|jobs|git|load]... [--dry-run]
+
+Sections default to all. Nothing is written remotely: git uses --no-optional-locks so `status`
+does not refresh the index of a shared checkout.
+"""
+
+from __future__ import annotations
+
+import argparse
+import shlex
+import sys
+from pathlib import Path
+
+sys.dont_write_bytecode = True  # keep the installed skill directory free of __pycache__
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _registry as reg  # noqa: E402
+
+SECTIONS = ("gpu", "disk", "jobs", "git", "load")
+FREE_MEM_MIB = 1024  # a GPU below this memory use and 5% utilisation counts as free
+GPU_QUERY = (
+    "nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu "
+    "--format=csv,noheader,nounits"
+)
+
+
+def watched_paths(machine: dict) -> list[str]:
+    paths = [str(p) for p in (machine.get("dirs") or {}).values()]
+    paths += [reg.repo_entry(machine, r)["path"] for r in machine.get("repos") or {}]
+    if machine.get("work_root"):
+        paths.append(str(machine["work_root"]))
+    return list(dict.fromkeys(paths))
+
+
+def section_command(name: str, machine: dict) -> str:
+    if name == "gpu":
+        return f"{GPU_QUERY} 2>&1 || echo 'no nvidia-smi'"
+    if name == "disk":
+        paths = " ".join(reg.qpath(p) for p in watched_paths(machine)) or "~"
+        return f"df -hP {paths} 2>/dev/null | awk '!seen[$0]++'"
+    if name == "jobs":
+        mine = shlex.quote(reg.owner(machine))
+        tmux = (
+            "tmux list-sessions -F '#{session_name}\t#{@owner}' 2>/dev/null"
+            f" | awk -F'\\t' -v me={mine} '{{print ($2==me ? \"mine \" : \"other\"), $1}}'"
+            " || echo 'no tmux server'"
+        )
+        logs = (machine.get("dirs") or {}).get("logs")
+        nohup = ""
+        if logs:
+            nohup = (
+                f"; for f in {reg.qpath(logs)}/*.pid; do [ -e \"$f\" ] || continue;"
+                ' p=$(cat "$f"); kill -0 "$p" 2>/dev/null && s=running || s=exited;'
+                ' echo "nohup $(basename "$f" .pid) pid=$p $s"; done'
+            )
+        return (tmux if (machine.get("tools") or {}).get("tmux", True) else "true") + nohup
+    if name == "git":
+        lines = []
+        for repo in machine.get("repos") or {}:
+            path = reg.qpath(reg.repo_entry(machine, repo)["path"])
+            lines.append(
+                f"echo '# {repo}'; git --no-optional-locks -C {path} status -sb 2>&1 | head -5;"
+                f" git -C {path} log -1 --format='%h %cd %s' --date=short 2>&1"
+            )
+        return "; ".join(lines) or "echo 'no repos registered'"
+    return "uptime; free -g | head -2"
+
+
+def summarize_gpu(raw: str) -> str:
+    free = []
+    for line in raw.splitlines():
+        cells = [c.strip() for c in line.split(",")]
+        if len(cells) == 5 and cells[2].isdigit() and cells[4].isdigit():
+            if int(cells[2]) < FREE_MEM_MIB and int(cells[4]) < 5:
+                free.append(cells[0])
+    return f"free GPUs: {','.join(free) if free else 'none'}"
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(prog="probe", description=__doc__.split("\n\n")[0])
+    parser.add_argument("alias")
+    parser.add_argument("sections", nargs="*", help=f"any of {', '.join(SECTIONS)}")
+    parser.add_argument("--dry-run", action="store_true")
+    args = parser.parse_args()
+    machine = reg.load_machine(args.alias)
+    sections = args.sections or list(SECTIONS)
+    unknown = sorted(set(sections) - set(SECTIONS))
+    if unknown:
+        parser.error(f"unknown sections {unknown}; choose from {', '.join(SECTIONS)}")
+    script = "; ".join(f"echo '@@rm:{s}'; {section_command(s, machine)}" for s in sections)
+    proc = reg.run(reg.ssh_argv(args.alias, reg.remote(machine, script)), args.dry_run, capture=True)
+    if args.dry_run:
+        return 0
+    if proc.returncode == 255:
+        sys.stderr.write(proc.stderr)
+        return 255
+    for block in proc.stdout.split("@@rm:")[1:]:
+        name, _, body = block.partition("\n")
+        print(f"== {name}")
+        print(body.rstrip())
+        if name == "gpu":
+            print(summarize_gpu(body))
+    return proc.returncode
+
+
+if __name__ == "__main__":
+    sys.exit(main())

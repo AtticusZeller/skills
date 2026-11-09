@@ -1,0 +1,161 @@
+#!/usr/bin/env -S uv run --script --quiet
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["pyyaml>=6"]
+# ///
+"""Manage long-running background jobs on a registered machine.
+
+Usage:
+  rjob start <alias> <name> [--repo R [--task T]] [--env E]... -- <cmd...>
+  rjob logs  <alias> <name> [-n N] [--follow]
+  rjob ls    <alias> [--all]
+  rjob stop  <alias> <name> [--rm-log]
+
+The job name is the tmux session name and the log is `<dirs.logs>/<name>.log`. Sessions carry a
+tmux user option `@owner` (registry `owner`, default local user), so `ls` and `stop` only see your
+own sessions on shared root accounts. Without tmux (`tools.tmux: false`) jobs run under
+`nohup setsid` with a `<name>.pid` file next to the log.
+"""
+
+from __future__ import annotations
+
+import argparse
+import shlex
+import sys
+from pathlib import Path
+
+sys.dont_write_bytecode = True  # keep the installed skill directory free of __pycache__
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _registry as reg  # noqa: E402
+
+
+def log_dir(machine: dict) -> str:
+    logs = (machine.get("dirs") or {}).get("logs")
+    if not logs:
+        raise reg.RegistryError(f"{machine['alias']}: rjob needs dirs.logs in the registry")
+    return str(logs)
+
+
+def uses_tmux(machine: dict) -> bool:
+    return bool((machine.get("tools") or {}).get("tmux", False))
+
+
+def job_body(machine: dict, name: str, script: str) -> str:
+    """The job itself: run the composed script, tee everything to the log, record the exit code."""
+    log = f"{reg.qpath(log_dir(machine))}/{name}.log"
+    return (
+        f"set -o pipefail; {reg.history_prefix(machine)}"
+        f"( {script} ) 2>&1 | tee -a {log}; "
+        f'echo "[rjob] {name} exit=$? at $(date -Is)" | tee -a {log}'
+    )
+
+
+def start_script(machine: dict, name: str, script: str) -> str:
+    logs = reg.qpath(log_dir(machine))
+    body = "bash -c " + shlex.quote(job_body(machine, name, script))
+    me = shlex.quote(reg.owner(machine))
+    if uses_tmux(machine):
+        return (
+            f"mkdir -p {logs} && "
+            f"if tmux has-session -t ={name} 2>/dev/null; then echo 'session {name} exists' >&2; exit 3; fi; "
+            f"tmux new-session -d -s {name} {shlex.quote(body)} \\; "
+            f"set-window-option remain-on-exit on \\; "
+            f"set-option @owner {me} && "
+            f"echo 'started tmux session {name}; log {log_dir(machine)}/{name}.log'"
+        )
+    pid = f"{logs}/{name}.pid"
+    return (
+        f"mkdir -p {logs} && "
+        f'if [ -e {pid} ] && kill -0 "$(cat {pid})" 2>/dev/null; then echo "job {name} running" >&2; exit 3; fi; '
+        f"nohup setsid {body} >/dev/null 2>&1 </dev/null & echo $! > {pid}; "
+        f"echo \"started nohup job {name} pid=$(cat {pid}); log {log_dir(machine)}/{name}.log\""
+    )
+
+
+def logs_script(machine: dict, name: str, lines: int, follow: bool) -> str:
+    log = f"{reg.qpath(log_dir(machine))}/{name}.log"
+    return f"tail -n {lines} {'-f ' if follow else ''}{log}"
+
+
+def ls_script(machine: dict, show_all: bool) -> str:
+    me = shlex.quote(reg.owner(machine))
+    if uses_tmux(machine):
+        filt = "" if show_all else f" | awk -F'\\t' -v me={me} '$2==me'"
+        return (
+            "tmux list-panes -a -F '#{session_name}\t#{@owner}\tdead=#{pane_dead}\t"
+            "status=#{pane_dead_status}\tcreated=#{t:session_created}' 2>/dev/null"
+            f"{filt} || echo 'no tmux server'"
+        )
+    logs = reg.qpath(log_dir(machine))
+    return (
+        f'for f in {logs}/*.pid; do [ -e "$f" ] || continue; p=$(cat "$f"); '
+        'kill -0 "$p" 2>/dev/null && s=running || s=exited; '
+        'echo "$(basename "$f" .pid)\tpid=$p\t$s"; done'
+    )
+
+
+def stop_script(machine: dict, name: str, rm_log: bool) -> str:
+    logs = reg.qpath(log_dir(machine))
+    me = shlex.quote(reg.owner(machine))
+    cleanup = f" && rm -f {logs}/{name}.log && echo 'removed log'" if rm_log else ""
+    if uses_tmux(machine):
+        return (
+            f"tmux has-session -t ={name} 2>/dev/null || {{ echo 'no session {name}' >&2; exit 4; }}; "
+            f"o=$(tmux show-options -v -t ={name}: @owner 2>/dev/null); "
+            f"if [ \"$o\" != {me} ]; then echo \"session {name} belongs to '$o', not {me}\" >&2; exit 5; fi; "
+            f"tmux kill-session -t ={name} && echo 'killed {name}'{cleanup}"
+        )
+    pid = f"{logs}/{name}.pid"
+    return (
+        f"[ -e {pid} ] || {{ echo 'no job {name}' >&2; exit 4; }}; "
+        f'p=$(cat {pid}); kill -0 "$p" 2>/dev/null && kill -- -"$p"; '
+        f"rm -f {pid} && echo 'stopped {name}'{cleanup}"
+    )
+
+
+def parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(prog="rjob", description=__doc__.split("\n\n")[0])
+    p.add_argument("--dry-run", action="store_true", help="print the ssh command only")
+    sub = p.add_subparsers(dest="action", required=True)
+    start = sub.add_parser("start")
+    start.add_argument("alias")
+    start.add_argument("name")
+    start.add_argument("--repo")
+    start.add_argument("--task")
+    start.add_argument("--env", action="append", default=[])
+    logs = sub.add_parser("logs")
+    logs.add_argument("alias")
+    logs.add_argument("name")
+    logs.add_argument("-n", type=int, default=50)
+    logs.add_argument("--follow", action="store_true")
+    ls = sub.add_parser("ls")
+    ls.add_argument("alias")
+    ls.add_argument("--all", action="store_true", help="include other users' sessions (read-only)")
+    stop = sub.add_parser("stop")
+    stop.add_argument("alias")
+    stop.add_argument("name")
+    stop.add_argument("--rm-log", action="store_true")
+    return p
+
+
+def main() -> int:
+    own, cmd = reg.split_command(sys.argv[1:])
+    args = parser().parse_args(own)
+    machine = reg.load_machine(args.alias)
+    name = reg.check_name(args.name, "job name") if hasattr(args, "name") else ""
+    if args.action == "start":
+        if not cmd:
+            raise reg.RegistryError("rjob start: missing command after --")
+        reg.risk_notice(machine)
+        script = start_script(machine, name, reg.compose(machine, cmd, args.repo, args.task, args.env))
+    elif args.action == "logs":
+        script = logs_script(machine, name, args.n, args.follow)
+    elif args.action == "ls":
+        script = ls_script(machine, args.all)
+    else:
+        script = stop_script(machine, name, args.rm_log)
+    return reg.run(reg.ssh_argv(args.alias, reg.remote(machine, script)), args.dry_run).returncode
+
+
+if __name__ == "__main__":
+    sys.exit(main())

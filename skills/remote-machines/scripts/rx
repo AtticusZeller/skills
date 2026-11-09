@@ -1,0 +1,43 @@
+#!/usr/bin/env -S uv run --script --quiet
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["pyyaml>=6"]
+# ///
+"""Run one foreground command on a registered machine with its workdir and envs applied.
+
+Usage: rx <alias> [--repo R [--task T]] [--env E]... [--dry-run] -- <cmd...>
+
+`--repo R` cds into the registry path of R; adding `--task T` cds into your own work copy
+`<work_root>/T/R` instead. `--env` may repeat and activates in order (e.g. a conda env, then proxy).
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+sys.dont_write_bytecode = True  # keep the installed skill directory free of __pycache__
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _registry as reg  # noqa: E402
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(prog="rx", description=__doc__.split("\n\n")[0])
+    parser.add_argument("alias")
+    parser.add_argument("--repo")
+    parser.add_argument("--task")
+    parser.add_argument("--env", action="append", default=[])
+    parser.add_argument("--dry-run", action="store_true", help="print the ssh command only")
+    own, cmd = reg.split_command(sys.argv[1:])
+    args = parser.parse_args(own)
+    if not cmd:
+        parser.error("missing command after --")
+    machine = reg.load_machine(args.alias)
+    reg.risk_notice(machine)
+    script = reg.compose(machine, cmd, args.repo, args.task, args.env)
+    return reg.run(reg.ssh_argv(args.alias, reg.remote(machine, script)), args.dry_run).returncode
+
+
+if __name__ == "__main__":
+    sys.exit(main())

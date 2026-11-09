@@ -1,0 +1,165 @@
+#!/usr/bin/env -S uv run --script --quiet
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["pyyaml>=6"]
+# ///
+"""Draft registry YAML for ssh-config hosts from one read-only probe each.
+
+Usage: bootstrap [alias...] [--config ~/.ssh/config] [--force] [--dry-run]
+
+With no aliases, every concrete `Host` in the ssh config (and its Includes) is drafted, except
+wildcards and `github.com`. Existing `<alias>.yaml` files are never overwritten; `--force` writes
+`<alias>.yaml.new` beside them for a manual merge. Each host gets one connection attempt with a
+10 s timeout; unreachable hosts get a skeleton whose `todo` says so.
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import glob
+import re
+import shlex
+import subprocess
+import sys
+from pathlib import Path
+
+import yaml
+
+sys.dont_write_bytecode = True  # keep the installed skill directory free of __pycache__
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _registry as reg  # noqa: E402
+
+SKIP = {"github.com"}
+TOOLS = ("tmux", "rg", "uv", "docker", "git", "rsync", "conda", "nvidia-smi")
+CONDA_BASES = "~/miniforge3 ~/miniconda3 ~/anaconda3 /opt/conda /root/miniforge3 /root/miniconda3"
+PROBE = f"""
+echo @@hostname; hostname
+echo @@os; . /etc/os-release 2>/dev/null && echo "$PRETTY_NAME"
+echo @@cpu; lscpu 2>/dev/null | sed -n 's/^Model name: *//p' | head -1; nproc
+echo @@mem; free -m | awk '/^Mem:/{{print $2}}'
+echo @@gpu; nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null
+echo @@tools; for t in {' '.join(TOOLS)}; do command -v $t >/dev/null 2>&1 && echo "$t yes" || echo "$t no"; done
+echo @@conda; for b in {CONDA_BASES}; do [ -x "$b/bin/conda" ] && "$b/bin/conda" env list 2>/dev/null | awk -v b="$b" '!/^#/ && NF>=2 && $1!="base" {{print b, $1}}' && break; done
+echo @@home; echo "$HOME"; ls -1 "$HOME" 2>/dev/null | head -40
+echo @@data; ls -1d /root/data/* /root/localstorage/* /data/* /mnt/* 2>/dev/null | head -40
+"""
+
+
+def ssh_hosts(config: Path) -> list[str]:
+    """Concrete Host names in order, following Include directives."""
+    hosts: list[str] = []
+    for raw in config.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        key, _, rest = line.partition(" ")
+        if key.lower() == "include":
+            for pattern in rest.split():
+                base = Path(pattern).expanduser()
+                base = base if base.is_absolute() else Path("~/.ssh").expanduser() / base
+                for inc in sorted(glob.glob(str(base))):
+                    hosts += ssh_hosts(Path(inc))
+        elif key.lower() == "host":
+            hosts += [h for h in rest.split() if not re.search(r"[*?!]", h)]
+    return list(dict.fromkeys(hosts))
+
+
+def sections(text: str) -> dict[str, list[str]]:
+    out: dict[str, list[str]] = {}
+    for block in text.split("@@")[1:]:
+        name, _, body = block.partition("\n")
+        out[name.strip()] = [ln for ln in body.splitlines() if ln.strip()]
+    return out
+
+
+def guess_role_org(alias: str) -> tuple[str, str]:
+    parts = alias.split("-")
+    role = parts[1] if len(parts) > 1 and parts[1] in reg.ROLES else "other"
+    return role, parts[0]
+
+
+def draft(alias: str, probe: dict[str, list[str]] | None, today: str) -> dict:
+    role, org = guess_role_org(alias)
+    entry: dict = {"alias": alias, "org": org, "role": role}
+    todo = ["network/reach", "shared + shared_rules", "repos", "dirs (data/checkpoints/logs)", "notes"]
+    if probe is None:
+        entry["todo"] = [f"unreachable from this network on {today}; rerun bootstrap when reachable", *todo]
+        if role == "robot":
+            entry["risk"] = "high"
+        return entry
+    cpu = probe.get("cpu", [])
+    gpus = probe.get("gpu", [])
+    hardware: dict = {"cpu": f"{cpu[0]} ({cpu[1]} threads)" if len(cpu) > 1 else " ".join(cpu)}
+    if probe.get("mem"):
+        hardware["mem_gb"] = round(int(probe["mem"][0]) / 1024, 1)
+    if gpus:
+        names = sorted({g.split(",")[0].strip() for g in gpus})
+        hardware["gpu"] = {"model": ", ".join(names), "count": len(gpus), "mem": gpus[0].split(",")[-1].strip()}
+    entry["hardware"] = hardware
+    entry["tools"] = {t.split()[0]: t.split()[1] == "yes" for t in probe.get("tools", []) if len(t.split()) == 2}
+    envs = {}
+    for line in probe.get("conda", []):
+        base, name = line.split(maxsplit=1)
+        envs[name] = f"source {base}/etc/profile.d/conda.sh && conda activate {name}"
+    if envs:
+        entry["envs"] = envs
+        entry["tools"]["conda"] = True  # conda is rarely on PATH in non-interactive shells
+    entry["risk"] = "high" if role == "robot" else "normal"
+    host = probe.get("hostname", ["?"])[0]
+    os_name = (probe.get("os") or ["?"])[0]
+    home = probe.get("home", [])
+    entry["notes"] = [f"hostname {host}; {os_name}"]
+    entry["todo"] = [
+        *todo,
+        f"probe {today}: home {home[0] if home else '?'} has {', '.join(home[1:]) or 'nothing listed'}",
+        f"probe {today}: data dirs {', '.join(probe.get('data', [])) or 'none found'}",
+    ]
+    return entry
+
+
+def probe_host(alias: str) -> tuple[dict[str, list[str]] | None, str]:
+    argv = ["ssh", "-T", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", "-o", "ConnectionAttempts=1",
+            alias, "bash -c " + shlex.quote(reg.HISTORY_OFF + "; " + PROBE)]
+    try:
+        proc = subprocess.run(argv, text=True, capture_output=True, timeout=60)
+    except subprocess.TimeoutExpired:
+        return None, "timeout after 60 s"
+    if proc.returncode == 255:
+        return None, (proc.stderr.strip().splitlines() or ["ssh error"])[-1]
+    return sections(proc.stdout), "ok"
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(prog="bootstrap", description=__doc__.split("\n\n")[0])
+    p.add_argument("aliases", nargs="*")
+    p.add_argument("--config", default="~/.ssh/config")
+    p.add_argument("--force", action="store_true", help="write <alias>.yaml.new when the file exists")
+    p.add_argument("--dry-run", action="store_true", help="probe and print YAML without writing")
+    args = p.parse_args()
+
+    root = reg.registry_dir()
+    hosts = args.aliases or [h for h in ssh_hosts(Path(args.config).expanduser()) if h not in SKIP]
+    today = dt.date.today().isoformat()
+    failed = []
+    for alias in hosts:
+        path = root / f"{alias}.yaml"
+        if path.exists() and not (args.force or args.dry_run):
+            print(f"skip {alias}: {path} exists")
+            continue
+        probe, status = probe_host(alias)
+        if probe is None:
+            failed.append((alias, status))
+        text = yaml.safe_dump(draft(alias, probe, today), sort_keys=False, allow_unicode=True)
+        if args.dry_run:
+            print(f"--- {alias} ({status})\n{text}")
+            continue
+        root.mkdir(parents=True, exist_ok=True)
+        out = path.with_suffix(".yaml.new") if path.exists() else path
+        out.write_text(text, encoding="utf-8")
+        print(f"wrote {out} ({status})")
+    for alias, why in failed:
+        print(f"unreachable {alias}: {why}", file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

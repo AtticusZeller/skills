@@ -15,10 +15,8 @@
 
 ## Remote Machines (SSH)
 
-- When managing servers from a local workstation, run Codex locally and execute remote commands through SSH; do not install or run Codex on those servers unless requested.
-- Use aliases from `~/.ssh/config`; this file is the source of truth for addresses, users, ports, and keys. Record confirmed training, inference, and robot-client aliases in the local machine notes when needed.
-- For remote commands, use `ssh -o BatchMode=yes -o ConnectTimeout=15 <alias> '<command>'`.
-- Keep long-running training or inference services in remote `tmux` sessions so they survive SSH disconnections.
+- Use the `remote-machines` skill for any SSH or remote-machine task. Its registry `~/.config/remote-machines/machines/<alias>.yaml` holds each machine's static facts and rules; read it before connecting.
+- Name `~/.ssh/config` hosts `<org>-<role>-<id>` (e.g. `acme-train-01`, `lab-4090`, `me-vps`) and group them by org with a comment saying how each group is reachable.
 
 ## Response and Writing Style
 

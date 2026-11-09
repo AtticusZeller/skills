@@ -84,6 +84,21 @@ that it contains no destructive command — and `references/classification.md`
 records the tier definitions, the never-delete list, and the owner's confirmed
 decision profile.
 
+Install the remote machines skill globally:
+
+```bash
+npx skills add AtticusZeller/skills --skill remote-machines -g -a codex -a claude-code -a cursor -y --full-depth
+```
+
+This skill treats every SSH host as an object. Static facts (role, hardware, tools, repos, envs,
+directories, sharing rules, risk level) live in a private local registry
+`~/.config/remote-machines/machines/<alias>.yaml`, which is never part of this repository; live
+state comes from a read-only `probe`. `rx` runs a command with the registered workdir and envs,
+`rjob` runs tmux (or nohup) background jobs tagged with an owner, and `rgit` ships local commits
+to your own work copy on a shared server without pushing to GitHub first. `bootstrap` drafts the
+registry from `~/.ssh/config` plus one read-only probe per host. Scripts need only `uv` locally;
+`scripts/test-remote-machines.sh` checks registry merging and command composition without SSH.
+
 Install all personal skills:
 
 ```bash

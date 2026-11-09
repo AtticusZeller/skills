@@ -1,0 +1,4 @@
+interface:
+  display_name: "Remote Machines"
+  short_description: "Registry and safe operations for SSH machines"
+  default_prompt: "Use $remote-machines to inspect or operate a remote machine over SSH."

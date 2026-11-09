@@ -1,0 +1,160 @@
+#!/usr/bin/env -S uv run --script --quiet
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["pyyaml>=6"]
+# ///
+"""Ship local commits to your own work copy on a remote machine, without pushing to GitHub first.
+
+Usage:
+  rgit clone <alias> --repo R --task T          # clone shared repo R into <work_root>/T/R
+  rgit push  <alias> --repo R [--task T] [--branch B] [--checkout] [--bundle]
+
+`push` sends local branch B (default: current) to `refs/remotes/laptop/B` in the target with
+`git push` over SSH; `--bundle` streams a `git bundle` over ssh instead, for hosts where that fails.
+`--checkout` then fast-forwards (or creates) branch B there; it refuses a dirty work tree.
+Targets registered as `shared: true` are refused: use `--task` to target your own copy.
+Only committed work moves; uncommitted changes stay local.
+`clone` uses `git clone --shared`: the copy borrows the shared repo's objects read-only through
+.git/objects/info/alternates, so a huge shared history costs nothing; it is meant for task copies,
+not long-lived ones (objects pruned from the shared repo would vanish from the copy too).
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import shlex
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+sys.dont_write_bytecode = True  # keep the installed skill directory free of __pycache__
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _registry as reg  # noqa: E402
+
+GIT_SSH = "ssh " + " ".join(reg.SSH_OPTS)
+
+
+def target_path(machine: dict, repo: str, task: str | None) -> str:
+    entry = reg.repo_entry(machine, repo)
+    if task:
+        return reg.work_copy(machine, repo, task)
+    if entry.get("shared"):
+        raise reg.RegistryError(
+            f"{machine['alias']}:{entry['path']} is a shared repo; never write to it. "
+            "Use --task T to push into your own work copy (create it with `rgit clone`)."
+        )
+    return entry["path"]
+
+
+def scp_path(path: str) -> str:
+    """git/scp resolve relative paths from the remote home, so `~/x` becomes `x`."""
+    return path[2:] if path.startswith("~/") else path
+
+
+def clone_script(src: str, dst: str) -> str:
+    s, d = reg.qpath(src), reg.qpath(dst)
+    return (
+        f"if [ -e {d} ]; then echo 'exists: {dst}' >&2; exit 3; fi; "
+        f"mkdir -p \"$(dirname {d})\" && git clone --quiet --shared {s} {d} && "
+        f"url=$(git -C {s} remote get-url origin 2>/dev/null) && git -C {d} remote set-url origin \"$url\"; "
+        f"git -C {d} remote -v | head -2; git -C {d} log -1 --oneline"
+    )
+
+
+def checkout_script(path: str, branch: str) -> str:
+    p, b = reg.qpath(path), shlex.quote(branch)
+    tracking = shlex.quote(f"laptop/{branch}")
+    return (
+        f"cd {p} && if [ -n \"$(git status --porcelain --untracked-files=no)\" ]; then "
+        "echo 'work tree has uncommitted changes; not checking out' >&2; exit 6; fi; "
+        f"if git show-ref --verify -q refs/heads/{b}; then git checkout -q {b} && git merge --ff-only {tracking}; "
+        f"else git checkout -q -b {b} {tracking}; fi && git log -1 --oneline"
+    )
+
+
+def local_branch(branch: str | None) -> str:
+    if branch:
+        return branch
+    out = subprocess.run(["git", "symbolic-ref", "--short", "HEAD"], text=True, capture_output=True)
+    if out.returncode != 0:
+        raise reg.RegistryError("detached HEAD; pass --branch")
+    return out.stdout.strip()
+
+
+def push_direct(alias: str, path: str, branch: str, dry: bool) -> int:
+    argv = ["git", "push", f"{alias}:{scp_path(path)}", f"+refs/heads/{branch}:refs/remotes/laptop/{branch}"]
+    if dry:
+        print(f"GIT_SSH_COMMAND={shlex.quote(GIT_SSH)} {shlex.join(argv)}")
+        return 0
+    return subprocess.run(argv, env={**os.environ, "GIT_SSH_COMMAND": GIT_SSH}).returncode
+
+
+def push_bundle(machine: dict, path: str, branch: str, dry: bool) -> int:
+    """Fallback: bundle only commits the remote lacks, stream it into its .git, fetch, delete it."""
+    alias = machine["alias"]
+    known = reg.run(
+        reg.ssh_argv(alias, reg.remote(machine, f"git -C {reg.qpath(path)} for-each-ref --format='%(objectname)'")),
+        dry, capture=True,
+    ).stdout.split()
+    have = [c for c in known if subprocess.run(["git", "cat-file", "-e", c], capture_output=True).returncode == 0]
+    remote_file = f"{path}/.git/laptop-{branch.replace('/', '_')}.bundle"
+    fetch = (
+        f"git -C {reg.qpath(path)} fetch -q {reg.qpath(remote_file)} "
+        f"+refs/heads/{branch}:refs/remotes/laptop/{branch}; rc=$?; rm -f {reg.qpath(remote_file)}; exit $rc"
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        bundle = f"{tmp}/b.bundle"
+        create = ["git", "bundle", "create", "-q", bundle, f"refs/heads/{branch}", *[f"^{c}" for c in have]]
+        upload = reg.ssh_argv(alias, reg.remote(machine, f"cat > {reg.qpath(remote_file)}"))
+        if dry:
+            print(shlex.join(create))
+            print(f"{shlex.join(upload)} < {bundle}")
+        else:
+            if subprocess.run(create).returncode != 0:
+                return 1
+            # Stream over ssh stdin rather than scp: some hosts have no sftp subsystem.
+            with open(bundle, "rb") as fh:
+                if subprocess.run(upload, stdin=fh).returncode != 0:
+                    return 1
+        return reg.run(reg.ssh_argv(alias, reg.remote(machine, fetch)), dry).returncode
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(prog="rgit", description=__doc__.split("\n\n")[0])
+    p.add_argument("--dry-run", action="store_true", help="print commands only")
+    sub = p.add_subparsers(dest="action", required=True)
+    clone = sub.add_parser("clone")
+    clone.add_argument("alias")
+    clone.add_argument("--repo", required=True)
+    clone.add_argument("--task", required=True)
+    push = sub.add_parser("push")
+    push.add_argument("alias")
+    push.add_argument("--repo", required=True)
+    push.add_argument("--task")
+    push.add_argument("--branch")
+    push.add_argument("--checkout", action="store_true")
+    push.add_argument("--bundle", action="store_true")
+    args = p.parse_args()
+
+    machine = reg.load_machine(args.alias)
+    reg.risk_notice(machine)
+    if args.action == "clone":
+        src = reg.repo_entry(machine, args.repo)["path"]
+        script = clone_script(src, reg.work_copy(machine, args.repo, args.task))
+        return reg.run(reg.ssh_argv(args.alias, reg.remote(machine, script)), args.dry_run).returncode
+
+    path = target_path(machine, args.repo, args.task)
+    branch = local_branch(args.branch)
+    if args.bundle:
+        rc = push_bundle(machine, path, branch, args.dry_run)
+    else:
+        rc = push_direct(args.alias, path, branch, args.dry_run)
+    if rc != 0 or not args.checkout:
+        return rc
+    return reg.run(reg.ssh_argv(args.alias, reg.remote(machine, checkout_script(path, branch))), args.dry_run).returncode
+
+
+if __name__ == "__main__":
+    sys.exit(main())
