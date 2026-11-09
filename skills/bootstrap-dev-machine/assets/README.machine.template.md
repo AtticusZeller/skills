@@ -1,6 +1,6 @@
 # Development Machine
 
-This machine uses the public `bootstrap-dev-machine` baseline: uv/Python, Miniforge/conda/mamba, nvm/Node, shell tooling, Oh my tmux, agent CLIs, shared skills, and non-systemd sing-box helpers.
+This machine uses the public `bootstrap-dev-machine` baseline: uv/Python, Miniforge/conda/mamba, nvm/Node, shell tooling, Oh my tmux, a Ghostty terminal baseline, agent CLIs, shared skills, and non-systemd sing-box helpers.
 
 ## Quick Start
 
@@ -25,6 +25,7 @@ Use `sbc run` for foreground diagnosis.
 - Conda/Mamba defaults to Miniforge at `~/miniforge3`; `--skip-conda` keeps an externally managed installation instead.
 - Node `{{NODE_VERSION}}` is managed by nvm.
 - Tmux uses Oh my tmux, with `Ctrl+b` and `Ctrl+a` prefixes. Mouse support is enabled by default; right-click panes or status-line names for command menus. Customize `tmux.conf.local`; prefix then `r` reloads without ending sessions.
+- Ghostty uses `~/.config/ghostty/config.ghostty`; the bootstrap installs it on apt/dpkg hosts and preserves local edits. The template requests JetBrainsMono Nerd Font. `ghostty +show-config` prints the effective configuration.
 - Load nvm before using Node in non-interactive shells:
 
 ```bash
@@ -41,6 +42,7 @@ npm -v
 - default Miniforge prefix: `~/miniforge3`
 - Oh my tmux checkout: `~/.local/share/oh-my-tmux`
 - tmux config and local customizations: `~/.config/tmux/tmux.conf` and `tmux.conf.local` (under `$XDG_CONFIG_HOME/tmux` when set)
+- Ghostty config: `~/.config/ghostty/config.ghostty` (under `$XDG_CONFIG_HOME/ghostty` when set)
 - personal skills checkout: `~/skills`
 - cross-agent skills: `~/.agents/skills`
 - Codex skills: `~/.codex/skills`

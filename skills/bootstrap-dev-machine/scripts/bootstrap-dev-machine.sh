@@ -10,6 +10,7 @@ skip_packages=false
 skip_conda=false
 skip_skills=false
 skip_context7=false
+skip_ghostty=false
 enable_dsw_persistent_prompt=false
 
 proxy_url="${PROXY_URL:-http://127.0.0.1:7890}"
@@ -34,6 +35,7 @@ Options:
   --skip-conda           Skip Miniforge (conda) installation
   --skip-skills          Skip personal and external agent skill installation
   --skip-context7        Install skills without running Context7 setup
+  --skip-ghostty         Skip Ghostty terminal installation and config deployment
   --enable-dsw-persistent-prompt
                         Append the Alibaba Cloud DSW storage prompt to ~/.codex/AGENTS.md
   -h, --help             Show this help
@@ -56,6 +58,7 @@ while (($#)); do
     --skip-conda) skip_conda=true ;;
     --skip-skills) skip_skills=true ;;
     --skip-context7) skip_context7=true ;;
+    --skip-ghostty) skip_ghostty=true ;;
     --enable-dsw-persistent-prompt) enable_dsw_persistent_prompt=true ;;
     -h|--help)
       usage
@@ -442,6 +445,23 @@ install_zsh_baseline() {
   fi
 }
 
+install_ghostty_terminal() {
+  phase "Ghostty terminal"
+  if [[ "${skip_ghostty}" == true ]]; then
+    info "Ghostty terminal setup skipped"
+    return
+  fi
+
+  local -a args=(--target-home "${HOME}")
+  if [[ "${dry_run}" == true ]]; then
+    args+=(--dry-run)
+  fi
+  if ! bash "${script_dir}/install-ghostty-terminal.sh" "${args[@]}"; then
+    warn "Ghostty terminal setup did not complete"
+    manual "Install Ghostty for this distribution, then rerun scripts/install-ghostty-terminal.sh"
+  fi
+}
+
 install_agent_skills() {
   phase "Agent skills"
   if [[ "${skip_skills}" == true ]]; then
@@ -545,6 +565,7 @@ deploy_sbc_helpers
 install_node
 install_developer_clis
 install_zsh_baseline
+install_ghostty_terminal
 phase "tmux baseline"
 tmux_args=(--target-home "${HOME}")
 if [[ "${dry_run}" == true ]]; then

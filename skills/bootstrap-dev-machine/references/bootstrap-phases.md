@@ -21,7 +21,7 @@ The defaults match the DSW/container baseline:
 - Conda/Mamba distribution: Miniforge `BOOTSTRAP_MINIFORGE_VERSION=26.3.2-3` at `$HOME/miniforge3`
 - Personal skills checkout: `PERSONAL_SKILLS_DIR=$HOME/skills`
 
-Use `--no-proxy` only when the host has direct network access. Use `--skip-packages`, `--skip-conda`, `--skip-skills`, or `--skip-context7` when those layers are managed externally. On Alibaba Cloud DSW, add `--enable-dsw-persistent-prompt` to back up and append the OSS persistence convention to `~/.codex/AGENTS.md` exactly once.
+Use `--no-proxy` only when the host has direct network access. Use `--skip-packages`, `--skip-conda`, `--skip-skills`, or `--skip-context7` when those layers are managed externally. Use `--skip-ghostty` on headless hosts or when the terminal is managed externally. On Alibaba Cloud DSW, add `--enable-dsw-persistent-prompt` to back up and append the OSS persistence convention to `~/.codex/AGENTS.md` exactly once.
 
 ## Automated Phases
 
@@ -35,13 +35,14 @@ The entry script performs these phases in order:
 6. Installs nvm and Node, then sets the requested Node version as default.
 7. Installs Claude Code and the Hugging Face CLI; checks other developer CLIs.
 8. Installs Oh My Zsh, Powerlevel10k, plugins, and the public server `.zshrc`.
-9. Installs Oh my tmux from upstream with an XDG configuration link and a create-if-absent local customization file with mouse and right-click menus enabled; existing sessions are kept running.
-10. Installs personal and external agent skills from the repository manifest.
-11. Creates `~/.codex/AGENTS.md` and `~/README.md` from bundled templates when absent, then adds one import of the shared global instructions to `~/.claude/CLAUDE.md`, preserving existing rules.
-12. When explicitly enabled, backs up and appends the Alibaba Cloud DSW OSS persistence prompt to `~/.codex/AGENTS.md`.
-13. Runs `check-dev-machine.sh` and prints all remaining manual work together.
+9. Installs Ghostty on apt/dpkg hosts with the documented ghostty-ubuntu installer command when it is missing, then deploys `assets/ghostty-config.ghostty` to the Ghostty configuration path and preserves locally modified files.
+10. Installs Oh my tmux from upstream with an XDG configuration link and a create-if-absent local customization file with mouse and right-click menus enabled; existing sessions are kept running.
+11. Installs personal and external agent skills from the repository manifest.
+12. Creates `~/.codex/AGENTS.md` and `~/README.md` from bundled templates when absent, then adds one import of the shared global instructions to `~/.claude/CLAUDE.md`, preserving existing rules.
+13. When explicitly enabled, backs up and appends the Alibaba Cloud DSW OSS persistence prompt to `~/.codex/AGENTS.md`.
+14. Runs `check-dev-machine.sh` and prints all remaining manual work together.
 
-Each phase is safe to rerun: existing tools and clones are reused, and `.zshrc` is backed up only when the deployed template differs.
+Each phase is safe to rerun: existing tools and clones are reused, `.zshrc` and the Ghostty configuration are backed up only when the deployed template differs, and locally edited Ghostty configurations are preserved for manual merge.
 
 ## Intentionally Manual
 
@@ -57,10 +58,11 @@ These items appear once in the final summary rather than interrupting the automa
 
 ## Failure Handling
 
-Required-phase failures stop immediately and identify the phase and line. Optional package or account-backed setup failures become warnings so independent phases can finish.
+Required-phase failures stop immediately and identify the phase and line. Optional package or account-backed setup failures become warnings so independent phases can finish. An unsupported Ghostty host or a failed terminal installer is also a warning: the configuration is still deployed for a later manual install.
 
 Use the focused references only after a failure:
 
 - `zsh-baseline.md` for shell customization and startup diagnosis.
 - `tmux-baseline.md` for configuration paths, conflicts, customization, and safe reload.
+- `ghostty-baseline.md` for the terminal installer command, configuration path, supported distributions, and local-change recovery.
 - `sbc-service-scripts.md` for sing-box helper behavior and configuration boundaries.

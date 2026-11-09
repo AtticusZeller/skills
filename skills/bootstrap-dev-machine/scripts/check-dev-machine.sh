@@ -36,7 +36,7 @@ check_version() {
 }
 
 echo "== Commands =="
-for cmd in git curl rg uv python3 conda mamba sbc codex claude gh hf cc-switch nvitop wandb zsh tmux; do
+for cmd in git curl rg uv python3 conda mamba sbc codex claude gh hf cc-switch nvitop wandb zsh tmux ghostty; do
   check_cmd "$cmd"
 done
 
@@ -64,6 +64,7 @@ check_version "claude" claude --version
 check_version "gh" gh --version
 check_version "hf" hf --version
 check_version "cc-switch" cc-switch --version
+check_version "ghostty" ghostty --version
 if command -v node >/dev/null 2>&1; then
   check_version "node" node -v
   check_version "npm" npm -v
@@ -100,6 +101,7 @@ check_path "$HOME/.oh-my-zsh/custom/plugins/zsh-bat"
 check_path "$HOME/.local/share/oh-my-tmux/.tmux.conf"
 check_path "${XDG_CONFIG_HOME:-$HOME/.config}/tmux/tmux.conf"
 check_path "${XDG_CONFIG_HOME:-$HOME/.config}/tmux/tmux.conf.local"
+check_path "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config.ghostty"
 check_path "$HOME/README.md"
 check_path "$HOME/.codex/AGENTS.md"
 check_path "$HOME/.claude/CLAUDE.md"
