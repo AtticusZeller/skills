@@ -27,6 +27,44 @@ It runs only when `ghostty` is absent. The installer downloads a release `.deb` 
 
 Because the installer downloads the `.deb` into the current directory, the wrapper runs it in a temporary directory. Use `--skip-install` to deploy only the configuration; use `--skip-ghostty` on the bootstrap to skip both.
 
+## macOS / MacBook Adaptation
+
+The bundled asset remains the Linux baseline. Its inline comments identify the
+macOS adaptations; the Linux bootstrap and `install-ghostty-terminal.sh` are not
+macOS installers. On a MacBook, install Ghostty with Homebrew:
+
+```bash
+brew install --cask ghostty
+```
+
+Back up an existing config, copy `assets/ghostty-config.ghostty` to
+`~/Library/Application Support/com.mitchellh.ghostty/config.ghostty`, and apply
+these changes to the local copy:
+
+- Change `command` to `/bin/zsh`; macOS does not ship `/usr/bin/zsh`.
+- Set `quit-after-last-window-closed = false` for the usual Mac behavior of
+  keeping the app running after closing its last window. Omit
+  `quit-after-last-window-closed-delay`, which is implemented only on Linux.
+- Keep Ghostty's default macOS shortcuts: `Cmd+C` / `Cmd+V` for copy/paste,
+  `Cmd+T` / `Cmd+N` for tabs/windows, and `Cmd+Shift+,` to reload config. The
+  template's additional `Ctrl` bindings do not clear these defaults. Omit the
+  `Shift+Insert` binding because macOS has no primary selection clipboard.
+- Keep the Ubuntu palette, 15 pt font, bar cursor, copy-on-select, and
+  `Shift+Enter` binding. The latter sends ESC followed by CR; multiline behavior
+  depends on the receiving application.
+
+To use the requested font family rather than the embedded fallback, install it
+with `brew install --cask font-jetbrains-mono-nerd-font`. Check `ghostty +list-fonts`;
+if the available monospaced family is `JetBrainsMono Nerd Font Mono`, use that
+name for all four `font-family` settings in the local copy.
+
+The macOS-specific config is loaded after the XDG config and can override it;
+avoid maintaining conflicting copies. Validate with `ghostty +validate-config`
+and inspect the effective values with `ghostty +show-config`. After a shell
+command change, open a new terminal window. See the official
+[configuration paths](https://ghostty.org/docs/config#file-location) and
+[quit-delay reference](https://ghostty.org/docs/config/reference#quit-after-last-window-closed-delay).
+
 ## Default Terminal on Ubuntu
 
 After installing Ghostty, select it for programs that use Debian's `x-terminal-emulator` alternative:

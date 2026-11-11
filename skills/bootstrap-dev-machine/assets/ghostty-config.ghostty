@@ -7,6 +7,7 @@
 # Terminal
 # ==========================================
 term = xterm-256color
+# Linux baseline. On macOS / MacBook, use command = /bin/zsh instead.
 command = /usr/bin/zsh
 
 # ==========================================
@@ -17,7 +18,9 @@ window-height = 20
 window-padding-balance = true
 maximize = false
 fullscreen = false
+# On macOS, use false to keep the app running after closing its last window.
 quit-after-last-window-closed = true
+# Linux only: the delayed quit is not implemented on macOS; omit this line there.
 quit-after-last-window-closed-delay = 5m
 
 # Allow applications to set window titles
@@ -26,6 +29,8 @@ quit-after-last-window-closed-delay = 5m
 # ==========================================
 # Font
 # ==========================================
+# On macOS, check +list-fonts; use JetBrainsMono Nerd Font Mono for all four
+# font-family settings if that is the available monospaced family.
 font-family = JetBrainsMono Nerd Font
 font-family-bold = JetBrainsMono Nerd Font
 font-family-italic = JetBrainsMono Nerd Font
@@ -55,6 +60,9 @@ cursor-style-blink = true
 # ==========================================
 
 # Copy and paste
+# These add Linux-style shortcuts without removing Ghostty's macOS defaults:
+# Cmd+C / Cmd+V for copy/paste and Cmd+Shift+, to reload the configuration.
+# Shift+Insert uses the primary selection clipboard, which macOS does not support.
 keybind = ctrl+shift+v=paste_from_clipboard
 keybind = ctrl+shift+c=copy_to_clipboard
 keybind = shift+insert=paste_from_selection
@@ -77,6 +85,7 @@ keybind = ctrl+shift+g=navigate_search:previous
 
 # Shift+Enter sends ESC + CR
 # Important for Coding Agent multiline input
+# Keep on macOS too; interpretation depends on the program running in the terminal.
 keybind = shift+enter=text:\x1b\r
 
 # ==========================================
