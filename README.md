@@ -26,6 +26,16 @@ On Alibaba Cloud DSW, run its installer with `--enable-dsw-persistent-prompt` to
 bash "$HOME/.agents/skills/bootstrap-dev-machine/scripts/bootstrap-dev-machine.sh" --enable-dsw-persistent-prompt
 ```
 
+On macOS / MacBook, use the Homebrew variant, including Mac-specific zsh and
+Ghostty settings, nvm/Node, uv/Python, Miniforge, and Oh my tmux. Proxying is opt-in;
+Linux CUDA/DSW setup is skipped. Add `--set-default-terminal` only when requesting
+Ghostty's executable and `.command` associations:
+
+```bash
+bash "$HOME/.agents/skills/bootstrap-dev-machine/scripts/bootstrap-dev-machine-macos.sh" --dry-run
+bash "$HOME/.agents/skills/bootstrap-dev-machine/scripts/bootstrap-dev-machine-macos.sh"
+```
+
 On Windows, run the PowerShell variant from a non-elevated PowerShell. It installs command-line tools with Scoop, GUI applications from `assets/winget-apps.txt` with winget, and skips Conda, zsh, and tmux:
 
 ```powershell

@@ -25,6 +25,9 @@ fi
 
 if [[ -n "${SBC_BINARY:-}" ]]; then
   binary="${SBC_BINARY}"
+elif command -v sing-box >/dev/null 2>&1; then
+  # Prefer a platform-native core (Homebrew on macOS) over the Python wheel.
+  binary="$(command -v sing-box)"
 elif [[ -x "${tool_python}" ]]; then
   binary="$("${tool_python}" -c 'from sing_box_bin import get_bin_path; print(get_bin_path())')"
 else

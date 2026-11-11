@@ -31,15 +31,19 @@ Because the installer downloads the `.deb` into the current directory, the wrapp
 
 The bundled asset remains the Linux baseline. Its inline comments identify the
 macOS adaptations; the Linux bootstrap and `install-ghostty-terminal.sh` are not
-macOS installers. On a MacBook, install Ghostty with Homebrew:
+macOS installers. The MacBook entry point `bootstrap-dev-machine-macos.sh` uses
+Homebrew and deploys the exact `assets/ghostty-config.macos.ghostty` template
+through `install-macos-config.py`, with backups and preservation of local edits.
+Use its `--configure-only` option to deploy the Mac configuration and handoff
+without reinstalling tools. On a MacBook, install Ghostty with Homebrew:
 
 ```bash
 brew install --cask ghostty
 ```
 
-Back up an existing config, copy `assets/ghostty-config.ghostty` to
-`~/Library/Application Support/com.mitchellh.ghostty/config.ghostty`, and apply
-these changes to the local copy:
+The Mac-specific template lives at
+`~/Library/Application Support/com.mitchellh.ghostty/config.ghostty` and makes
+these adaptations relative to the Linux template:
 
 - Change `command` to `/bin/zsh`; macOS does not ship `/usr/bin/zsh`.
 - Set `quit-after-last-window-closed = false` for the usual Mac behavior of

@@ -122,7 +122,7 @@ cmp -s "${windows}/.claude/CLAUDE.md" "${tmp_dir}/claude.expected" ||
 if grep -q $'\r' "${windows}/.codex/AGENTS.md" "${windows}/README.md"; then
   fail "Rendered Windows handoff contains CRLF line endings"
 fi
-if run_installer "${tmp_dir}/fresh" --platform macos >/dev/null 2>&1; then
+if run_installer "${tmp_dir}/fresh" --platform unsupported >/dev/null 2>&1; then
   fail "Installer accepted an unsupported platform"
 fi
 pass "Windows handoff is rendered deterministically"

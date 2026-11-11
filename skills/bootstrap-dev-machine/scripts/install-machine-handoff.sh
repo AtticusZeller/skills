@@ -24,7 +24,7 @@ Options:
   --proxy-url <url>       Public local proxy endpoint
   --python-version <ver>  uv-managed Python version
   --node-version <ver>    Default Node major version
-  --platform <name>       Template set: linux or windows (default: linux)
+  --platform <name>       Template set: linux, macos or windows (default: linux)
   --dry-run               Report changes without writing files
   -h, --help              Show this help
 EOF
@@ -109,6 +109,7 @@ validate_input() {
 case "$platform" in
   linux) template_suffix="" ;;
   windows) template_suffix=".windows" ;;
+  macos) template_suffix=".macos" ;;
   *) die "Unsupported platform: ${platform}" ;;
 esac
 

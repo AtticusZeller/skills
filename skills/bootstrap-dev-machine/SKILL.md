@@ -1,13 +1,15 @@
 ---
 name: bootstrap-dev-machine
-description: Guide a Codex agent through configuring a fresh GPU/DSW-style Linux development machine, or a Windows workstation through a PowerShell variant, with SSH-forwarded proxy, ripgrep, Codex, uv/Python 3.12, Miniforge/conda/mamba, sing-box mixed proxy, Claude Code, nvm/Node 24, Context7, global development skills, zsh/tmux, Ghostty terminal, Git/GitHub/Hugging Face tooling, shared Codex/Claude global instructions, and a machine README.md. Use when the user asks to bootstrap, reproduce, migrate, audit, or repair this development environment on a new machine.
+description: Configure a Linux GPU/DSW development machine, a macOS/MacBook workstation with Homebrew, or Windows through PowerShell. Includes ripgrep, Codex, uv/Python 3.12, Miniforge/conda/mamba, Claude Code, nvm/Node 24, Context7, shared skills, zsh/tmux, Ghostty, Git/GitHub/Hugging Face tooling, and shared agent instructions. Use when bootstrapping, reproducing, migrating, auditing, or repairing this development environment on a new machine.
 ---
 
 # Bootstrap Dev Machine
 
 ## Overview
 
-Use this skill to rebuild the same development-machine baseline on a fresh Linux GPU/DSW host or a Windows workstation. The normal path is one idempotent installer run followed by one review of its validation and manual-follow-up summary.
+Use this skill to rebuild the development-machine baseline on Linux GPU/DSW, macOS/MacBook, or Windows. The normal path is one idempotent installer run followed by one review of its validation and manual-follow-up summary.
+
+On macOS, read `references/macos-bootstrap.md` and run `bash scripts/bootstrap-dev-machine-macos.sh` (preview with `--dry-run`). This uses Homebrew, `/bin/zsh`, Mac-specific Ghostty/zsh assets, and proxy opt-in. Never run the Linux bootstrap on a Mac. Add `--set-default-terminal` only when the user requested Ghostty's default-terminal associations.
 
 On Windows, run `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-machine.ps1` (add `-DryRun` to preview) from a non-elevated PowerShell and read `references/windows-bootstrap.md` instead of the Linux workflow below.
 
@@ -38,6 +40,11 @@ On Windows, run `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-
 ## Resources
 
 - `scripts/bootstrap-dev-machine.sh`: idempotent one-shot installer and primary entry point.
+- `scripts/bootstrap-dev-machine-macos.sh` and `scripts/check-dev-machine-macos.sh`: Homebrew-based MacBook installer and read-only checker.
+- `scripts/install-macos-config.py`: deterministic Mac zsh/Ghostty asset deployer with backups and local-edit preservation.
+- `scripts/install-prompt-config.sh` and `scripts/test-prompt-config.sh`: shared Powerlevel10k preset deployment and fidelity/preservation checks; existing personal prompts are preserved.
+- `scripts/set-default-terminal-macos.swift`: explicit opt-in default application associations; `--check` verifies without changing them.
+- `scripts/test-macos-bootstrap.sh`: Mac asset deployment, idempotency, backup, local-edit, and handoff regression checks.
 - `scripts/check-dev-machine.sh`: read-only validation script used by the installer.
 - `scripts/bootstrap-dev-machine.ps1` and `scripts/check-dev-machine.ps1`: Windows installer (Scoop CLIs, winget GUI apps, no Conda/zsh/tmux) and its read-only validation.
 - `scripts/test-windows-bootstrap.sh`: Windows installer regression checks; PowerShell parse checks run when PowerShell is available.
@@ -47,15 +54,17 @@ On Windows, run `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-
 - `scripts/install-dsw-persistent-prompt.sh`: optional, idempotent installer for the Alibaba Cloud DSW rule in `~/.codex/AGENTS.md`.
 - `references/bootstrap-phases.md`: installer inputs, automated phases, manual boundaries, and failure handling.
 - `references/windows-bootstrap.md`: Windows inputs, phases, boundaries, and recovery.
+- `references/macos-bootstrap.md`: MacBook inputs, tools, shell configuration, default terminal, and recovery.
 - `references/sbc-service-scripts.md`: behavior and configuration boundaries for the deployed sing-box helpers.
 - `references/zsh-baseline.md`: resulting shell state and focused startup diagnosis.
 - `references/tmux-baseline.md`: Oh my tmux paths, customization, and session-preserving reload.
 - `references/ghostty-baseline.md`: Ghostty installer command, supported distributions, configuration path, and local-change recovery.
 - `assets/zshrc.server`: reusable public server `.zshrc` template with proxy, CUDA, uv, conda/mamba, NVM, PATH, and virtualenv defaults.
-- `assets/p10k.zsh`: Powerlevel10k template deployed to `~/.p10k.zsh` only when absent; requires a Nerd Font.
+- `assets/zshrc.macos` and `assets/ghostty-config.macos.ghostty`: Mac-specific shell and terminal templates.
+- `assets/p10k.zsh`: exported Ubuntu Powerlevel10k preset (lean, two lines, left frame, transient prompt, Nerd Font v3), reused on Mac as `~/.p10k.zsh` without the wizard.
 - `assets/tmux-defaults.conf`: mouse support and right-click menus enabled on fresh tmux installations.
 - `assets/ghostty-config.ghostty`: Ghostty 1.3+ configuration template deployed to `$XDG_CONFIG_HOME/ghostty/config.ghostty`.
-- `assets/{AGENTS,README}.machine[.windows].template.md`: public machine handoff templates rendered by the installer (`--platform windows` selects the Windows set).
+- `assets/{AGENTS,README}.machine[.macos|.windows].template.md`: public machine handoff templates rendered by the installer (`--platform macos` or `--platform windows` selects the corresponding set).
 - `assets/winget-apps.txt`: winget GUI application IDs; command-line tools belong in Scoop.
 - `assets/sbc-{start,stop,status}`: executable user-level sing-box helpers for non-systemd hosts.
 

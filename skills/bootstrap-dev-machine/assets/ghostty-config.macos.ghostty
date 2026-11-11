@@ -1,0 +1,112 @@
+
+# Ghostty configuration for macOS / MacBook
+# Migrated from Alacritty
+# Ref: https://ghostty.org/docs/config/reference
+
+# ==========================================
+# Terminal
+# ==========================================
+term = xterm-256color
+# Use the system login shell path on macOS.
+command = /bin/zsh
+
+# ==========================================
+# Window
+# ==========================================
+window-width = 80
+window-height = 20
+window-padding-balance = true
+maximize = false
+fullscreen = false
+# On macOS, use false to keep the app running after closing its last window.
+quit-after-last-window-closed = false
+
+# Allow applications to set window titles
+# (Ghostty default; do not set "title")
+
+# ==========================================
+# Font
+# ==========================================
+# On macOS, check +list-fonts; use JetBrainsMono Nerd Font Mono for all four
+# font-family settings if that is the available monospaced family.
+font-family = JetBrainsMono Nerd Font Mono
+font-family-bold = JetBrainsMono Nerd Font Mono
+font-family-italic = JetBrainsMono Nerd Font Mono
+font-family-bold-italic = JetBrainsMono Nerd Font Mono
+
+font-style = Regular
+font-style-bold = Bold
+font-style-italic = Italic
+font-style-bold-italic = Bold Italic
+
+font-size = 15
+
+# ==========================================
+# Mouse and Selection
+# ==========================================
+mouse-hide-while-typing = true
+copy-on-select = clipboard
+
+# ==========================================
+# Cursor
+# ==========================================
+cursor-style = bar
+cursor-style-blink = true
+
+# ==========================================
+# Keybindings
+# ==========================================
+
+# Copy and paste
+# These add Linux-style shortcuts without removing Ghostty's macOS defaults:
+# Cmd+C / Cmd+V for copy/paste and Cmd+Shift+, to reload the configuration.
+# Shift+Insert uses the primary selection clipboard, which macOS does not support.
+keybind = ctrl+shift+v=paste_from_clipboard
+keybind = ctrl+shift+c=copy_to_clipboard
+
+# Font size
+keybind = ctrl+0=reset_font_size
+keybind = ctrl+equal=increase_font_size:1
+keybind = ctrl+minus=decrease_font_size:1
+
+# Window
+keybind = ctrl+shift+n=new_window
+keybind = ctrl+shift+t=new_tab
+keybind = ctrl+shift+q=quit
+
+# Search
+keybind = ctrl+shift+f=start_search
+keybind = ctrl+shift+b=start_search
+keybind = ctrl+g=navigate_search:next
+keybind = ctrl+shift+g=navigate_search:previous
+
+# Shift+Enter sends ESC + CR
+# Important for Coding Agent multiline input
+# Keep on macOS too; interpretation depends on the program running in the terminal.
+keybind = shift+enter=text:\x1b\r
+
+# ==========================================
+# Ubuntu Colors
+# ==========================================
+background = #300A24
+foreground = #EEEEEC
+
+# Normal colors (0-7)
+palette = 0=#171421
+palette = 1=#C01C28
+palette = 2=#26A269
+palette = 3=#A2734C
+palette = 4=#12488B
+palette = 5=#A347BA
+palette = 6=#2AA1B3
+palette = 7=#D0CFCC
+
+# Bright colors (8-15)
+palette = 8=#5E5C64
+palette = 9=#F66151
+palette = 10=#33DA7A
+palette = 11=#E9AD0C
+palette = 12=#2A7BDE
+palette = 13=#C061CB
+palette = 14=#33C7DE
+palette = 15=#FFFFFF

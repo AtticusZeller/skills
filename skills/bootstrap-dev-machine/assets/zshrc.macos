@@ -1,0 +1,68 @@
+# MacBook zsh baseline. Keep credentials and private proxy endpoints elsewhere.
+typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# Ghostty launches login shells; also support non-login interactive shells.
+if [[ -z "${HOMEBREW_PREFIX:-}" ]]; then
+  if [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -x /usr/local/bin/brew ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+fi
+typeset -U path
+path=("$HOME/.local/bin" "$HOME/miniforge3/condabin" $path)
+export PATH
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+fpath=("$HOME/.zfunc" $fpath)
+plugins=(git macos extract docker history-substring-search z
+  zsh-autosuggestions zsh-bat ohmyzsh-full-autoupdate zsh-syntax-highlighting)
+[[ ! -f "$ZSH/oh-my-zsh.sh" ]] || source "$ZSH/oh-my-zsh.sh"
+[[ ! -f "$HOME/.p10k.zsh" ]] || source "$HOME/.p10k.zsh"
+
+if [[ -x "$HOME/miniforge3/bin/conda" ]]; then
+  eval "$("$HOME/miniforge3/bin/conda" shell.zsh hook)"
+fi
+if [[ -x "$HOME/miniforge3/bin/mamba" ]]; then
+  export MAMBA_EXE="$HOME/miniforge3/bin/mamba"
+  export MAMBA_ROOT_PREFIX="$HOME/miniforge3"
+  eval "$("$MAMBA_EXE" shell hook --shell zsh --root-prefix "$MAMBA_ROOT_PREFIX")"
+fi
+export NVM_DIR="$HOME/.nvm"
+[[ ! -s "$NVM_DIR/nvm.sh" ]] || source "$NVM_DIR/nvm.sh"
+if (( $+commands[uv] )); then
+  eval "$(uv generate-shell-completion zsh)"
+fi
+if (( $+commands[uvx] )); then
+  eval "$(uvx --generate-shell-completion zsh)"
+fi
+if (( $+commands[fzf] )); then
+  source <(fzf --zsh)
+fi
+
+# Reuse the project's environment, including when entering it after startup.
+autoload -Uz add-zsh-hook
+bootstrap_activate_venv() {
+  local directory="$PWD"
+  while [[ "$directory" != / ]]; do
+    if [[ -f "$directory/.venv/bin/activate" ]]; then
+      [[ "${VIRTUAL_ENV:-}" == "$directory/.venv" ]] || source "$directory/.venv/bin/activate"
+      return
+    fi
+    directory="${directory:h}"
+  done
+}
+add-zsh-hook chpwd bootstrap_activate_venv
+bootstrap_activate_venv
+
+# Proxying is opt-in on macOS; preserve existing network configuration.
+if [[ -n "${PROXY_URL:-}" ]]; then
+  export http_proxy="$PROXY_URL" https_proxy="$PROXY_URL"
+  export HTTP_PROXY="$PROXY_URL" HTTPS_PROXY="$PROXY_URL"
+  export no_proxy="${no_proxy:-localhost,127.0.0.1}"
+  export NO_PROXY="${NO_PROXY:-$no_proxy}"
+fi
+[[ ! -f "$HOME/.zshrc.local" ]] || source "$HOME/.zshrc.local"

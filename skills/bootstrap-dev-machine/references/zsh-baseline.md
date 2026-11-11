@@ -1,4 +1,25 @@
-# Server Zsh Baseline
+# Zsh Baselines
+
+## macOS / MacBook
+
+Use `bootstrap-dev-machine-macos.sh`, which deploys `assets/zshrc.macos` through
+`install-macos-config.py`. It keeps Apple's `/bin/zsh`, loads the appropriate
+Apple Silicon or Intel Homebrew environment, and installs the same Oh My Zsh,
+Powerlevel10k, autosuggestions, syntax highlighting, bat, and update plugins.
+It also loads uv/uvx completions, fzf, nvm/Node, and Miniforge Conda/Mamba hooks.
+The base Conda environment is not auto-activated. The nearest project `.venv`
+is activated on startup and directory changes.
+
+CUDA, DSW rules, Linux package-manager hooks, and forced proxy settings are not
+included. Proxying is enabled only with an explicitly supplied `PROXY_URL`.
+The exported Ubuntu `assets/p10k.zsh` preset is deployed to `~/.p10k.zsh`; no wizard
+is required. It preserves the lean two-line style, left frame, compact spacing,
+Nerd Font v3 icons, 24-hour time, and transient prompt. Use
+`~/.zshrc.local` for private additions and `p10k configure` for optional changes.
+Managed updates back up replaced files and preserve local edits using stored
+hashes. Open a new Ghostty window to load a changed shell configuration.
+
+## Linux Server
 
 The main installer owns shell installation and deployment. This reference describes the resulting state and the few choices that remain local to each machine.
 
@@ -17,7 +38,11 @@ Existing clones are reused. The installer records the deployed template hash; la
 
 ## Local Choices
 
-When `~/.p10k.zsh` is absent, the installer deploys `assets/p10k.zsh` (lean, 2 lines, nerdfont-v3, transient prompt). An existing `~/.p10k.zsh` is never overwritten. The template needs a Nerd Font in the client terminal; otherwise run `p10k configure` on that machine.
+When `~/.p10k.zsh` is absent, the Linux installer deploys `assets/p10k.zsh` (lean,
+2 lines, nerdfont-v3, transient prompt). Existing Linux prompt files are never
+overwritten. The Mac entry point reuses that exact asset through
+`install-prompt-config.sh`: it preserves custom prompts and updates an unchanged
+managed template with a backup. The wizard is optional on both platforms.
 
 Set a different proxy by exporting `PROXY_URL` before running the installer. Keep Git proxy settings on the same endpoint.
 
