@@ -17,7 +17,7 @@ Existing clones are reused. The installer records the deployed template hash; la
 
 ## Local Choices
 
-Powerlevel10k configuration remains machine-local because its wizard is interactive and depends on terminal font capabilities. If `~/.p10k.zsh` is absent, the installer reports `p10k configure` as a final manual action.
+When `~/.p10k.zsh` is absent, the installer deploys `assets/p10k.zsh` (lean, 2 lines, nerdfont-v3, transient prompt). An existing `~/.p10k.zsh` is never overwritten. The template needs a Nerd Font in the client terminal; otherwise run `p10k configure` on that machine.
 
 Set a different proxy by exporting `PROXY_URL` before running the installer. Keep Git proxy settings on the same endpoint.
 

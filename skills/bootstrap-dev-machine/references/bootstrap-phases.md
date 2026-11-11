@@ -50,7 +50,7 @@ The script cannot safely automate account or machine-private state:
 
 - sing-box subscription/configuration content;
 - GitHub, Hugging Face, Weights & Biases, and Context7 authentication;
-- interactive Powerlevel10k prompt choices;
+- Powerlevel10k prompt changes beyond the deployed `assets/p10k.zsh` template;
 - private or host-specific handoff additions beyond the public generated baseline;
 - cc-switch installation when no supported system package is available.
 

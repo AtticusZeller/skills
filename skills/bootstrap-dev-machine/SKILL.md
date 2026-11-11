@@ -52,6 +52,7 @@ On Windows, run `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-
 - `references/tmux-baseline.md`: Oh my tmux paths, customization, and session-preserving reload.
 - `references/ghostty-baseline.md`: Ghostty installer command, supported distributions, configuration path, and local-change recovery.
 - `assets/zshrc.server`: reusable public server `.zshrc` template with proxy, CUDA, uv, conda/mamba, NVM, PATH, and virtualenv defaults.
+- `assets/p10k.zsh`: Powerlevel10k template deployed to `~/.p10k.zsh` only when absent; requires a Nerd Font.
 - `assets/tmux-defaults.conf`: mouse support and right-click menus enabled on fresh tmux installations.
 - `assets/ghostty-config.ghostty`: Ghostty 1.3+ configuration template deployed to `$XDG_CONFIG_HOME/ghostty/config.ghostty`.
 - `assets/{AGENTS,README}.machine[.windows].template.md`: public machine handoff templates rendered by the installer (`--platform windows` selects the Windows set).

@@ -429,8 +429,12 @@ install_zsh_baseline() {
     fi
   fi
 
-  if [[ ! -f "${HOME}/.p10k.zsh" ]]; then
-    manual "Run p10k configure in an interactive zsh session"
+  local p10k_template="${asset_dir}/p10k.zsh"
+  [[ -f "${p10k_template}" ]] || die "Missing asset: ${p10k_template}"
+  if [[ -f "${HOME}/.p10k.zsh" ]]; then
+    info "Keeping existing ~/.p10k.zsh"
+  else
+    run install -m 0644 "${p10k_template}" "${HOME}/.p10k.zsh"
   fi
 
   local zsh_path
