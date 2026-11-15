@@ -1,5 +1,9 @@
 # macOS Execution Notes
 
+## Git Worktrees
+
+- By default, create worktrees at `~/worktree/<repo>/<branch-name>`.
+
 ## Python
 
 - Prefer uv for Python execution and dependency management.
