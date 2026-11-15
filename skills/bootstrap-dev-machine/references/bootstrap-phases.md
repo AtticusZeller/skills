@@ -31,16 +31,15 @@ The entry script performs these phases in order:
 2. Detects apt, dnf, or yum; installs required packages including ripgrep (`rg`) and attempts optional developer utilities.
 3. Downloads the pinned Miniforge installer and matching checksum, verifies it, installs `conda` and `mamba` non-interactively, initializes their zsh hooks, and disables automatic base activation.
 4. Installs uv, Python, sing-box-cli, nvitop, and Weights & Biases.
-5. Deploys `sbc-start`, `sbc-stop`, and `sbc-status` for non-systemd hosts.
-6. Installs nvm and Node, then sets the requested Node version as default.
-7. Installs Claude Code and the Hugging Face CLI; checks other developer CLIs.
-8. Installs Oh My Zsh, Powerlevel10k, plugins, and the public server `.zshrc`.
-9. Installs Ghostty on apt/dpkg hosts with the documented ghostty-ubuntu installer command when it is missing, then deploys `assets/ghostty-config.ghostty` to the Ghostty configuration path and preserves locally modified files.
-10. Installs Oh my tmux from upstream with an XDG configuration link and a create-if-absent local customization file with mouse and right-click menus enabled; existing sessions are kept running.
-11. Installs personal and external agent skills from the repository manifest.
-12. Creates `~/.codex/AGENTS.md` and `~/README.md` from bundled templates when absent, then adds one import of the shared global instructions to `~/.claude/CLAUDE.md`, preserving existing rules.
-13. When explicitly enabled, backs up and appends the Alibaba Cloud DSW OSS persistence prompt to `~/.codex/AGENTS.md`.
-14. Runs `check-dev-machine.sh` and prints all remaining manual work together.
+5. Installs nvm and Node, then sets the requested Node version as default.
+6. Installs Claude Code and the Hugging Face CLI; checks other developer CLIs.
+7. Installs Oh My Zsh, Powerlevel10k, plugins, and the public server `.zshrc`.
+8. Installs Ghostty on apt/dpkg hosts with the documented ghostty-ubuntu installer command when it is missing, then deploys `assets/ghostty-config.ghostty` to the Ghostty configuration path and preserves locally modified files.
+9. Installs Oh my tmux from upstream with an XDG configuration link and a create-if-absent local customization file with mouse and right-click menus enabled; existing sessions are kept running.
+10. Installs personal and external agent skills from the repository manifest.
+11. Creates `~/.codex/AGENTS.md` and `~/README.md` from bundled templates when absent, then adds one import of the shared global instructions to `~/.claude/CLAUDE.md`, preserving existing rules.
+12. When explicitly enabled, backs up and appends the Alibaba Cloud DSW OSS persistence prompt to `~/.codex/AGENTS.md`.
+13. Runs `check-dev-machine.sh` and prints all remaining manual work together.
 
 Each phase is safe to rerun: existing tools and clones are reused, `.zshrc` and the Ghostty configuration are backed up only when the deployed template differs, and locally edited Ghostty configurations are preserved for manual merge.
 
@@ -65,4 +64,3 @@ Use the focused references only after a failure:
 - `zsh-baseline.md` for shell customization and startup diagnosis.
 - `tmux-baseline.md` for configuration paths, conflicts, customization, and safe reload.
 - `ghostty-baseline.md` for the terminal installer command, configuration path, supported distributions, and local-change recovery.
-- `sbc-service-scripts.md` for sing-box helper behavior and configuration boundaries.

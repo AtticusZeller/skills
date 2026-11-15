@@ -55,7 +55,6 @@ On Windows, run `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-
 - `references/bootstrap-phases.md`: installer inputs, automated phases, manual boundaries, and failure handling.
 - `references/windows-bootstrap.md`: Windows inputs, phases, boundaries, and recovery.
 - `references/macos-bootstrap.md`: MacBook inputs, tools, shell configuration, default terminal, and recovery.
-- `references/sbc-service-scripts.md`: behavior and configuration boundaries for the deployed sing-box helpers.
 - `references/zsh-baseline.md`: resulting shell state and focused startup diagnosis.
 - `references/tmux-baseline.md`: Oh my tmux paths, customization, and session-preserving reload.
 - `references/ghostty-baseline.md`: Ghostty installer command, supported distributions, configuration path, and local-change recovery.
@@ -66,7 +65,6 @@ On Windows, run `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-
 - `assets/ghostty-config.ghostty`: Ghostty 1.3+ configuration template deployed to `$XDG_CONFIG_HOME/ghostty/config.ghostty`.
 - `assets/{AGENTS,README}.machine[.macos|.windows].template.md`: public machine handoff templates rendered by the installer (`--platform macos` or `--platform windows` selects the corresponding set).
 - `assets/winget-apps.txt`: winget GUI application IDs; command-line tools belong in Scoop.
-- `assets/sbc-{start,stop,status}`: executable user-level sing-box helpers for non-systemd hosts.
 
 ## Completion Criteria
 

@@ -87,9 +87,6 @@ else
   check_path "$HOME/miniforge3/bin/mamba"
 fi
 check_path "$HOME/.config/sing-box/config.json"
-check_path "$HOME/.local/bin/sbc-start"
-check_path "$HOME/.local/bin/sbc-stop"
-check_path "$HOME/.local/bin/sbc-status"
 check_path "$HOME/.zshrc"
 check_path "$HOME/.p10k.zsh"
 check_path "$HOME/.oh-my-zsh"

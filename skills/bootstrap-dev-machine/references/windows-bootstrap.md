@@ -29,7 +29,7 @@ Git Bash is located from `git --exec-path`, never from `bash` on PATH, because `
 
 ## Not Installed on Windows
 
-Conda/Miniforge, zsh/Oh My Zsh, Oh my tmux, the `sbc-start/stop/status` helpers, and the DSW persistent-storage prompt. Manage sing-box with `sbc config` and `sbc service` from an elevated PowerShell, or `sbc run`.
+Conda/Miniforge, zsh/Oh My Zsh, Oh my tmux, and the DSW persistent-storage prompt. Manage sing-box with `sbc config` and `sbc service` from an elevated PowerShell, or `sbc run`.
 
 ## Recovery
 

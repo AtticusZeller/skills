@@ -312,16 +312,9 @@ install_python_tools() {
   install_uv_tool wandb wandb
 }
 
-deploy_sbc_helpers() {
-  phase "sing-box helpers"
-  local name
-  for name in sbc-start sbc-stop sbc-status; do
-    [[ -f "${asset_dir}/${name}" ]] || die "Missing asset: ${asset_dir}/${name}"
-    run install -m 0755 "${asset_dir}/${name}" "${HOME}/.local/bin/${name}"
-  done
-
+check_sing_box_config() {
   if [[ ! -f "${HOME}/.config/sing-box/config.json" ]]; then
-    manual "Create ~/.config/sing-box/config.json, then run sbc-start"
+    manual "Create ~/.config/sing-box/config.json before running sing-box"
   fi
 }
 
@@ -565,7 +558,7 @@ configure_proxy
 install_system_packages
 install_conda
 install_python_tools
-deploy_sbc_helpers
+check_sing_box_config
 install_node
 install_developer_clis
 install_zsh_baseline

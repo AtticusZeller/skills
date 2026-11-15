@@ -4,20 +4,7 @@ This machine uses the public `bootstrap-dev-machine` baseline: uv/Python, Minifo
 
 ## Quick Start
 
-Start and inspect the local proxy:
-
-```bash
-sbc-start
-sbc-status
-```
-
-The expected proxy endpoint is `{{PROXY_URL}}`. Stop the background process with:
-
-```bash
-sbc-stop
-```
-
-Use `sbc run` for foreground diagnosis.
+Use `sbc run` to start sing-box in the foreground. The expected proxy endpoint is `{{PROXY_URL}}`.
 
 ## Toolchain
 
@@ -37,8 +24,6 @@ npm -v
 ## Important Paths
 
 - sing-box config: `~/.config/sing-box/config.json`
-- sing-box helpers: `~/.local/bin/sbc-start`, `sbc-stop`, `sbc-status`
-- sing-box state: `~/.local/state/sbc/`
 - default Miniforge prefix: `~/miniforge3`
 - Oh my tmux checkout: `~/.local/share/oh-my-tmux`
 - tmux config and local customizations: `~/.config/tmux/tmux.conf` and `tmux.conf.local` (under `$XDG_CONFIG_HOME/tmux` when set)
@@ -63,7 +48,6 @@ npx skills add AtticusZeller/skills --skill '*' -g -y --full-depth
 
 ```bash
 sbc version
-sbc-status
 uv --version
 uv python find {{PYTHON_VERSION}}
 conda --version

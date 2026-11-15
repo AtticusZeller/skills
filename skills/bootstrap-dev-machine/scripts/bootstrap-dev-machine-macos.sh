@@ -3,7 +3,6 @@ set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/../../.." && pwd)"
-asset_dir="${script_dir}/../assets"
 dry_run=false
 skip_packages=false
 skip_conda=false
@@ -120,10 +119,6 @@ if [[ "$configure_only" != true ]]; then
   tmux_args=(bash "${script_dir}/install-tmux-baseline.sh")
   [[ "$dry_run" != true ]] || tmux_args+=(--dry-run)
   run "${tmux_args[@]}"
-  run mkdir -p "$HOME/.local/bin"
-  for helper in sbc-start sbc-stop sbc-status; do
-    run install -m 0755 "$asset_dir/$helper" "$HOME/.local/bin/$helper"
-  done
 fi
 
 prompt_args=(--target-home "$HOME")
@@ -153,5 +148,5 @@ fi
 printf '\n[MANUAL] Account logins: gh auth login; hf auth login; wandb login; codex; claude.\n'
 printf '[MANUAL] Context7 account setup: ctx7 setup --cli --claude --codex\n'
 printf '[INFO] Shared Powerlevel10k prompt deployed; p10k configure is optional customization.\n'
-printf '[MANUAL] Provide a private sing-box config before starting sbc-start.\n'
+printf '[MANUAL] Provide a private sing-box config before running sing-box.\n'
 printf '[INFO] Open a new Ghostty window to load the MacBook shell configuration.\n'
