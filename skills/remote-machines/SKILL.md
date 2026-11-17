@@ -21,6 +21,10 @@ the remote side; everything runs locally over SSH.
 
 ## Workflow
 
+When adding a machine, configure public-key login with `ssh-copy-id` after adding its SSH
+configuration. If the user has already installed the key, do not repeat it. Never store passwords
+in SSH configuration or the registry.
+
 1. **Read the registry first.** When a task touches a machine, read its YAML (`extends` and
    `_defaults.yaml` included) before opening any SSH session. Do not explore the host to rediscover
    what the registry already says.
