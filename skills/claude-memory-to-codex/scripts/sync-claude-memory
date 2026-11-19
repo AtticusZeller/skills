@@ -1,0 +1,214 @@
+#!/usr/bin/env -S uv run --script --quiet
+# /// script
+# requires-python = ">=3.10"
+# dependencies = []
+# ///
+"""Mirror Claude Code auto-memory files into Codex memory ad-hoc notes.
+
+Each ~/.claude/projects/<project>/memory/<name>.md (except MEMORY.md) becomes one
+note under $CODEX_HOME/memories/extensions/ad_hoc/notes/. Codex's own memory
+consolidation reads new or changed notes and folds them into MEMORY.md and
+memory_summary.md. Re-running only rewrites notes whose source changed.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import re
+import sys
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+
+NOTE_PREFIX = "claude-memory--"
+MARKER = "<!-- synced-from-claude-memory:"
+
+
+@dataclass
+class Item:
+    source: Path
+    project_dir: str
+    project_cwd: str | None
+    note_name: str
+
+
+def resolve_project_cwd(project_dir: Path) -> str | None:
+    """Find the real cwd for an encoded Claude project dir name."""
+    for jsonl in sorted(project_dir.glob("*.jsonl"), key=lambda p: p.stat().st_mtime, reverse=True)[:5]:
+        try:
+            with jsonl.open(encoding="utf-8") as fh:
+                for _, line in zip(range(50), fh):
+                    match = re.search(r'"cwd":"([^"]+)"', line)
+                    if match:
+                        return match.group(1)
+        except OSError:
+            continue
+    return decode_by_filesystem(project_dir.name)
+
+
+def decode_by_filesystem(encoded: str) -> str | None:
+    """Decode '-home-u-a-b' by walking the filesystem: '-' is '/', '.', or a literal '-'."""
+    parts = encoded.lstrip("-").split("-")
+
+    def walk(base: Path, rest: list[str]) -> Path | None:
+        if not rest:
+            return base
+        for take in range(1, len(rest) + 1):
+            chunk = rest[:take]
+            for joiner in ("-", ".", "_", " "):
+                name = joiner.join(chunk)
+                candidate = base / name
+                if candidate.is_dir():
+                    found = walk(candidate, rest[take:])
+                    if found:
+                        return found
+        return None
+
+    found = walk(Path("/"), parts)
+    return str(found) if found else None
+
+
+def split_frontmatter(text: str) -> tuple[dict[str, str], str]:
+    if not text.startswith("---\n"):
+        return {}, text
+    end = text.find("\n---", 4)
+    if end == -1:
+        return {}, text
+    meta: dict[str, str] = {}
+    for line in text[4:end].splitlines():
+        match = re.match(r"\s*(name|description|type):\s*(.*)$", line)
+        if match and match.group(1) not in meta:
+            meta[match.group(1)] = match.group(2).strip().strip('"')
+    return meta, text[end + 4 :].lstrip("\n")
+
+
+def render_note(item: Item, home: Path) -> str:
+    text = item.source.read_text(encoding="utf-8")
+    meta, body = split_frontmatter(text)
+    digest = hashlib.sha256(text.encode()).hexdigest()[:16]
+    mtime = datetime.fromtimestamp(item.source.stat().st_mtime, timezone.utc).strftime("%Y-%m-%d")
+    cwd = item.project_cwd or "(project directory no longer exists)"
+    scope = "global (any cwd)" if item.project_cwd == str(home) else f"cwd={cwd}"
+    source = "~/" + str(item.source.relative_to(home))
+    lines = [
+        f"# {meta.get('name') or item.source.stem}",
+        "",
+        f"- origin: Claude Code auto-memory `{source}`",
+        f"- applies_to: {scope}",
+        f"- kind: {meta.get('type') or 'unspecified'}",
+        f"- last_edited: {mtime}",
+    ]
+    if meta.get("description"):
+        lines.append(f"- summary: {meta['description']}")
+    lines += ["", body.rstrip(), "", f"{MARKER} {source} sha256={digest} -->", ""]
+    return "\n".join(lines)
+
+
+def note_name_for(project_dir: str, stem: str, home_encoded: str) -> str:
+    short = project_dir
+    if short == home_encoded:
+        short = "home"
+    elif short.startswith(home_encoded + "-"):
+        short = short[len(home_encoded) + 1 :]
+    slug = re.sub(r"[^A-Za-z0-9._-]+", "-", f"{short}--{stem}").strip("-")
+    return f"{NOTE_PREFIX}{slug}.md"
+
+
+def load_excludes(path: Path) -> set[str]:
+    if not path.is_file():
+        return set()
+    out = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.split("#", 1)[0].strip()
+        if line:
+            out.add(line)
+    return out
+
+
+def main() -> int:
+    home = Path.home()
+    codex_home = Path(os.environ.get("CODEX_HOME", home / ".codex"))
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--claude-projects", type=Path, default=home / ".claude" / "projects")
+    parser.add_argument("--memory-root", type=Path, default=codex_home / "memories")
+    parser.add_argument(
+        "--exclude-file",
+        type=Path,
+        default=home / ".config" / "claude-memory-to-codex" / "exclude.txt",
+        help="one '<project-dir>/<file>.md' or '<project-dir>' per line",
+    )
+    parser.add_argument("--include-missing", action="store_true", help="also sync projects whose directory is gone")
+    parser.add_argument("--prune", action="store_true", help="delete synced notes whose Claude source is gone or excluded")
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--json", action="store_true", help="print a JSON report")
+    args = parser.parse_args()
+
+    ad_hoc = args.memory_root / "extensions" / "ad_hoc"
+    if not (ad_hoc / "instructions.md").is_file():
+        print(f"error: {ad_hoc}/instructions.md missing; enable Codex memories and run Codex once", file=sys.stderr)
+        return 2
+    notes_dir = ad_hoc / "notes"
+    excludes = load_excludes(args.exclude_file)
+    home_encoded = str(home).replace("/", "-")
+
+    report: dict[str, list[str]] = {k: [] for k in ("created", "updated", "unchanged", "skipped", "orphaned", "pruned")}
+    wanted: set[str] = set()
+
+    for project_dir in sorted(p for p in args.claude_projects.iterdir() if (p / "memory").is_dir()):
+        cwd = resolve_project_cwd(project_dir)
+        cwd_exists = bool(cwd) and Path(cwd).is_dir()
+        for source in sorted((project_dir / "memory").glob("*.md")):
+            if source.name == "MEMORY.md":
+                continue
+            key = f"{project_dir.name}/{source.name}"
+            if project_dir.name in excludes or key in excludes:
+                report["skipped"].append(f"{key} (excluded)")
+                continue
+            if not cwd_exists and not args.include_missing:
+                report["skipped"].append(f"{key} (project dir missing)")
+                continue
+            item = Item(source, project_dir.name, cwd if cwd_exists else None, note_name_for(project_dir.name, source.stem, home_encoded))
+            wanted.add(item.note_name)
+            content = render_note(item, home)
+            target = notes_dir / item.note_name
+            old = target.read_text(encoding="utf-8") if target.is_file() else None
+            if old == content:
+                report["unchanged"].append(item.note_name)
+                continue
+            report["updated" if old is not None else "created"].append(item.note_name)
+            if not args.dry_run:
+                notes_dir.mkdir(parents=True, exist_ok=True)
+                tmp = target.with_suffix(".md.tmp")
+                tmp.write_text(content, encoding="utf-8")
+                tmp.replace(target)
+
+    if notes_dir.is_dir():
+        for note in sorted(notes_dir.glob(f"{NOTE_PREFIX}*.md")):
+            if note.name in wanted or MARKER not in note.read_text(encoding="utf-8"):
+                continue
+            if args.prune:
+                report["pruned"].append(note.name)
+                if not args.dry_run:
+                    note.unlink()
+            else:
+                report["orphaned"].append(note.name)
+
+    if args.json:
+        print(json.dumps({"notes_dir": str(notes_dir), "dry_run": args.dry_run, **report}, ensure_ascii=False, indent=2))
+    else:
+        print(f"notes_dir: {notes_dir}{'  (dry run)' if args.dry_run else ''}")
+        for key, values in report.items():
+            if values:
+                print(f"{key} ({len(values)}):")
+                for value in values:
+                    print(f"  {value}")
+        if report["orphaned"]:
+            print("orphaned notes kept; rerun with --prune to delete them")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

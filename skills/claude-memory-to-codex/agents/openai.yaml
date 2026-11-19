@@ -1,0 +1,4 @@
+interface:
+  display_name: "Claude Memory to Codex"
+  short_description: "Sync Claude Code memories into Codex ad-hoc memory notes"
+  default_prompt: "Use $claude-memory-to-codex to sync Claude Code memories into Codex memory."

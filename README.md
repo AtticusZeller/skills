@@ -109,6 +109,19 @@ to your own work copy on a shared server without pushing to GitHub first. `boots
 registry from `~/.ssh/config` plus one read-only probe per host. Scripts need only `uv` locally;
 `scripts/test-remote-machines.sh` checks registry merging and command composition without SSH.
 
+Install the Claude-to-Codex memory sync skill globally:
+
+```bash
+npx skills add AtticusZeller/skills --skill claude-memory-to-codex -g -a codex -a claude-code -a cursor -y --full-depth
+```
+
+This skill mirrors Claude Code auto-memory files into Codex's `ad_hoc` memory extension
+(`~/.codex/memories/extensions/ad_hoc/notes/`), one note per memory, so Codex's own consolidation
+folds them into its memory. `scripts/sync-claude-memory` is idempotent, skips projects whose
+directory is gone, reads exclusions from `~/.config/claude-memory-to-codex/exclude.txt`, and only
+deletes its own notes with `--prune`. `scripts/test-sync-claude-memory.sh` checks note format,
+idempotency, updates, and pruning in a temporary home.
+
 Install all personal skills:
 
 ```bash
