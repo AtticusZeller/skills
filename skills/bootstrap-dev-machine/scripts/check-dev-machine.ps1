@@ -20,12 +20,12 @@ function Find-Cmd([string]$Name) {
         Select-Object -First 1
 }
 
-function Test-Cmd([string]$Name) {
+function Test-Cmd([string]$Name, [string]$Missing = 'missing') {
     $command = Find-Cmd $Name
     if ($command) {
         Write-Check 'OK' 'command' $Name $command.Source
     } else {
-        Write-Check 'WARN' 'command' $Name 'missing'
+        Write-Check 'WARN' 'command' $Name $Missing
     }
 }
 
@@ -55,6 +55,7 @@ foreach ($name in @('scoop', 'winget', 'git', 'rg', 'uv', 'sbc', 'node', 'npm', 
         'codex', 'claude', 'gh', 'hf', 'cc-switch', 'nvitop', 'wandb')) {
     Test-Cmd $name
 }
+Test-Cmd 'pi' 'missing; install: npm install -g --ignore-scripts @earendil-works/pi-coding-agent'
 
 Write-Host ''
 Write-Host '== Versions =='
@@ -66,6 +67,7 @@ Show-Version 'node' 'node' @('-v')
 Show-Version 'npm' 'npm' @('-v')
 Show-Version 'codex' 'codex' @('--version')
 Show-Version 'claude' 'claude' @('--version')
+Show-Version 'pi' 'pi' @('--version')
 Show-Version 'gh' 'gh' @('--version')
 Show-Version 'hf' 'hf' @('--version')
 Show-Version 'uv python' 'uv' @('python', 'find')

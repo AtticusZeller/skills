@@ -20,7 +20,7 @@ powershell -ExecutionPolicy Bypass -File scripts\bootstrap-dev-machine.ps1
 3. winget GUI applications from `assets/winget-apps.txt`; IDs that are already installed are skipped.
 4. uv (official installer), uv Python, and the sing-box-cli, nvitop, and wandb uv tools.
 5. Node: reuses an existing Node with the requested major version. Otherwise it installs fnm through Scoop, installs and defaults that version, and prepends fnm's `aliases\default` to the user PATH so non-interactive agent shells find Node without profile hooks.
-6. Claude Code and the Hugging Face CLI through their official `install.ps1`, each run in a child PowerShell.
+6. Claude Code and the Hugging Face CLI through their official `install.ps1`, each run in a child PowerShell. Installs Pi with npm and adds npm's global prefix to the user PATH if needed. Codex is checked but still installed manually.
 7. Agent skills: `npx skills add`, then `scripts/install-global-skills.sh` through Git Bash.
 8. Machine handoff: `install-machine-handoff.sh --platform windows` through Git Bash, which renders the Windows templates.
 9. `check-dev-machine.ps1` validation and the consolidated manual follow-up list.

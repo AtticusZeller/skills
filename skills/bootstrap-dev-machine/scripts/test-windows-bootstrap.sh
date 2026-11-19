@@ -41,6 +41,10 @@ if grep -Eqi 'miniforge|mamba' "${scripts[0]}"; then
 fi
 pass "Windows installer does not install Conda"
 
+grep -Fq "Invoke-Native 'npm.cmd' @('install', '-g', '--ignore-scripts', '@earendil-works/pi-coding-agent')" "${scripts[0]}" || fail "Windows bootstrap must install Pi"
+grep -Fq "Show-Version 'pi' 'pi' @('--version')" "${scripts[1]}" || fail "Windows validation must check the Pi version"
+pass "Windows bootstrap includes Pi installation and validation"
+
 powershell=""
 for candidate in pwsh powershell.exe powershell; do
   if command -v "$candidate" >/dev/null 2>&1; then

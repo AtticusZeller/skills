@@ -32,7 +32,7 @@ The entry script performs these phases in order:
 3. Downloads the pinned Miniforge installer and matching checksum, verifies it, installs `conda` and `mamba` non-interactively, initializes their zsh hooks, and disables automatic base activation.
 4. Installs uv, Python, sing-box-cli, nvitop, and Weights & Biases.
 5. Installs nvm and Node, then sets the requested Node version as default.
-6. Installs Claude Code and the Hugging Face CLI; checks other developer CLIs.
+6. Installs Codex and Claude Code with their official installers, Pi with npm under nvm, and the Hugging Face CLI; checks other developer CLIs.
 7. Installs Oh My Zsh, Powerlevel10k, plugins, and the public server `.zshrc`.
 8. Installs Ghostty on apt/dpkg hosts with the documented ghostty-ubuntu installer command when it is missing, then deploys `assets/ghostty-config.ghostty` to the Ghostty configuration path and preserves locally modified files.
 9. Installs Oh my tmux from upstream with an XDG configuration link and a create-if-absent local customization file with mouse and right-click menus enabled; existing sessions are kept running.

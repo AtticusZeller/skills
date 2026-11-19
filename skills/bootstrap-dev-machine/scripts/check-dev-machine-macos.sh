@@ -24,6 +24,13 @@ if [[ -s "$HOME/.nvm/nvm.sh" ]]; then
 else
   echo '[MISSING] nvm'; missing=1
 fi
+if command -v pi >/dev/null 2>&1; then
+  printf '[OK] pi: %s\n' "$(command -v pi)"
+  pi --version
+else
+  echo '[MISSING] pi; install: curl -fsSL https://pi.dev/install.sh | sh'
+  missing=1
+fi
 if [[ -x "$HOME/miniforge3/bin/conda" ]]; then
   "$HOME/miniforge3/bin/conda" --version
   "$HOME/miniforge3/bin/mamba" --version

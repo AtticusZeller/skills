@@ -1,6 +1,6 @@
 ---
 name: bootstrap-dev-machine
-description: Configure a Linux GPU/DSW development machine, a macOS/MacBook workstation with Homebrew, or Windows through PowerShell. Includes ripgrep, Codex, uv/Python 3.12, Miniforge/conda/mamba, Claude Code, nvm/Node 24, Context7, shared skills, zsh/tmux, Ghostty, Git/GitHub/Hugging Face tooling, and shared agent instructions. Use when bootstrapping, reproducing, migrating, auditing, or repairing this development environment on a new machine.
+description: Configure a Linux GPU/DSW development machine, a macOS/MacBook workstation with Homebrew, or Windows through PowerShell. Includes ripgrep, Codex, uv/Python 3.12, Miniforge/conda/mamba, Claude Code, Pi, nvm/Node 24, Context7, shared skills, zsh/tmux, Ghostty, Git/GitHub/Hugging Face tooling, and shared agent instructions. Use when bootstrapping, reproducing, migrating, auditing, or repairing this development environment on a new machine.
 ---
 
 # Bootstrap Dev Machine
@@ -18,14 +18,14 @@ On Windows, run `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-
 1. Confirm the host shape: user, shell, PID 1, package manager, writable home, and whether `127.0.0.1:7890` is reachable.
 2. Preview once with `bash scripts/bootstrap-dev-machine.sh --dry-run` when the host is unfamiliar or already configured.
 3. Run `bash scripts/bootstrap-dev-machine.sh` once. On Alibaba Cloud DSW, add `--enable-dsw-persistent-prompt` to append the persistent-storage rule to `~/.codex/AGENTS.md`. Prefer environment variables or its skip flags over manually replaying phase commands.
-4. Inspect the final validation and consolidated manual-follow-up list.
+4. Inspect the final validation and consolidated manual-follow-up list. Bootstrap installs the Pi coding agent by default on Linux, macOS, and Windows. The read-only checks report Pi's version or print an install hint.
 5. Read `references/bootstrap-phases.md` only for inputs, phase boundaries, or a failed phase. Read the focused zsh or sing-box reference only when that subsystem needs diagnosis or customization.
 
 ## Doctor
 
 To check an already configured Linux machine against the repo, run `bash scripts/doctor.sh` from the git checkout of the skills repo. The installed copy also works: it finds the checkout through the skill lock file. Then:
 
-1. Show the user the report. `MISSING` skills: give the printed install command; do not install them unprompted. `EXTRA` is informational only.
+1. Show the user the report. Relay the printed install commands for missing tools or skills; do not install them unprompted. `EXTRA` is informational only.
 2. For each `DRIFT` or `STALE` item, show `doctor.sh --diff <id>` and ask the user with AskUserQuestion which way to go: repo → machine, machine → repo, or keep it and add it to the ignore list (`doctor.sh --ignore <id>`).
 3. Exact-match items (`statusline-script`, `statusline-setting`, `herdr`, `p10k`) sync with `doctor.sh --sync <id> --to local|repo`; it backs up the target and rechecks.
    - `ghostty`, `tmux-local`, `zshrc`, `codex-agents` and `readme` mix shared and personal lines, so merge only the parts the user picks, by hand.
@@ -91,4 +91,4 @@ Consistency rules:
 
 ## Completion Criteria
 
-The machine is ready when the user can run `rg`, `mamba --version`, `sbc version`, use the local proxy, start the configured zsh, Ghostty, and Oh my tmux baselines without errors, run Codex/Claude, use Node 24 through nvm, use uv Python 3.12, manage environments with `conda` and `mamba`, and read `~/.codex/AGENTS.md`. Claude Code must import the shared global instructions from `~/.claude/CLAUDE.md`.
+The machine is ready when the user can run `rg`, `mamba --version`, `sbc version`, use the local proxy, start the configured zsh, Ghostty, and Oh my tmux baselines without errors, run Codex, Claude Code, and Pi, use Node 24 through nvm, use uv Python 3.12, manage environments with `conda` and `mamba`, and read `~/.codex/AGENTS.md`. Claude Code must import the shared global instructions from `~/.claude/CLAUDE.md`.

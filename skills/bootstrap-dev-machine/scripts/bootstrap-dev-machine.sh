@@ -330,6 +330,16 @@ install_node() {
 
 install_developer_clis() {
   phase "Developer CLIs"
+  if ! command -v codex >/dev/null 2>&1; then
+    run_node bash -o pipefail -c 'command -v codex >/dev/null 2>&1 || curl -fsSL https://chatgpt.com/codex/install.sh | sh'
+  else
+    info "codex already installed"
+  fi
+  if ! command -v pi >/dev/null 2>&1; then
+    run_node bash -c 'command -v pi >/dev/null 2>&1 || npm install -g --ignore-scripts @earendil-works/pi-coding-agent'
+  else
+    info "pi already installed"
+  fi
   if ! command -v claude >/dev/null 2>&1; then
     run_shell 'curl -fsSL https://claude.ai/install.sh | bash'
   else
@@ -345,10 +355,6 @@ install_developer_clis() {
   if ! command -v gh >/dev/null 2>&1; then
     warn "gh was not available from the system package manager"
     manual "Install GitHub CLI (gh) from its official package or release"
-  fi
-  if ! command -v codex >/dev/null 2>&1; then
-    warn "codex is not installed automatically"
-    manual "Install Codex with the supported entry point for this host"
   fi
   if ! command -v cc-switch >/dev/null 2>&1; then
     warn "cc-switch is not installed automatically"

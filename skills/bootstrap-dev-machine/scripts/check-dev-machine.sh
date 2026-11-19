@@ -3,6 +3,7 @@ set -u
 
 ok=0
 warn=0
+PATH="$HOME/.local/bin:$PATH"
 
 if [[ -d "$HOME/miniforge3/condabin" ]]; then
   PATH="$HOME/miniforge3/bin:$HOME/miniforge3/condabin:$PATH"
@@ -13,7 +14,7 @@ check_cmd() {
   if command -v "$name" >/dev/null 2>&1; then
     printf 'OK   command %-12s %s\n' "$name" "$(command -v "$name")"
   else
-    printf 'WARN command %-12s missing\n' "$name"
+    printf 'WARN command %-12s missing%s\n' "$name" "${2:+; install: $2}"
     warn=$((warn + 1))
   fi
 }
@@ -36,7 +37,7 @@ check_version() {
 }
 
 echo "== Commands =="
-for cmd in git curl rg uv python3 conda mamba sbc codex claude gh hf cc-switch nvitop wandb zsh tmux ghostty; do
+for cmd in git curl rg uv python3 conda mamba sbc claude gh hf cc-switch nvitop wandb zsh tmux ghostty; do
   check_cmd "$cmd"
 done
 
@@ -50,9 +51,14 @@ else
   printf 'WARN nvm     %s missing\n' "$HOME/.nvm/nvm.sh"
   warn=$((warn + 1))
 fi
+check_cmd codex
+check_cmd pi 'curl -fsSL https://pi.dev/install.sh | sh'
 
 echo
 echo "== Versions =="
+if command -v pi >/dev/null 2>&1; then
+  check_version "pi" pi --version
+fi
 check_version "uv" uv --version
 check_version "rg" rg --version
 check_version "python3" python3 --version

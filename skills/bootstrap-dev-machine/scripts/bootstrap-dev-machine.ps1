@@ -446,6 +446,18 @@ function Install-DeveloperClis {
         Write-Info 'hf already installed'
     }
     Update-SessionPath
+    if (-not (Test-Command 'pi')) {
+        $null = Invoke-Native 'npm.cmd' @('install', '-g', '--ignore-scripts', '@earendil-works/pi-coding-agent')
+        if (-not $DryRun -and -not (Test-Command 'pi')) {
+            $prefix = & (Find-Command 'npm.cmd').Source prefix -g | Select-Object -First 1
+            if ($LASTEXITCODE -ne 0 -or -not $prefix) { throw 'Could not find the npm global prefix for Pi' }
+            Add-UserPath $prefix
+            Update-SessionPath
+            if (-not (Test-Command 'pi')) { throw 'Pi installation completed but pi is not on PATH' }
+        }
+    } else {
+        Write-Info 'pi already installed'
+    }
 
     if (-not (Test-Command 'gh')) {
         Write-Warning2 'gh was not installed by Scoop'

@@ -81,6 +81,22 @@ expect tmux-local OK
 expect zshrc DRIFT
 expect codex-agents OK
 
+# Package checks use the current PATH and never install a missing Pi.
+mkdir -p "$tmp_dir/bin"
+for tool in awk basename bash cat cmp diff dirname git grep head install jq mkdir mktemp mv paste rm wc; do
+  ln -s "$(command -v "$tool")" "$tmp_dir/bin/$tool"
+done
+if PATH="$tmp_dir/bin" bash "$doctor" --repo "$repo" >"$tmp_dir/out"; then
+  fail "doctor should exit 1 with missing packages"
+fi
+expect command:pi MISSING
+grep -Fq 'curl -fsSL https://pi.dev/install.sh | sh' "$tmp_dir/out" || fail "missing Pi install hint"
+printf '#!/bin/bash\n[[ "$1" == --version ]] && echo 1.2.3\n' >"$tmp_dir/bin/pi"
+chmod +x "$tmp_dir/bin/pi"
+PATH="$tmp_dir/bin" bash "$repo/skills/bootstrap-dev-machine/scripts/check-dev-machine.sh" >"$tmp_dir/out"
+grep -Eq '^INFO pi +1\.2\.3$' "$tmp_dir/out" || fail "missing Pi version"
+! grep -Fq 'https://pi.dev/install.sh' "$tmp_dir/out" || fail "install hint printed for installed Pi"
+
 # Section edits are drift; --diff names only the changed section.
 sed -i 's/^- Prefer uv for Python/- Prefer pip for Python/' "$home/.codex/AGENTS.md"
 run >"$tmp_dir/out" || true

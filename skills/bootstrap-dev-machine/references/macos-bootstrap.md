@@ -10,7 +10,7 @@ personal skills checkout at `~/dev/skills`. Preview with `--dry-run` before setu
 - Homebrew manages Git, gh, ripgrep, jq, bat, fd, fzf, tmux, uv, Bash, coreutils, findutils, GNU sed,
   ShellCheck, the native sing-box core, Ghostty, its font, Codex CLI, and Claude Code.
 - uv installs Python 3.12 and isolated `hf`, `wandb`, and `sbc` tools. `sbc` uses the Homebrew core on macOS; the Python binary wheel is Linux-only.
-- nvm installs Node 24; Miniforge installs Conda/Mamba at `~/miniforge3` from a
+- nvm installs Node 24, then npm installs Pi if missing. Miniforge installs Conda/Mamba at `~/miniforge3` from a
   pinned Darwin release with SHA256 verification. Base auto-activation is disabled.
 - Oh My Zsh, Powerlevel10k, autosuggestions, highlighting, full-autoupdate, and bat
   plugins are cloned from their upstream repositories. The system `/bin/zsh` is

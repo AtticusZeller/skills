@@ -87,6 +87,7 @@ if [[ "$configure_only" != true ]]; then
   else
     echo "[DRY-RUN] nvm install ${node_version}; nvm alias default ${node_version}"
   fi
+  command -v pi >/dev/null 2>&1 || run npm install -g --ignore-scripts @earendil-works/pi-coding-agent
 
   if [[ "$skip_conda" != true ]]; then
     prefix="$HOME/miniforge3"
