@@ -73,7 +73,6 @@ Show-Version 'uv python' 'uv' @('python', 'find')
 Write-Host ''
 Write-Host '== Paths =='
 Test-PathEntry (Join-Path $HOME '.local\bin')
-Test-PathEntry (Join-Path $HOME 'README.md')
 Test-PathEntry (Join-Path $HOME '.codex\AGENTS.md')
 Test-PathEntry (Join-Path $HOME '.claude\CLAUDE.md')
 Test-PathEntry (Join-Path $HOME '.agents\skills')

@@ -30,7 +30,7 @@ run_installer() {
 fresh="${tmp_dir}/fresh"
 mkdir -p "$fresh"
 run_installer "$fresh"
-[[ -f "${fresh}/.codex/AGENTS.md" && -f "${fresh}/README.md" ]] ||
+[[ -f "${fresh}/.codex/AGENTS.md" && ! -e "${fresh}/README.md" ]] ||
   fail "Fresh handoff files were not created"
 [[ ! -e "${fresh}/AGENTS.md" ]] ||
   fail "Installer created duplicate home-level instructions"
@@ -39,22 +39,9 @@ sed \
   -e 's|{{PYTHON_VERSION}}|3.12|g' \
   -e 's|{{NODE_VERSION}}|24|g' \
   "${asset_dir}/AGENTS.machine.template.md" >"${tmp_dir}/AGENTS.expected.md"
-sed \
-  -e 's|{{PROXY_URL}}|http://127.0.0.1:7890|g' \
-  -e 's|{{PYTHON_VERSION}}|3.12|g' \
-  -e 's|{{NODE_VERSION}}|24|g' \
-  "${asset_dir}/README.machine.template.md" >"${tmp_dir}/README.expected.md"
 cmp -s "${fresh}/.codex/AGENTS.md" "${tmp_dir}/AGENTS.expected.md" ||
   fail "Rendered AGENTS.md does not preserve template fidelity"
-cmp -s "${fresh}/README.md" "${tmp_dir}/README.expected.md" ||
-  fail "Rendered README.md does not preserve template fidelity"
-grep -Fq '`http://127.0.0.1:7890`' "${fresh}/README.md" ||
-  fail "Proxy URL was not rendered"
-grep -Fq 'Python `3.12`' "${fresh}/README.md" ||
-  fail "Python version was not rendered"
-grep -Fq 'Node `24`' "${fresh}/README.md" ||
-  fail "Node version was not rendered"
-if grep -Eq '\{\{[^}]+\}\}' "${fresh}/.codex/AGENTS.md" "${fresh}/README.md"; then
+if grep -Eq '\{\{[^}]+\}\}' "${fresh}/.codex/AGENTS.md"; then
   fail "Rendered handoff contains unresolved placeholders"
 fi
 pass "fresh machine handoff is rendered deterministically"
@@ -64,12 +51,9 @@ cmp -s "${fresh}/.claude/CLAUDE.md" "${tmp_dir}/claude.expected" ||
 cp "${fresh}/.claude/CLAUDE.md" "${tmp_dir}/claude.before"
 
 cp "${fresh}/.codex/AGENTS.md" "${tmp_dir}/agents.before"
-cp "${fresh}/README.md" "${tmp_dir}/readme.before"
 run_installer "$fresh"
 cmp -s "${fresh}/.codex/AGENTS.md" "${tmp_dir}/agents.before" ||
   fail "Second run changed AGENTS.md"
-cmp -s "${fresh}/README.md" "${tmp_dir}/readme.before" ||
-  fail "Second run changed README.md"
 pass "existing handoff files remain unchanged"
 cmp -s "${fresh}/.claude/CLAUDE.md" "${tmp_dir}/claude.before" ||
   fail "Second run duplicated the Claude import"
@@ -106,7 +90,7 @@ pass "shared global instructions preserve custom rules and existing imports"
 windows="${tmp_dir}/windows"
 mkdir -p "$windows"
 run_installer "$windows" --platform windows
-for name in AGENTS README; do
+for name in AGENTS; do
   sed \
     -e 's|{{PROXY_URL}}|http://127.0.0.1:7890|g' \
     -e 's|{{PYTHON_VERSION}}|3.12|g' \
@@ -115,11 +99,9 @@ for name in AGENTS README; do
 done
 cmp -s "${windows}/.codex/AGENTS.md" "${tmp_dir}/AGENTS.windows.expected.md" ||
   fail "Rendered Windows AGENTS.md does not preserve template fidelity"
-cmp -s "${windows}/README.md" "${tmp_dir}/README.windows.expected.md" ||
-  fail "Rendered Windows README.md does not preserve template fidelity"
 cmp -s "${windows}/.claude/CLAUDE.md" "${tmp_dir}/claude.expected" ||
   fail "Windows handoff did not install the Claude global import"
-if grep -q $'\r' "${windows}/.codex/AGENTS.md" "${windows}/README.md"; then
+if grep -q $'\r' "${windows}/.codex/AGENTS.md"; then
   fail "Rendered Windows handoff contains CRLF line endings"
 fi
 if run_installer "${tmp_dir}/fresh" --platform unsupported >/dev/null 2>&1; then

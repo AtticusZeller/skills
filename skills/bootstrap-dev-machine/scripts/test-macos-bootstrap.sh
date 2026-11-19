@@ -43,7 +43,8 @@ with tempfile.TemporaryDirectory() as temp:
     assert subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode != 0
     assert ghostty.is_symlink() and shell.read_bytes() == edited
     subprocess.run(['bash', str(scripts / 'install-machine-handoff.sh'), '--target-home', str(home), '--platform', 'macos', '--proxy-url', 'disabled'], check=True)
-    for name, path in [('AGENTS', home / '.codex/AGENTS.md'), ('README', home / 'README.md')]:
+    assert not (home / 'README.md').exists(), 'handoff must not create ~/README.md'
+    for name, path in [('AGENTS', home / '.codex/AGENTS.md')]:
         expected = (assets / f'{name}.machine.macos.template.md').read_text().replace('{{PYTHON_VERSION}}', '3.12').replace('{{NODE_VERSION}}', '24').replace('{{PROXY_URL}}', 'disabled')
         assert path.read_text() == expected
     shared = home / '.claude/CLAUDE.md'

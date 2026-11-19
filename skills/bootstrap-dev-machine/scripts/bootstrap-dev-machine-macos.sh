@@ -138,7 +138,7 @@ handoff_args=(--platform macos --proxy-url "${PROXY_URL:-disabled}" --python-ver
 bash "${script_dir}/install-machine-handoff.sh" "${handoff_args[@]}"
 
 if [[ "$configure_only" != true && "$skip_skills" != true ]]; then
-  run npx --yes skills add "$repo_root" --skill '*' -g -a codex -a claude-code -a cursor -y --full-depth
+  run npx --yes skills add "$repo_root" --skill '*' -g -a codex -a claude-code -a pi -y --full-depth
   # Account-backed Context7 setup is a final manual step; install its CLI first.
   command -v ctx7 >/dev/null 2>&1 || run npm install -g ctx7
   skills_args=(--skip-context7-setup)

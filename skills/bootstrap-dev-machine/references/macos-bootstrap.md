@@ -26,8 +26,8 @@ personal skills checkout at `~/dev/skills`. Preview with `--dry-run` before setu
   is run. Proxy variables are set only when `PROXY_URL` is explicitly supplied.
 - Personal and manifest-listed global agent skills are installed. The Context7
   CLI is installed, while account-backed setup is reported as a manual step.
-- Mac-specific machine handoff templates create global instructions and the home
-  README only when absent; Claude imports the existing shared instructions once.
+- The Mac-specific template creates the global instructions only when absent;
+  Claude imports the existing shared instructions once.
 
 ## Options and Recovery
 

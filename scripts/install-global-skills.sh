@@ -34,7 +34,7 @@ run_cmd() {
   fi
 }
 
-agent_args=(-a codex -a claude-code -a cursor)
+agent_args=(-a codex -a claude-code -a pi)
 
 install_skill() {
   local repo="$1"

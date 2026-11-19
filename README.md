@@ -13,12 +13,12 @@ npx skills add AtticusZeller/skills --list --full-depth
 Install the development-machine bootstrap skill globally:
 
 ```bash
-npx skills add AtticusZeller/skills --skill bootstrap-dev-machine -g -a codex -a claude-code -a cursor -y --full-depth
+npx skills add AtticusZeller/skills --skill bootstrap-dev-machine -g -a codex -a claude-code -a pi -y --full-depth
 ```
 
-This skill provides an idempotent one-shot installer for the full machine baseline, including public machine handoff docs, a server `.zshrc`, ripgrep (`rg`) for agent-friendly code and document search, Oh My Zsh, Powerlevel10k, shell plugins, Oh my tmux, a Ghostty terminal baseline, CUDA, uv, Miniforge/conda/mamba, NVM, proxy variables, and non-systemd sing-box helpers.
+This skill provides an idempotent one-shot installer for the full machine baseline, including shared agent instructions, a server `.zshrc`, ripgrep (`rg`) for agent-friendly code and document search, Oh My Zsh, Powerlevel10k, shell plugins, Oh my tmux, a Ghostty terminal baseline, a Claude Code statusline, CUDA, uv, Miniforge/conda/mamba, NVM, proxy variables, and non-systemd sing-box helpers.
 
-Global agent instructions live in `~/.codex/AGENTS.md`; `~/.claude/CLAUDE.md` imports that file with `@../.codex/AGENTS.md`. The installer preserves existing rules and creates `~/README.md` when absent.
+Global agent instructions live in `~/.codex/AGENTS.md`; `~/.claude/CLAUDE.md` imports that file with `@../.codex/AGENTS.md`. The installer creates the global file only when absent and preserves existing rules.
 
 On Alibaba Cloud DSW, run its installer with `--enable-dsw-persistent-prompt` to back up and append the OSS persistence rule to `~/.codex/AGENTS.md`:
 
@@ -42,16 +42,22 @@ On Windows, run the PowerShell variant from a non-elevated PowerShell. It instal
 powershell -ExecutionPolicy Bypass -File "$HOME\.agents\skills\bootstrap-dev-machine\scripts\bootstrap-dev-machine.ps1" -DryRun
 ```
 
+On a configured Linux machine, `doctor.sh` reports which packages, third-party skills, personal skills and configs differ from this repository. It is read-only unless you pass `--sync` or `--ignore`:
+
+```bash
+bash ~/skills/skills/bootstrap-dev-machine/scripts/doctor.sh
+```
+
 Install the personal skills maintenance skill globally:
 
 ```bash
-npx skills add AtticusZeller/skills --skill manage-personal-skills -g -a codex -a claude-code -a cursor -y --full-depth
+npx skills add AtticusZeller/skills --skill manage-personal-skills -g -a codex -a claude-code -a pi -y --full-depth
 ```
 
 Install the repository initialization skill globally:
 
 ```bash
-npx skills add AtticusZeller/skills --skill init-repo-agents -g -a codex -a claude-code -a cursor -y --full-depth
+npx skills add AtticusZeller/skills --skill init-repo-agents -g -a codex -a claude-code -a pi -y --full-depth
 ```
 
 This skill creates a human-owned collaboration baseline: the human decides intent,
@@ -69,7 +75,7 @@ chained into an automatic lifecycle.
 Install the plan-driven feature development skill globally:
 
 ```bash
-npx skills add AtticusZeller/skills --skill develop-feature -g -a codex -a claude-code -a cursor -y --full-depth
+npx skills add AtticusZeller/skills --skill develop-feature -g -a codex -a claude-code -a pi -y --full-depth
 ```
 
 This skill agrees a plan with the human first, then lets that plan govern
@@ -79,7 +85,7 @@ closeout into `docs/<area>/log.md`.
 Install the disk cleanup skill globally:
 
 ```bash
-npx skills add AtticusZeller/skills --skill disk-cleanup -g -a codex -a claude-code -a cursor -y --full-depth
+npx skills add AtticusZeller/skills --skill disk-cleanup -g -a codex -a claude-code -a pi -y --full-depth
 ```
 
 This skill audits disk usage across the **whole filesystem** — not just `$HOME` —
@@ -97,7 +103,7 @@ decision profile.
 Install the remote machines skill globally:
 
 ```bash
-npx skills add AtticusZeller/skills --skill remote-machines -g -a codex -a claude-code -a cursor -y --full-depth
+npx skills add AtticusZeller/skills --skill remote-machines -g -a codex -a claude-code -a pi -y --full-depth
 ```
 
 This skill treats every SSH host as an object. Static facts (role, hardware, tools, repos, envs,
@@ -112,7 +118,7 @@ registry from `~/.ssh/config` plus one read-only probe per host. Scripts need on
 Install the Claude-to-Codex memory sync skill globally:
 
 ```bash
-npx skills add AtticusZeller/skills --skill claude-memory-to-codex -g -a codex -a claude-code -a cursor -y --full-depth
+npx skills add AtticusZeller/skills --skill claude-memory-to-codex -g -a codex -a claude-code -a pi -y --full-depth
 ```
 
 This skill mirrors Claude Code auto-memory files into Codex's `ad_hoc` memory extension
@@ -125,7 +131,7 @@ idempotency, updates, and pruning in a temporary home.
 Install all personal skills:
 
 ```bash
-npx skills add AtticusZeller/skills --skill '*' -g -a codex -a claude-code -a cursor -y --full-depth
+npx skills add AtticusZeller/skills --skill '*' -g -a codex -a claude-code -a pi -y --full-depth
 ```
 
 These examples name the target agents explicitly. PromptScript supports project-level skills only, so do not use `-g` with `-a promptscript`.
@@ -144,7 +150,7 @@ Reinstall the current repository-initialization Skill from a local checkout:
 
 ```bash
 npx skills add . --skill init-repo-agents \
-  -g -a codex -a claude-code -a cursor -y --full-depth
+  -g -a codex -a claude-code -a pi -y --full-depth
 ```
 
 Use the Skill to audit and update an existing repository. Its initializer is only
@@ -168,9 +174,9 @@ Install them:
 bash scripts/install-global-skills.sh
 ```
 
-The script runs `npx skills add <repo> --skill <skill> -g -a codex -a claude-code -a cursor -y` for each manifest entry.
+The script runs `npx skills add <repo> --skill <skill> -g -a codex -a claude-code -a pi -y` for each manifest entry.
 
-The Skills CLI uses the shared `~/.agents/skills` directory for Codex and Cursor. The explicit agent flags limit the requested installation targets, but shared skills may also appear in listings for other agents that consume the universal directory, such as GitHub Copilot.
+The Skills CLI uses the shared `~/.agents/skills` directory for Codex; Claude Code and Pi get links in their own skills directories. The explicit agent flags limit the requested installation targets, but shared skills may also appear in listings for other agents that consume the universal directory, such as GitHub Copilot.
 
 For Context7, it also runs:
 

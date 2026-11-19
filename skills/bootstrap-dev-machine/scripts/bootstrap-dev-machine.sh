@@ -573,6 +573,10 @@ phase "Herdr configuration"
 herdr_args=(--config-dir "${HOME}/.config/herdr")
 [[ "${dry_run}" != true ]] || herdr_args+=(--dry-run)
 bash "${script_dir}/install-herdr-config.sh" "${herdr_args[@]}"
+phase "Claude Code statusline"
+statusline_args=(--target-home "${HOME}")
+[[ "${dry_run}" != true ]] || statusline_args+=(--dry-run)
+bash "${script_dir}/install-claude-statusline.sh" "${statusline_args[@]}"
 install_agent_skills
 deploy_machine_handoff
 deploy_dsw_persistent_prompt

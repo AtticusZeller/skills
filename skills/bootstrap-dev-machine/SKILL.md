@@ -21,6 +21,26 @@ On Windows, run `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-
 4. Inspect the final validation and consolidated manual-follow-up list.
 5. Read `references/bootstrap-phases.md` only for inputs, phase boundaries, or a failed phase. Read the focused zsh or sing-box reference only when that subsystem needs diagnosis or customization.
 
+## Doctor
+
+To check an already configured Linux machine against the repo, run `bash scripts/doctor.sh` from the git checkout of the skills repo. The installed copy also works: it finds the checkout through the skill lock file. Then:
+
+1. Show the user the report. `MISSING` skills: give the printed install command; do not install them unprompted. `EXTRA` is informational only.
+2. For each `DRIFT` or `STALE` item, show `doctor.sh --diff <id>` and ask the user with AskUserQuestion which way to go: repo → machine, machine → repo, or keep it and add it to the ignore list (`doctor.sh --ignore <id>`).
+3. Exact-match items (`statusline-script`, `statusline-setting`, `herdr`, `p10k`) sync with `doctor.sh --sync <id> --to local|repo`; it backs up the target and rechecks.
+   - `ghostty`, `tmux-local`, `zshrc`, `codex-agents` and `readme` mix shared and personal lines, so merge only the parts the user picks, by hand.
+   - A `STALE` personal skill is updated by reinstalling it from the checkout.
+4. Repo changes go through `manage-personal-skills`: validate, then commit and push only after the user confirms.
+
+Consistency rules:
+
+| Items | Rule |
+| --- | --- |
+| `statusline-script`, `statusline-setting`, `herdr`, `p10k` | Exact match. |
+| `ghostty`, `zshrc` | The repo's non-comment lines must be the start of the local file; extra lines after them are fine. |
+| `tmux-local` | The repo's defaults block must appear in order somewhere in the file, since the upstream part is not repo-owned. |
+| `codex-agents`, `readme` | Every `##` section of the rendered template must appear unchanged; extra local sections are allowed anywhere. |
+
 ## Rules
 
 - Do not write tokens, PATs, SSH keys, private subscriptions, node credentials, or API keys into docs or scripts.
@@ -28,9 +48,9 @@ On Windows, run `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-
 - Keep sing-box in `mixed` mode unless the user explicitly asks for TUN and confirms the host supports it.
 - Keep Git proxy, shell proxy variables, and install commands aligned to the user's active proxy endpoint.
 - Prefer official installers or official release artifacts. If a mirror fails with 403 or stale packages, override it explicitly rather than debugging the wrong layer.
-- Keep `~/.codex/AGENTS.md` focused on execution defaults, configuration paths, host-specific operational notes, and the shared response and writing style in the machine template. Apply that style to answers, explanations, and documents; keep it separate from code implementation and development workflow rules. Keep installation walkthroughs and validation commands in `~/README.md` or scripts; do not add generic collaboration rules or duplicate unrelated Skill instructions.
+- Keep `~/.codex/AGENTS.md` focused on execution defaults, configuration paths, host-specific operational notes, and the shared response and writing style in the machine template. Apply that style to answers, explanations, and documents; keep it separate from code implementation and development workflow rules. Keep installation walkthroughs and validation commands in scripts; do not add generic collaboration rules or duplicate unrelated Skill instructions.
 - The Linux machine template's `Remote Machines (SSH)` section points to the `remote-machines` skill. Host facts belong in its local registry `~/.config/remote-machines/machines/`; keep machine-private connection details out of the public templates. The Windows template keeps plain SSH rules because the remote-machines scripts are verified on Linux only.
-- Let `scripts/install-machine-handoff.sh` create the public machine handoff from bundled templates. Never recreate or summarize those templates manually; preserve existing handoff files unchanged.
+- Let `scripts/install-machine-handoff.sh` create `~/.codex/AGENTS.md` from the bundled templates. Never recreate or summarize those templates manually; preserve an existing file unchanged. No `~/README.md` is generated.
 - The installer creates `~/.codex/AGENTS.md` only when absent and adds one import to `~/.claude/CLAUDE.md`, preserving existing Claude rules. Both tools share the Codex global file. Do not hardcode a workstation username. Restart Claude Code after setup and inspect `/memory` to confirm loading.
 - Keep executable setup logic in `scripts/` or `assets/`; Markdown should explain inputs, boundaries, and recovery rather than duplicate command sequences.
 - Deploy the bundled Herdr TUI configuration on fresh machines without overwriting an existing config. This only configures Herdr; it does not install it or register remote machines.
@@ -47,11 +67,13 @@ On Windows, run `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-
 - `scripts/set-default-terminal-macos.swift`: explicit opt-in default application associations; `--check` verifies without changing them.
 - `scripts/test-macos-bootstrap.sh`: Mac asset deployment, idempotency, backup, local-edit, and handoff regression checks.
 - `scripts/check-dev-machine.sh`: read-only validation script used by the installer.
+- `scripts/doctor.sh` and `scripts/test-doctor.sh`: machine-vs-repo drift report with `--diff`, `--sync` and `--ignore` (Linux), plus its regression checks.
+- `scripts/install-claude-statusline.sh` and `scripts/test-claude-statusline.sh`: install `assets/claude-statusline.sh` as `~/.claude/statusline-command.sh` when absent and add a missing `statusLine` key to `settings.json` after a backup; honours `CLAUDE_CONFIG_DIR` and needs `jq` plus bash 4.
 - `scripts/bootstrap-dev-machine.ps1` and `scripts/check-dev-machine.ps1`: Windows installer (Scoop CLIs, winget GUI apps, no Conda/zsh/tmux) and its read-only validation.
 - `scripts/test-windows-bootstrap.sh`: Windows installer regression checks; PowerShell parse checks run when PowerShell is available.
 - `scripts/install-tmux-baseline.sh`: idempotent Oh my tmux installer; run it directly for a tmux-only repair. Keeps local customizations and never stops sessions.
 - `scripts/install-ghostty-terminal.sh`: idempotent Ghostty installer and config deployer; supports `--target-home`, `--skip-install`, and `--dry-run`, and preserves locally edited configs.
-- `scripts/install-machine-handoff.sh`: deterministic installer for machine handoff and shared Codex/Claude global instructions; supports `--target-home` and `--dry-run` for focused configuration.
+- `scripts/install-machine-handoff.sh`: deterministic installer for the shared Codex/Claude global instructions; supports `--target-home` and `--dry-run` for focused configuration.
 - `scripts/install-dsw-persistent-prompt.sh`: optional, idempotent installer for the Alibaba Cloud DSW rule in `~/.codex/AGENTS.md`.
 - `references/bootstrap-phases.md`: installer inputs, automated phases, manual boundaries, and failure handling.
 - `references/windows-bootstrap.md`: Windows inputs, phases, boundaries, and recovery.
@@ -64,9 +86,9 @@ On Windows, run `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-
 - `assets/p10k.zsh`: exported Ubuntu Powerlevel10k preset (lean, two lines, left frame, transient prompt, Nerd Font v3), reused on Mac as `~/.p10k.zsh` without the wizard.
 - `assets/tmux-defaults.conf`: mouse support and right-click menus enabled on fresh tmux installations.
 - `assets/ghostty-config.ghostty`: Ghostty 1.3+ configuration template deployed to `$XDG_CONFIG_HOME/ghostty/config.ghostty`.
-- `assets/{AGENTS,README}.machine[.macos|.windows].template.md`: public machine handoff templates rendered by the installer (`--platform macos` or `--platform windows` selects the corresponding set).
+- `assets/AGENTS.machine[.macos|.windows].template.md`: shared global instruction templates rendered by the installer (`--platform macos` or `--platform windows` selects the corresponding set).
 - `assets/winget-apps.txt`: winget GUI application IDs; command-line tools belong in Scoop.
 
 ## Completion Criteria
 
-The machine is ready when the user can run `rg`, `mamba --version`, `sbc version`, use the local proxy, start the configured zsh, Ghostty, and Oh my tmux baselines without errors, run Codex/Claude, use Node 24 through nvm, use uv Python 3.12, manage environments with `conda` and `mamba`, and read `~/.codex/AGENTS.md` plus `~/README.md` for handoff details. Claude Code must import the shared global instructions from `~/.claude/CLAUDE.md`.
+The machine is ready when the user can run `rg`, `mamba --version`, `sbc version`, use the local proxy, start the configured zsh, Ghostty, and Oh my tmux baselines without errors, run Codex/Claude, use Node 24 through nvm, use uv Python 3.12, manage environments with `conda` and `mamba`, and read `~/.codex/AGENTS.md`. Claude Code must import the shared global instructions from `~/.claude/CLAUDE.md`.

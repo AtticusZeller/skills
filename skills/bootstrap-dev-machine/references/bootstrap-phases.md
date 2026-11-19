@@ -36,10 +36,11 @@ The entry script performs these phases in order:
 7. Installs Oh My Zsh, Powerlevel10k, plugins, and the public server `.zshrc`.
 8. Installs Ghostty on apt/dpkg hosts with the documented ghostty-ubuntu installer command when it is missing, then deploys `assets/ghostty-config.ghostty` to the Ghostty configuration path and preserves locally modified files.
 9. Installs Oh my tmux from upstream with an XDG configuration link and a create-if-absent local customization file with mouse and right-click menus enabled; existing sessions are kept running.
-10. Installs personal and external agent skills from the repository manifest.
-11. Creates `~/.codex/AGENTS.md` and `~/README.md` from bundled templates when absent, then adds one import of the shared global instructions to `~/.claude/CLAUDE.md`, preserving existing rules.
-12. When explicitly enabled, backs up and appends the Alibaba Cloud DSW OSS persistence prompt to `~/.codex/AGENTS.md`.
-13. Runs `check-dev-machine.sh` and prints all remaining manual work together.
+10. Deploys the Herdr TUI configuration and the Claude Code statusline when absent; adds the `statusLine` key to an existing `~/.claude/settings.json` only when it is missing, after a backup.
+11. Installs personal and external agent skills from the repository manifest.
+12. Creates `~/.codex/AGENTS.md` from the bundled template when absent, then adds one import of the shared global instructions to `~/.claude/CLAUDE.md`, preserving existing rules.
+13. When explicitly enabled, backs up and appends the Alibaba Cloud DSW OSS persistence prompt to `~/.codex/AGENTS.md`.
+14. Runs `check-dev-machine.sh` and prints all remaining manual work together.
 
 Each phase is safe to rerun: existing tools and clones are reused, `.zshrc` and the Ghostty configuration are backed up only when the deployed template differs, and locally edited Ghostty configurations are preserved for manual merge.
 

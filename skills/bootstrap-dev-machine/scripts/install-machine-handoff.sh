@@ -15,8 +15,8 @@ usage() {
   cat <<'EOF'
 Usage: install-machine-handoff.sh [options]
 
-Install machine handoff and shared Codex/Claude global instructions.
-Create ~/.codex/AGENTS.md and ~/README.md only when absent.
+Install the shared Codex/Claude global instructions.
+Create ~/.codex/AGENTS.md only when absent.
 Preserve existing global instructions and Claude rules; add one Claude import.
 
 Options:
@@ -142,9 +142,7 @@ render_template() {
 }
 
 agents_rendered="${tmp_dir}/AGENTS.md"
-readme_rendered="${tmp_dir}/README.md"
 render_template "${asset_dir}/AGENTS.machine${template_suffix}.template.md" "$agents_rendered"
-render_template "${asset_dir}/README.machine${template_suffix}.template.md" "$readme_rendered"
 
 install_if_absent() {
   local source="$1"
@@ -161,8 +159,6 @@ install_if_absent() {
   install -m 0644 "$source" "$destination"
   info "installed ${destination}"
 }
-
-install_if_absent "$readme_rendered" "${target_home}/README.md"
 
 codex_agents="${target_home}/.codex/AGENTS.md"
 claude_rules="${target_home}/.claude/CLAUDE.md"
