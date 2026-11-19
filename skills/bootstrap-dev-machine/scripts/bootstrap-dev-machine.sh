@@ -265,7 +265,7 @@ install_conda() {
     print_command curl -fsSL "${installer_url}.sha256" -o "<temporary-checksum>"
     print_command sha256sum -c "<temporary-checksum>"
     print_command bash "<temporary-installer>" -b -p "${conda_prefix}"
-    print_command "${conda_bin}" config --set auto_activate_base false
+    print_command "${conda_bin}" config --set auto_activate false
     return
   fi
 
@@ -291,7 +291,7 @@ install_conda() {
   fi
   rm -rf "${tmp_dir}"
   [[ -x "${mamba_bin}" ]] || die "Miniforge installation completed but mamba is missing: ${mamba_bin}"
-  "${conda_bin}" config --set auto_activate_base false
+  "${conda_bin}" config --set auto_activate false
 }
 
 install_python_tools() {
@@ -382,10 +382,8 @@ install_zsh_baseline() {
     "${zsh_custom}/plugins/zsh-syntax-highlighting"
   clone_if_missing https://github.com/Pilaton/OhMyZsh-full-autoupdate \
     "${zsh_custom}/plugins/ohmyzsh-full-autoupdate"
-  clone_if_missing https://github.com/fdellwing/zsh-bat \
-    "${zsh_custom}/plugins/zsh-bat"
 
-  local template="${asset_dir}/zshrc.server"
+  local template="${asset_dir}/zshrc.linux"
   local target="${HOME}/.zshrc"
   local state_dir="${HOME}/.local/state/bootstrap-dev-machine"
   local hash_file="${state_dir}/zshrc.sha256"

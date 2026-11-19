@@ -19,7 +19,7 @@ Nerd Font v3 icons, 24-hour time, and transient prompt. Use
 Managed updates back up replaced files and preserve local edits using stored
 hashes. Open a new Ghostty window to load a changed shell configuration.
 
-## Linux Server
+## Linux Workstation
 
 The main installer owns shell installation and deployment. This reference describes the resulting state and the few choices that remain local to each machine.
 
@@ -28,11 +28,12 @@ The main installer owns shell installation and deployment. This reference descri
 `bootstrap-dev-machine.sh` installs and configures:
 
 - zsh, Oh My Zsh, and Powerlevel10k;
-- `zsh-autosuggestions`, `zsh-syntax-highlighting`, `ohmyzsh-full-autoupdate`, and `zsh-bat`;
-- `assets/zshrc.server` as `~/.zshrc`, with a timestamped backup when content changes;
-- `$HOME/.local/bin`, optional CUDA paths, uv/uvx completion, Miniforge/conda/mamba initialization, and NVM loading;
-- startup activation of the nearest parent `.venv`;
-- lower- and upper-case proxy variables using `PROXY_URL`.
+- `zsh-autosuggestions`, `zsh-syntax-highlighting`, and `ohmyzsh-full-autoupdate`;
+- `assets/zshrc.linux` as `~/.zshrc`, with a timestamped backup when content changes;
+- `$HOME/.local/bin`, plus Linuxbrew, pnpm, bun, Go, CUDA (`/usr/local/cuda`, else the newest `cuda-*`) and TensorRT (`~/.local/opt/TensorRT-*`) only when present;
+- uv/uvx completion, Miniforge/conda/mamba initialization, NVM loading, and the JetBrains vmoptions hook when present;
+- activation of the nearest parent `.venv` on startup and on every `cd`, deactivating it when leaving the project;
+- no proxy variables; `~/.zshrc.local` is sourced last for secrets and machine-private settings.
 
 Existing clones are reused. The installer records the deployed template hash; later runs update an unchanged managed file but preserve local edits and report a manual merge.
 
@@ -44,9 +45,7 @@ overwritten. The Mac entry point reuses that exact asset through
 `install-prompt-config.sh`: it preserves custom prompts and updates an unchanged
 managed template with a backup. The wizard is optional on both platforms.
 
-Set a different proxy by exporting `PROXY_URL` before running the installer. Keep Git proxy settings on the same endpoint.
-
-Do not place GitHub, Hugging Face, Weights & Biases, or other tokens in `.zshrc`. Authenticate with each tool's supported credential store.
+Do not place GitHub, Hugging Face, Weights & Biases, or other tokens in `.zshrc`. Prefer each tool's credential store; tokens that must be environment variables go in `~/.zshrc.local` (mode 600, never committed).
 
 ## Diagnosis
 
@@ -55,6 +54,6 @@ Use `zsh -n ~/.zshrc` for syntax failures. For interactive startup errors, check
 1. `~/.oh-my-zsh/oh-my-zsh.sh` exists.
 2. Every external name in `plugins=(...)` has a matching directory under the Oh My Zsh custom plugin directory.
 3. The Powerlevel10k theme directory exists.
-4. Miniforge, NVM, and optional CUDA directories are only loaded when present.
+4. Miniforge, NVM, Linuxbrew, CUDA, and TensorRT directories are only loaded when present.
 
 The machine checker performs the same path and syntax checks without modifying the shell configuration.

@@ -108,7 +108,7 @@ items=(
   "p10k|exact|${asset_dir}/p10k.zsh|${HOME}/.p10k.zsh"
   "ghostty|prefix|${asset_dir}/ghostty-config.ghostty|${xdg}/ghostty/config.ghostty"
   "tmux-local|contains|${asset_dir}/tmux-defaults.conf|${xdg}/tmux/tmux.conf.local"
-  "zshrc|prefix|${asset_dir}/zshrc.server|${HOME}/.zshrc"
+  "zshrc|prefix|${asset_dir}/zshrc.linux|${HOME}/.zshrc"
   "codex-agents|sections|${render_dir}/.codex/AGENTS.md|${HOME}/.codex/AGENTS.md"
 )
 

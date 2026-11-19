@@ -105,7 +105,7 @@ if [[ "$configure_only" != true ]]; then
         rm -rf "$scratch"
       fi
     fi
-    run "$prefix/bin/conda" config --set auto_activate_base false
+    run "$prefix/bin/conda" config --set auto_activate false
     if [[ "$dry_run" != true ]]; then [[ -x "$prefix/bin/mamba" ]]; fi
   fi
 

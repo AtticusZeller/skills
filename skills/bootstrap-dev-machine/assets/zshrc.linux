@@ -1,0 +1,141 @@
+# Linux workstation zsh baseline. Secrets and machine-private settings go in
+# ~/.zshrc.local (sourced last, never committed).
+typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
+
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+
+# Extra completion directories must be on fpath before oh-my-zsh runs compinit.
+fpath=("$HOME/.zfunc" $fpath)
+[[ ! -d "$HOME/.local/share/zsh/site-functions" ]] || fpath=("$HOME/.local/share/zsh/site-functions" $fpath)
+
+plugins=(
+  command-not-found
+  extract
+  docker
+  history-substring-search
+  z
+  zsh-autosuggestions
+  zsh-syntax-highlighting
+  ohmyzsh-full-autoupdate
+)
+
+source "$ZSH/oh-my-zsh.sh"
+[[ ! -f "$HOME/.p10k.zsh" ]] || source "$HOME/.p10k.zsh"
+
+# ── PATH ─────────────────────────────────────────────────────────────────────
+typeset -U path
+if [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  if [[ -d /home/linuxbrew/.linuxbrew/opt/curl ]]; then
+    path=("/home/linuxbrew/.linuxbrew/opt/curl/bin" $path)
+    export LD_LIBRARY_PATH="/home/linuxbrew/.linuxbrew/opt/curl/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+  fi
+fi
+path=("$HOME/.local/bin" $path)
+[[ ! -d "$HOME/miniforge3/bin" ]] || path=("$HOME/miniforge3/bin" $path)
+
+export PNPM_HOME="$HOME/.local/share/pnpm"
+[[ ! -d "$PNPM_HOME" ]] || path=("$PNPM_HOME" $path)
+
+export BUN_INSTALL="$HOME/.bun"
+[[ ! -d "$BUN_INSTALL/bin" ]] || path=("$BUN_INSTALL/bin" $path)
+[[ ! -s "$BUN_INSTALL/_bun" ]] || source "$BUN_INSTALL/_bun"
+
+[[ ! -d "$HOME/go/bin" ]] || path+=("$HOME/go/bin")
+
+# CUDA: prefer the /usr/local/cuda link, else the newest versioned install.
+cuda_dirs=(/usr/local/cuda(N-/) /usr/local/cuda-<->*(N-/On))
+if (( ${#cuda_dirs} )); then
+  export CUDA_HOME="${cuda_dirs[1]}"
+  path=("$CUDA_HOME/bin" $path)
+  export LD_LIBRARY_PATH="$CUDA_HOME/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+fi
+unset cuda_dirs
+
+# TensorRT unpacked under ~/.local/opt; the newest version wins.
+trt_dirs=("$HOME"/.local/opt/TensorRT-*(N/On))
+if (( ${#trt_dirs} )); then
+  export TensorRT_ROOT="${trt_dirs[1]}"
+  path=("$TensorRT_ROOT/bin" $path)
+  export LD_LIBRARY_PATH="$TensorRT_ROOT/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+fi
+unset trt_dirs
+export PATH
+
+# ── Toolchains ───────────────────────────────────────────────────────────────
+conda_executable="$HOME/miniforge3/bin/conda"
+if [[ ! -x "$conda_executable" ]] && (( $+commands[conda] )); then
+  conda_executable="$commands[conda]"
+fi
+if [[ -x "$conda_executable" ]]; then
+  eval "$("$conda_executable" shell.zsh hook)"
+fi
+unset conda_executable
+
+mamba_executable="$HOME/miniforge3/bin/mamba"
+if [[ ! -x "$mamba_executable" ]] && (( $+commands[mamba] )); then
+  mamba_executable="$commands[mamba]"
+fi
+if [[ -x "$mamba_executable" ]]; then
+  export MAMBA_EXE="$mamba_executable"
+  export MAMBA_ROOT_PREFIX="${MAMBA_ROOT_PREFIX:-$HOME/miniforge3}"
+  __mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --root-prefix "$MAMBA_ROOT_PREFIX" 2>/dev/null)"
+  mamba_hook_rc=$?
+  if (( mamba_hook_rc == 0 )); then
+    eval "$__mamba_setup"
+  else
+    alias mamba="$MAMBA_EXE"
+  fi
+  unset __mamba_setup mamba_hook_rc
+fi
+unset mamba_executable
+
+if (( $+commands[uv] )); then
+  eval "$(uv generate-shell-completion zsh)"
+fi
+if (( $+commands[uvx] )); then
+  eval "$(uvx --generate-shell-completion zsh)"
+fi
+
+export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+[[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
+
+[[ ! -f "$HOME/.jetbrains.vmoptions.sh" ]] || source "$HOME/.jetbrains.vmoptions.sh"
+
+# ── Python virtualenv ────────────────────────────────────────────────────────
+# Activate the nearest .venv on startup and on every cd; leaving the project
+# deactivates only a venv this hook activated. Runs after conda so the venv's
+# bin directory stays first on PATH.
+auto_activate_venv() {
+  local dir="$PWD"
+  while [[ "$dir" != "/" ]]; do
+    if [[ -f "$dir/.venv/bin/activate" ]]; then
+      if [[ "${VIRTUAL_ENV:-}" != "$dir/.venv" ]]; then
+        source "$dir/.venv/bin/activate"
+        typeset -g _auto_venv="$dir/.venv"
+      fi
+      return
+    fi
+    dir="${dir:h}"
+  done
+  if [[ -n "${_auto_venv:-}" && "${VIRTUAL_ENV:-}" == "$_auto_venv" ]] && (( $+functions[deactivate] )); then
+    deactivate
+  fi
+  unset _auto_venv
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook chpwd auto_activate_venv
+auto_activate_venv
+
+# Keep commands that do not resolve to an executable out of shell history.
+zshaddhistory() {
+  whence "${${(z)1}[1]}" >| /dev/null || return 1
+}
+
+[[ ! -f "$HOME/.zshrc.local" ]] || source "$HOME/.zshrc.local"

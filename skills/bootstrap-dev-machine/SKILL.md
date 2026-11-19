@@ -81,7 +81,7 @@ Consistency rules:
 - `references/zsh-baseline.md`: resulting shell state and focused startup diagnosis.
 - `references/tmux-baseline.md`: Oh my tmux paths, customization, and session-preserving reload.
 - `references/ghostty-baseline.md`: Ghostty installer command, supported distributions, configuration path, and local-change recovery.
-- `assets/zshrc.server`: reusable public server `.zshrc` template with proxy, CUDA, uv, conda/mamba, NVM, PATH, and virtualenv defaults.
+- `assets/zshrc.linux`: Linux workstation `.zshrc` template (no proxy; optional Linuxbrew, pnpm, bun, Go, CUDA, TensorRT; uv, conda/mamba, NVM; `.venv` auto-activation on `cd`; sources `~/.zshrc.local` last).
 - `assets/zshrc.macos` and `assets/ghostty-config.macos.ghostty`: Mac-specific shell and terminal templates.
 - `assets/p10k.zsh`: exported Ubuntu Powerlevel10k preset (lean, two lines, left frame, transient prompt, Nerd Font v3), reused on Mac as `~/.p10k.zsh` without the wizard.
 - `assets/tmux-defaults.conf`: mouse support and right-click menus enabled on fresh tmux installations.
