@@ -23,6 +23,10 @@
 
 - Follow the project's Node version and package manager. The default Node is on PATH for every shell; when fnm manages it, switch versions with `fnm use <version>`.
 
+## Command Execution
+
+Execute short, one-off commands directly in the shell. For longer or complex scripts, save them to a temporary file before execution.
+
 ## Remote Machines (SSH)
 
 - When managing servers from a local workstation, run Codex locally and execute remote commands through SSH; do not install or run Codex on those servers unless requested.

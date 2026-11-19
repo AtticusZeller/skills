@@ -17,6 +17,10 @@
 - Interactive shell configuration lives in `~/.zshrc`; do not assume non-interactive commands load it.
 - Search files and text with `rg` when available.
 
+## Command Execution
+
+Execute short, one-off commands directly in the shell. For longer or complex scripts, save them to a temporary file before execution.
+
 ## macOS
 
 - Homebrew lives at `/opt/homebrew` on Apple Silicon and `/usr/local` on Intel. Use `brew`; keep the Apple-provided `/bin/zsh` as the login shell.

@@ -17,6 +17,10 @@
 - Interactive shell configuration lives in `~/.zshrc`; do not assume non-interactive commands load it.
 - Search files and text with `rg` when available.
 
+## Command Execution
+
+Execute short, one-off commands directly in the shell. For longer or complex scripts, save them to a temporary file before execution.
+
 ## Remote Machines (SSH)
 
 - Use the `remote-machines` skill for any SSH or remote-machine task. Its registry `~/.config/remote-machines/machines/<alias>.yaml` holds each machine's static facts and rules; read it before connecting.
