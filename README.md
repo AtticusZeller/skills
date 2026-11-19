@@ -176,7 +176,7 @@ bash scripts/install-global-skills.sh
 
 The script runs `npx skills add <repo> --skill <skill> -g -a codex -a claude-code -a pi -y` for each manifest entry.
 
-The Skills CLI uses the shared `~/.agents/skills` directory for Codex; Claude Code and Pi get links in their own skills directories. The explicit agent flags limit the requested installation targets, but shared skills may also appear in listings for other agents that consume the universal directory, such as GitHub Copilot.
+The Skills CLI uses the shared `~/.agents/skills` directory for Codex and Pi; Claude Code gets links in `~/.claude/skills`. The explicit agent flags limit the requested installation targets, but shared skills may also appear in listings for other agents that consume the universal directory, such as GitHub Copilot.
 
 For Context7, it also runs:
 
