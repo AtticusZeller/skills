@@ -569,6 +569,10 @@ if [[ "${dry_run}" == true ]]; then
   tmux_args+=(--dry-run)
 fi
 bash "${script_dir}/install-tmux-baseline.sh" "${tmux_args[@]}"
+phase "Herdr configuration"
+herdr_args=(--config-dir "${HOME}/.config/herdr")
+[[ "${dry_run}" != true ]] || herdr_args+=(--dry-run)
+bash "${script_dir}/install-herdr-config.sh" "${herdr_args[@]}"
 install_agent_skills
 deploy_machine_handoff
 deploy_dsw_persistent_prompt

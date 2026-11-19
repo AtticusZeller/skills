@@ -1,0 +1,8 @@
+onboarding = false
+
+[worktrees]
+directory = "~/worktree"
+
+[theme]
+name = "dracula"
+auto_switch = false

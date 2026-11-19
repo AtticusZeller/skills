@@ -33,6 +33,7 @@ On Windows, run `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-
 - Let `scripts/install-machine-handoff.sh` create the public machine handoff from bundled templates. Never recreate or summarize those templates manually; preserve existing handoff files unchanged.
 - The installer creates `~/.codex/AGENTS.md` only when absent and adds one import to `~/.claude/CLAUDE.md`, preserving existing Claude rules. Both tools share the Codex global file. Do not hardcode a workstation username. Restart Claude Code after setup and inspect `/memory` to confirm loading.
 - Keep executable setup logic in `scripts/` or `assets/`; Markdown should explain inputs, boundaries, and recovery rather than duplicate command sequences.
+- Deploy the bundled Herdr TUI configuration on fresh machines without overwriting an existing config. This only configures Herdr; it does not install it or register remote machines.
 - Start interactive tmux servers from a real terminal. For missing application colours, inspect inherited `NO_COLOR`, `TERM`, and `COLORTERM` using `references/tmux-baseline.md`; preserve intentional colour preferences.
 - Deploy the Ghostty configuration from `assets/ghostty-config.ghostty`; install Ghostty on apt/dpkg hosts with the documented ghostty-ubuntu installer command only when it is absent. Preserve locally edited configurations and treat unsupported hosts or installer failures as warnings, not blockers.
 - Keep the DSW persistent-storage prompt opt-in; its installer must back up an existing Codex `AGENTS.md` and append the asset exactly once.

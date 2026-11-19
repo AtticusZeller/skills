@@ -122,6 +122,9 @@ if [[ "$configure_only" != true ]]; then
 fi
 
 prompt_args=(--target-home "$HOME")
+herdr_args=(--config-dir "${HOME}/.config/herdr")
+[[ "$dry_run" != true ]] || herdr_args+=(--dry-run)
+bash "${script_dir}/install-herdr-config.sh" "${herdr_args[@]}"
 [[ "$dry_run" != true ]] || prompt_args+=(--dry-run)
 run bash "${script_dir}/install-prompt-config.sh" "${prompt_args[@]}"
 

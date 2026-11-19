@@ -496,6 +496,9 @@ function Install-AgentSkills {
 
 function Install-MachineHandoff {
     Start-Phase 'Machine handoff'
+    $herdrArguments = @('--config-dir', (ConvertTo-PosixPath (Join-Path $env:APPDATA 'herdr')))
+    if ($DryRun) { $herdrArguments += '--dry-run' }
+    $null = Invoke-GitBashScript (Join-Path $ScriptDir 'install-herdr-config.sh') $herdrArguments -SelfDryRun
     $arguments = @(
         '--platform', 'windows',
         '--target-home', (ConvertTo-PosixPath $HOME),
