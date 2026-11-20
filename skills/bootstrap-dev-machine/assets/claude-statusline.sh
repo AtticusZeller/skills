@@ -5,7 +5,17 @@
 # Narrow terminals (COLUMNS) drop detail level by level; see "Shrink levels" below.
 # Set CCSL_GLYPHS=unicode if the terminal font has no Nerd Font glyphs.
 
-export LC_ALL=C.UTF-8
+# macOS ships bash 3.2; switch to a Homebrew bash when one is installed.
+if (( BASH_VERSINFO[0] < 4 )) && [ -z "$CCSL_REEXEC" ]; then
+    for b in /opt/homebrew/bin/bash /usr/local/bin/bash; do
+        [ -x "$b" ] && CCSL_REEXEC=1 exec "$b" "$0" "$@"
+    done
+fi
+# Width math counts characters, so it needs a UTF-8 locale; macOS may lack C.UTF-8.
+for loc in C.UTF-8 en_US.UTF-8; do
+    { export LC_ALL=$loc; } 2>/dev/null
+    x='│'; [ ${#x} -eq 1 ] && break
+done
 input=$(cat)
 now=$(date +%s)
 
@@ -44,9 +54,9 @@ R=$'\e[0m'; B=$'\e[1m'
 
 # ── Icons ────────────────────────────────────────────────────────────────────
 if [ "${CCSL_GLYPHS:-nerd}" = nerd ]; then
-    I_MODEL=$''; I_EFF=$''; I_DIR=$'\U000f024b'; I_GIT=$'\U000f02a2'
-    I_CTX=$''; I_CMP=$''; I_CACHE=$''; I_QUOTA=$'\U000f0520'
-    I_DUR=$'\U000f19bb'
+    I_MODEL=$''; I_EFF=$''; I_DIR=$'󰉋'; I_GIT=$'󰊢'
+    I_CTX=$''; I_CMP=$''; I_CACHE=$''; I_QUOTA=$'󰔠'
+    I_DUR=$'󱦻'
 else
     I_MODEL='◆'; I_EFF='ϟ'; I_DIR='▣'; I_GIT='⎇'; I_CTX='◔'; I_CMP='⇲'
     I_CACHE='≈'; I_QUOTA='◷'; I_DUR='◷'
@@ -79,7 +89,7 @@ CACHE_DIR="/tmp/.claude-statusline-cache"
 mkdir -p "$CACHE_DIR" 2>/dev/null
 cf="${CACHE_DIR}/${session_id}.git"
 cache_age=999
-[ -f "$cf" ] && cache_age=$(( now - $(stat -c %Y "$cf" 2>/dev/null || echo 0) ))
+[ -f "$cf" ] && cache_age=$(( now - $(stat -c %Y "$cf" 2>/dev/null || stat -f %m "$cf" 2>/dev/null || echo 0) ))
 
 if (( cache_age > 5 )); then
     gb="" gs=0 gm=0 gu=0 ga=0 gbh=0

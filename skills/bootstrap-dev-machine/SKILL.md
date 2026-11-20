@@ -23,7 +23,7 @@ On Windows, run `powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-
 
 ## Doctor
 
-To check an already configured Linux machine against the repo, run `bash scripts/doctor.sh` from the git checkout of the skills repo. The installed copy also works: it finds the checkout through the skill lock file. Then:
+To check an already configured Linux or macOS machine against the repo, run `bash scripts/doctor.sh` from the git checkout of the skills repo. The installed copy also works: it finds the checkout through the skill lock file. Then:
 
 1. Show the user the report. Relay the printed install commands for missing tools or skills; do not install them unprompted. `EXTRA` is informational only.
 2. For each `DRIFT` or `STALE` item, show `doctor.sh --diff <id>` and ask the user with AskUserQuestion which way to go: repo → machine, machine → repo, or keep it and add it to the ignore list (`doctor.sh --ignore <id>`).
@@ -37,7 +37,7 @@ Consistency rules:
 | Items | Rule |
 | --- | --- |
 | `statusline-script`, `statusline-setting`, `herdr`, `p10k` | Exact match. |
-| `ghostty`, `zshrc` | The repo's non-comment lines must be the start of the local file; extra lines after them are fine. |
+| `ghostty`, `zshrc` | The repo's non-comment lines must be the start of the local file; extra lines after them are fine. On macOS the Mac assets and the Application Support Ghostty path are compared. |
 | `tmux-local` | The repo's defaults block must appear in order somewhere in the file, since the upstream part is not repo-owned. |
 | `codex-agents`, `readme` | Every `##` section of the rendered template must appear unchanged; extra local sections are allowed anywhere. |
 
@@ -67,8 +67,8 @@ Consistency rules:
 - `scripts/set-default-terminal-macos.swift`: explicit opt-in default application associations; `--check` verifies without changing them.
 - `scripts/test-macos-bootstrap.sh`: Mac asset deployment, idempotency, backup, local-edit, and handoff regression checks.
 - `scripts/check-dev-machine.sh`: read-only validation script used by the installer.
-- `scripts/doctor.sh` and `scripts/test-doctor.sh`: machine-vs-repo drift report with `--diff`, `--sync` and `--ignore` (Linux), plus its regression checks.
-- `scripts/install-claude-statusline.sh` and `scripts/test-claude-statusline.sh`: install `assets/claude-statusline.sh` as `~/.claude/statusline-command.sh` when absent and add a missing `statusLine` key to `settings.json` after a backup; honours `CLAUDE_CONFIG_DIR` and needs `jq` plus bash 4.
+- `scripts/doctor.sh` and `scripts/test-doctor.sh`: machine-vs-repo drift report with `--diff`, `--sync` and `--ignore` (Linux and macOS, detected via `uname`; on macOS it re-runs itself under Homebrew bash 4+), plus its regression checks.
+- `scripts/install-claude-statusline.sh` and `scripts/test-claude-statusline.sh`: install `assets/claude-statusline.sh` as `~/.claude/statusline-command.sh` when absent and add a missing `statusLine` key to `settings.json` after a backup; honours `CLAUDE_CONFIG_DIR` and needs `jq`. Both bootstraps call it. The statusline prefers Homebrew bash when started by macOS bash 3.2 and falls back to `en_US.UTF-8` where `C.UTF-8` is missing.
 - `scripts/install-pi-config.sh` and `scripts/test-pi-config.sh`: opt-in Pi profile from `assets/pi/`. Use `--dry-run` to preview. Honours `PI_CODING_AGENT_DIR`, needs `jq`, preserves existing files, and adds missing settings after a backup.
 - `scripts/bootstrap-dev-machine.ps1` and `scripts/check-dev-machine.ps1`: Windows installer (Scoop CLIs, winget GUI apps, no Conda/zsh/tmux) and its read-only validation.
 - `scripts/test-windows-bootstrap.sh`: Windows installer regression checks; PowerShell parse checks run when PowerShell is available.

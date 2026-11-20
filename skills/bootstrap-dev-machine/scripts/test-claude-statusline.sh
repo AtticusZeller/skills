@@ -28,10 +28,19 @@ payload='{"model":{"display_name":"Test"},"workspace":{"current_dir":"/tmp/x"},"
 lines="$(printf '%s' "$payload" | COLUMNS=120 bash -c "$cmd" | wc -l)"
 [[ "$lines" -ge 1 ]] || fail "statusline rendered nothing"
 
+# macOS runs it with bash 3.2 when no Homebrew bash exists: no $'\U...' escapes,
+# and GNU-only stat calls need a BSD fallback.
+! grep -qF "\$'\\U" "$asset" || fail "asset uses \\U escapes (bash 4.2+)"
+! grep -n 'stat -c' "$asset" | grep -vq 'stat -f' || fail "stat -c without BSD fallback"
+# A C-locale environment still measures glyph widths in characters.
+c_out="$(printf '%s' "$payload" | env -i PATH="$PATH" COLUMNS=60 bash "$asset")"
+[[ -n "$c_out" && "$c_out" == "$(printf '%s' "$payload" | COLUMNS=60 bash "$asset")" ]] ||
+  fail "C-locale run differs from the UTF-8 run"
+
 # Rerun is idempotent and never touches local edits.
-before="$(sha256sum "$home/.claude/settings.json")"
+cp "$home/.claude/settings.json" "$tmp_dir/before.json"
 bash "$installer" --target-home "$home" >/dev/null
-[[ "$before" == "$(sha256sum "$home/.claude/settings.json")" ]] || fail "rerun changed settings"
+cmp -s "$tmp_dir/before.json" "$home/.claude/settings.json" || fail "rerun changed settings"
 printf '# local\n' >"$home/.claude/statusline-command.sh"
 jq '.statusLine.command = "custom"' "$home/.claude/settings.json" >"$tmp_dir/s" && mv "$tmp_dir/s" "$home/.claude/settings.json"
 bash "$installer" --target-home "$home" >/dev/null
@@ -42,9 +51,11 @@ bash "$installer" --target-home "$home" >/dev/null
 home2="${tmp_dir}/personal"
 mkdir -p "$home2/.claude"
 printf '{"model":"opus","env":{"A":"1"},"permissions":{"allow":["Bash(ls)"]}}\n' >"$home2/.claude/settings.json"
+chmod 0600 "$home2/.claude/settings.json"
 original="$(jq -S . "$home2/.claude/settings.json")"
 bash "$installer" --target-home "$home2" >/dev/null
 [[ "$(jq -S 'del(.statusLine)' "$home2/.claude/settings.json")" == "$original" ]] || fail "personal keys changed"
+[[ "$(ls -l "$home2/.claude/settings.json" | cut -c1-10)" == -rw------- ]] || fail "settings mode changed"
 compgen -G "$home2/.claude/settings.json.bak.*" >/dev/null || fail "no backup"
 [[ "$(jq -S . "$home2"/.claude/settings.json.bak.*)" == "$original" ]] || fail "backup differs"
 

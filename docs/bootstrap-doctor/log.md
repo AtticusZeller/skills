@@ -152,3 +152,25 @@ v1 只覆盖 Linux。包检查直接复用 `check-dev-machine.sh`，不重复维
   - 本机部署：备份 `~/.zshrc`，装入模板并写入 `zshrc.sha256` 状态，doctor 显示 zshrc OK。
 
 状态：全部完成，已提交推送。
+
+## doctor 与 statusline 扩展到 macOS（2026-11-19）
+
+背景：v1 只接入 Linux。macOS bootstrap 已通过 Homebrew 安装 `bash`、`jq`，但 `/bin/bash` 是 3.2，GUI 启动的 Claude Code 可能拿不到 Homebrew 的 PATH；`stat -c`、`sha256sum`、`chmod --reference` 是 GNU 专有；macOS 可能没有 `C.UTF-8`；Mac 的 ghostty/zshrc 资产和路径与 Linux 不同（见 `install-macos-config.py`）。
+
+### Task: macOS 兼容
+
+**Change**
+
+- [x] statusline（资产与本机同步修改，保持逐字节一致）：bash <4 时优先 `exec` Homebrew bash；四个 `$'\U…'` 图标改为字面字形（bash 3.2 不解析 `\U`）；`stat -c %Y` 失败时退到 BSD `stat -f %m`；locale 依次试 `C.UTF-8`、`en_US.UTF-8`，以 `│` 的长度为 1 作为判定。
+- [x] `install-claude-statusline.sh`：用 `cp -p` 把原文件权限带到临时文件，替代 GNU 专有的 `chmod --reference`（原先在 macOS 上会静默失败，settings 变成 0600）。
+- [x] `bootstrap-dev-machine-macos.sh` 在 Herdr 之后调用 statusline 安装脚本。
+- [x] `doctor.sh`：bash <4 时 `exec` Homebrew bash，否则提示 `brew install bash`；新增 `--platform linux|macos`（默认按 `uname`）；macOS 比较 `zshrc.macos`、`ghostty-config.macos.ghostty`（Application Support 路径），用 `--platform macos --proxy-url ${PROXY_URL:-disabled}` 渲染 AGENTS 模板（与 macOS bootstrap 一致）；解析 `check-dev-machine-macos.sh` 的 `[OK]/[MISSING]/[MANUAL]` 输出，脚本因 `set -e` 提前退出且无 MISSING 时报 `WARN check:exit`；`sha256sum` 退到 `shasum -a 256`；BSD `wc -l` 前导空格经算术展开去掉。
+
+**Verification**
+
+1. [x] statusline 修改前后在 `COLUMNS=200/120/90/75/60/50` 下对同一 mock JSON 输出逐字节一致；`env -i` 的 C locale 下输出与 UTF-8 下一致。
+2. [x] `test-claude-statusline.sh` 新增：资产不含 `$'\U`（反向注入验证能拦截）、`stat -c` 必须带 BSD 回退、C locale 输出一致、合并后 settings 保持 0600；去掉 `sha256sum`。
+3. [x] `test-doctor.sh` 新增 macOS 用例：Mac ghostty/zshrc 尾部追加为 OK、macOS AGENTS 模板为 OK、打桩的 macOS 检查输出解析为 `command:sbc MISSING` / `manual:GitHub WARN` / `check:exit WARN`、未知平台拒绝。
+4. [ ] macOS 真机验证（见 `plan.md`）。
+
+弯路：想在本机编译 bash 3.2.57 实测 statusline，被权限策略拒绝，改为静态排查 bash 3.2 不支持的语法（只发现 `\U` 转义）加 Homebrew bash 重入。

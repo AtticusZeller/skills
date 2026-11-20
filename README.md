@@ -51,7 +51,7 @@ On Windows, run the PowerShell variant from a non-elevated PowerShell. It instal
 powershell -ExecutionPolicy Bypass -File "$HOME\.agents\skills\bootstrap-dev-machine\scripts\bootstrap-dev-machine.ps1" -DryRun
 ```
 
-On a configured Linux machine, `doctor.sh` reports which packages, third-party skills, personal skills and configs differ from this repository. It is read-only unless you pass `--sync` or `--ignore`:
+On a configured Linux or macOS machine, `doctor.sh` reports which packages, third-party skills, personal skills and configs differ from this repository. It is read-only unless you pass `--sync` or `--ignore`:
 
 ```bash
 bash ~/skills/skills/bootstrap-dev-machine/scripts/doctor.sh

@@ -88,8 +88,9 @@ else
   backup="${settings}.bak.$(date +%Y%m%d%H%M%S).$$"
   cp -p "${settings}" "${backup}"
   tmp="$(mktemp "${settings}.tmp.XXXXXX")"
+  # cp -p carries the original mode over to the temp file on GNU and BSD alike.
+  cp -p "${settings}" "${tmp}"
   jq --arg cmd "${status_cmd}" ". + {statusLine: ${jq_status}}" "${settings}" >"${tmp}"
-  chmod --reference="${settings}" "${tmp}" 2>/dev/null || true
   mv "${tmp}" "${settings}"
   echo "[INFO] Added statusLine to ${settings}; backup: ${backup}"
 fi

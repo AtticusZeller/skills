@@ -2,6 +2,15 @@
 # Read-only report of how this machine differs from the skills repository baseline.
 set -uo pipefail
 
+# Associative arrays need bash 4+; macOS /bin/bash is 3.2.
+if ((BASH_VERSINFO[0] < 4)); then
+  for b in /opt/homebrew/bin/bash /usr/local/bin/bash; do
+    [[ -x "$b" ]] && exec "$b" "$0" "$@"
+  done
+  echo "doctor.sh needs bash 4+; install it with: brew install bash" >&2
+  exit 2
+fi
+
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
@@ -13,6 +22,7 @@ skills repository. Read-only unless --sync or --ignore is given.
 
 Options:
   --repo <dir>          Skills repository checkout (default: see below)
+  --platform <name>     linux or macos (default: from uname)
   --skip-packages       Skip the package check (check-dev-machine.sh)
   --verbose             Print the full package check output
   --diff <id>           Show the difference for one item (template vs local)
@@ -30,6 +40,7 @@ EOF
 }
 
 repo=""
+platform=""
 skip_packages=false
 verbose=false
 diff_id=""
@@ -38,10 +49,11 @@ sync_to=""
 ignore_id=""
 while (($#)); do
   case "$1" in
-    --repo|--diff|--sync|--to|--ignore)
+    --repo|--platform|--diff|--sync|--to|--ignore)
       (($# >= 2)) || { echo "$1 requires a value" >&2; exit 2; }
       case "$1" in
         --repo) repo="$2" ;;
+        --platform) platform="$2" ;;
         --diff) diff_id="$2" ;;
         --sync) sync_id="$2" ;;
         --to) sync_to="$2" ;;
@@ -57,6 +69,10 @@ while (($#)); do
 done
 
 [[ -z "${sync_to}" || -n "${sync_id}" ]] || { echo "--to is only valid with --sync" >&2; exit 2; }
+if [[ -z "${platform}" ]]; then
+  [[ "$(uname -s)" == Darwin ]] && platform=macos || platform=linux
+fi
+[[ "${platform}" == linux || "${platform}" == macos ]] || { echo "--platform must be linux or macos" >&2; exit 2; }
 ignore_file="${XDG_CONFIG_HOME:-${HOME}/.config}/bootstrap-dev-machine/doctor-ignore"
 if [[ -n "${ignore_id}" ]]; then
   mkdir -p "$(dirname "${ignore_file}")"
@@ -101,20 +117,32 @@ trap 'rm -rf "${tmp_dir}"' EXIT
 claude_dir="${CLAUDE_CONFIG_DIR:-${HOME}/.claude}"
 xdg="${XDG_CONFIG_HOME:-${HOME}/.config}"
 render_dir="${tmp_dir}/render"
+# Same targets the platform's bootstrap deploys to (install-macos-config.py on macOS).
+if [[ "${platform}" == macos ]]; then
+  ghostty_item="${asset_dir}/ghostty-config.macos.ghostty|${HOME}/Library/Application Support/com.mitchellh.ghostty/config.ghostty"
+  zshrc_asset="${asset_dir}/zshrc.macos"
+  check_script="${skill_dir}/scripts/check-dev-machine-macos.sh"
+  handoff_args=(--platform macos --proxy-url "${PROXY_URL:-disabled}")
+else
+  ghostty_item="${asset_dir}/ghostty-config.ghostty|${xdg}/ghostty/config.ghostty"
+  zshrc_asset="${asset_dir}/zshrc.linux"
+  check_script="${skill_dir}/scripts/check-dev-machine.sh"
+  handoff_args=(--platform linux)
+fi
 items=(
   "statusline-script|exact|${asset_dir}/claude-statusline.sh|${claude_dir}/statusline-command.sh"
   "statusline-setting|exact-json|${tmp_dir}/statusline.json|${claude_dir}/settings.json"
   "herdr|exact|${asset_dir}/herdr-config.toml|${xdg}/herdr/config.toml"
   "p10k|exact|${asset_dir}/p10k.zsh|${HOME}/.p10k.zsh"
-  "ghostty|prefix|${asset_dir}/ghostty-config.ghostty|${xdg}/ghostty/config.ghostty"
+  "ghostty|prefix|${ghostty_item}"
   "tmux-local|contains|${asset_dir}/tmux-defaults.conf|${xdg}/tmux/tmux.conf.local"
-  "zshrc|prefix|${asset_dir}/zshrc.linux|${HOME}/.zshrc"
+  "zshrc|prefix|${zshrc_asset}|${HOME}/.zshrc"
   "codex-agents|sections|${render_dir}/.codex/AGENTS.md|${HOME}/.codex/AGENTS.md"
 )
 
 prepare_templates() {
   mkdir -p "${render_dir}"
-  bash "${skill_dir}/scripts/install-machine-handoff.sh" --target-home "${render_dir}" >/dev/null 2>&1 ||
+  bash "${skill_dir}/scripts/install-machine-handoff.sh" --target-home "${render_dir}" "${handoff_args[@]}" >/dev/null 2>&1 ||
     echo "[WARN] Could not render handoff templates" >&2
   if [[ -x "${skill_dir}/scripts/install-claude-statusline.sh" ]] && command -v jq >/dev/null 2>&1; then
     # An empty or failed result must read as "template missing", never as an empty value.
@@ -125,6 +153,9 @@ prepare_templates() {
 }
 
 effective_lines() { grep -Ev '^[[:space:]]*(#|$)' "$1" || true; }
+sha256_of() {
+  if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1"; else shasum -a 256 "$1"; fi | awk '{print $1}'
+}
 
 # Split Markdown into numbered section files plus an index of "N<TAB>heading".
 split_sections() {   # file outdir
@@ -189,7 +220,8 @@ check_item() {   # id type template local
       ;;
     prefix)
       effective_lines "$tpl" >"${tmp_dir}/p.t"
-      effective_lines "$loc" | head -n "$(wc -l <"${tmp_dir}/p.t")" >"${tmp_dir}/p.l"
+      # BSD wc pads its count with spaces; arithmetic strips them.
+      effective_lines "$loc" | head -n "$(( $(wc -l <"${tmp_dir}/p.t") ))" >"${tmp_dir}/p.l"
       if ! cmp -s "${tmp_dir}/p.t" "${tmp_dir}/p.l"; then
         item_status=DRIFT
         item_note="$(diff "${tmp_dir}/p.t" "${tmp_dir}/p.l" | grep -c '^[<>]') effective lines differ from repo"
@@ -309,7 +341,7 @@ if [[ -n "${sync_id}" ]]; then
     if [[ "${sync_id}" == p10k ]]; then
       # Keep install-prompt-config.sh treating the file as unmodified.
       mkdir -p "${HOME}/.local/state/bootstrap-dev-machine"
-      sha256sum "$it_tpl" | awk '{print $1}' >"${HOME}/.local/state/bootstrap-dev-machine/p10k.sha256"
+      sha256_of "$it_tpl" >"${HOME}/.local/state/bootstrap-dev-machine/p10k.sha256"
     fi
   else
     [[ -n "${repo}" ]] || { echo "No repository checkout found; pass --repo" >&2; exit 2; }
@@ -337,15 +369,35 @@ report() {   # status section id note
 }
 
 echo "repo: ${repo:-<none: read-only checks against ${skill_dir}>}"
+echo "platform: ${platform}"
 
 echo
 echo "== packages =="
 if [[ "${skip_packages}" == true ]]; then
   echo "skipped"
 else
-  pkg_out="$(bash "${skill_dir}/scripts/check-dev-machine.sh" 2>&1)"
+  pkg_out="$(bash "${check_script}" 2>&1)"
+  pkg_rc=$?
   if [[ "${verbose}" == true ]]; then
     printf '%s\n' "${pkg_out}"
+  elif [[ "${platform}" == macos ]]; then
+    # check-dev-machine-macos.sh prints [OK] / [MISSING] / [MANUAL] lines and
+    # stops at the first failing version probe (set -e).
+    pkg_ok="$(grep -c '^\[OK\] ' <<<"${pkg_out}")"
+    pkg_missing=0
+    while read -r tag what rest; do
+      what="${what%:}"; what="${what%;}"
+      if [[ "$tag" == '[MISSING]' ]]; then
+        pkg_missing=$((pkg_missing + 1))
+        report MISSING packages "command:${what##*/}" "${what} ${rest}"
+      else
+        report WARN packages "manual:${what}" "${what} ${rest}"
+      fi
+    done < <(grep -E '^\[(MISSING|MANUAL)\] ' <<<"${pkg_out}")
+    if ((pkg_rc != 0 && pkg_missing == 0)); then
+      report WARN packages "check:exit" "check-dev-machine-macos.sh exited ${pkg_rc} early (--verbose for output)"
+    fi
+    printf '%-8s %-9s %s\n' OK packages "${pkg_ok} checks passed (--verbose for all)"
   else
     pkg_ok="$(grep -c '^OK  ' <<<"${pkg_out}")"
     while read -r _ kind what rest; do

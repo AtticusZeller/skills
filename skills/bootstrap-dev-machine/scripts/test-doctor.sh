@@ -83,7 +83,7 @@ expect codex-agents OK
 
 # Package checks use the current PATH and never install a missing Pi.
 mkdir -p "$tmp_dir/bin"
-for tool in awk basename bash cat cmp diff dirname git grep head install jq mkdir mktemp mv paste rm wc; do
+for tool in awk basename bash cat cmp diff dirname git grep head install jq mkdir mktemp mv paste rm uname wc; do
   ln -s "$(command -v "$tool")" "$tmp_dir/bin/$tool"
 done
 if PATH="$tmp_dir/bin" bash "$doctor" --repo "$repo" >"$tmp_dir/out"; then
@@ -152,5 +152,35 @@ bash "$tmp_dir/wt/skills/bootstrap-dev-machine/scripts/doctor.sh" --sync herdr -
 # Mixed-content items refuse automatic sync.
 if bash "$doctor" --repo "$repo" --sync ghostty --to local 2>/dev/null; then fail "ghostty sync should be refused"; fi
 if bash "$doctor" --repo "$repo" --sync statusline-setting --to repo 2>/dev/null; then fail "setting to repo should be refused"; fi
+
+# macOS layout: Library ghostty path, zshrc.macos, macOS handoff template, and the
+# [OK]/[MISSING]/[MANUAL] package report (stubbed: the real check refuses non-Darwin).
+mac="${tmp_dir}/mac"
+mkdir -p "$mac/Library/Application Support/com.mitchellh.ghostty"
+HOME="$mac" bash "$repo/skills/bootstrap-dev-machine/scripts/install-claude-statusline.sh" >/dev/null
+{ cat "$assets/ghostty-config.macos.ghostty"; printf 'font-size = 18\n'; } \
+  >"$mac/Library/Application Support/com.mitchellh.ghostty/config.ghostty"
+{ cat "$assets/zshrc.macos"; printf 'alias mine=1\n'; } >"$mac/.zshrc"
+HOME="$mac" PROXY_URL=disabled bash "$repo/skills/bootstrap-dev-machine/scripts/install-machine-handoff.sh" \
+  --target-home "$mac" --platform macos --proxy-url disabled >/dev/null
+cat >"$repo/skills/bootstrap-dev-machine/scripts/check-dev-machine-macos.sh" <<'EOF'
+echo '[OK] brew: /opt/homebrew/bin/brew'
+echo '[MISSING] sbc'
+echo '[MANUAL] GitHub CLI login: gh auth login'
+exit 1
+EOF
+HOME="$mac" PROXY_URL=disabled bash "$doctor" --repo "$repo" --platform macos >"$tmp_dir/out" || true
+expect ghostty OK
+expect zshrc OK
+expect codex-agents OK
+expect statusline-script OK
+expect command:sbc MISSING
+expect manual:GitHub WARN
+grep -q '^OK  *packages  *1 checks passed' "$tmp_dir/out" || fail "macOS OK count"
+printf 'echo hi\n' >"$repo/skills/bootstrap-dev-machine/scripts/check-dev-machine-macos.sh"
+printf 'exit 3\n' >>"$repo/skills/bootstrap-dev-machine/scripts/check-dev-machine-macos.sh"
+HOME="$mac" bash "$doctor" --repo "$repo" --platform macos >"$tmp_dir/out" || true
+expect check:exit WARN
+if bash "$doctor" --platform windows 2>/dev/null; then fail "unknown platform accepted"; fi
 
 printf '[PASS] doctor statuses, read-only report, diff, ignore and sync\n'

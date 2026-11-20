@@ -24,6 +24,8 @@ personal skills checkout at `~/dev/skills`. Preview with `--dry-run` before setu
   helpers are installed but no network proxy, TUN interface, or background service
   is enabled automatically. No CUDA, NVIDIA tools, DSW prompt, apt, or systemd setup
   is run. Proxy variables are set only when `PROXY_URL` is explicitly supplied.
+- `install-claude-statusline.sh` deploys the Claude Code statusline when absent and adds a
+  missing `statusLine` key to `~/.claude/settings.json` after a backup.
 - Personal and manifest-listed global agent skills are installed. The Context7
   CLI is installed, while account-backed setup is reported as a manual step.
 - The Mac-specific template creates the global instructions only when absent;
@@ -44,7 +46,8 @@ The helper's `--check` mode reads and verifies these associations. macOS may ask
 for user consent. Ordinary source files, URL schemes, Finder services, and
 application-specific terminal preferences are not changed.
 
-Run `scripts/check-dev-machine-macos.sh` after setup. Open a new Ghostty window
+Run `scripts/check-dev-machine-macos.sh` after setup; `scripts/doctor.sh` later compares the
+machine with the repo (packages, skills, Mac assets). Open a new Ghostty window
 to load the shell; use `Cmd+Shift+,` to reload Ghostty's appearance settings.
 Account credentials, GitHub login, Context7 account setup, sing-box private config,
 and optional `p10k configure` choices remain local manual actions.
