@@ -52,6 +52,7 @@ install_skill KKKKhazix/khazix-skills neat-freak
 install_skill wandb/skills wandb-primary
 install_skill lennney/stop-that-shit stop-that-shit
 install_skill lennney/stop-that-shit stss
+install_skill AtticusZeller/no-comments clean-comments
 
 if [[ "$run_context7" == true ]]; then
   run_cmd npx ctx7 setup --cli --claude --codex -y

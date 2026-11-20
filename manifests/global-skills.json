@@ -37,6 +37,10 @@
     {
       "repo": "lennney/stop-that-shit",
       "skills": ["stop-that-shit", "stss"]
+    },
+    {
+      "repo": "AtticusZeller/no-comments",
+      "skills": ["clean-comments"]
     }
   ]
 }
