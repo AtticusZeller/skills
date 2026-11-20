@@ -270,7 +270,8 @@ seg_dur() {
 
 # ── Layout ───────────────────────────────────────────────────────────────────
 # Each line is a left group and a right group; the gap between them is padded so
-# both lines end on the same column at every shrink level.
+# both lines end at the terminal's right edge (COLUMNS - 4), or on the same
+# column as the wider line when COLUMNS is unknown.
 #   Line 1: model │ dir │ git │ context ........................ date time
 #   Line 2: cache ............................ 5h │ 7d │ duration
 # Claude Code passes the terminal width in COLUMNS (2.1.153+).
@@ -292,14 +293,15 @@ for (( lvl = 0; lvl <= MAX_LEVEL; lvl++ )); do
     if (( ! done2 )); then
         l2_left=$(seg_cache)
         l2_right=$(join_segs "$(seg_quota)" "$(seg_dur)")
-        [ -z "$l2_left" ] && { l2_left=$l2_right; l2_right=""; }
-        w2r=$(vis_width "$l2_right")
-        w2=$(( $(vis_width "$l2_left") + (w2r > 0 ? GAP_MIN + w2r : 0) ))
+        w2l=$(vis_width "$l2_left"); w2r=$(vis_width "$l2_right")
+        w2=$(( w2l + (w2l > 0 && w2r > 0 ? GAP_MIN : 0) + w2r ))
         (( w2 <= avail || lvl == MAX_LEVEL )) && done2=1
     fi
     (( done1 && done2 )) && break
 done
 width=$(( w1 > w2 ? w1 : w2 ))
+# With a known terminal width, push the right groups to the right edge.
+[ -n "$COLUMNS" ] && (( width < avail )) && width=$avail
 
 render_line() {   # left right
     local lw rw gap pad
