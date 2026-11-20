@@ -20,6 +20,15 @@ This skill provides an idempotent one-shot installer for the full machine baseli
 
 Global agent instructions live in `~/.codex/AGENTS.md`; `~/.claude/CLAUDE.md` imports that file with `@../.codex/AGENTS.md`. The installer creates the global file only when absent and preserves existing rules.
 
+After installing Pi, optionally apply the portable Pi profile from the checkout. The profile includes an append prompt, `tokyo-footer`, compact Bash display, and settings with npm package references. The installer requires Bash and `jq`:
+
+```bash
+bash skills/bootstrap-dev-machine/scripts/install-pi-config.sh --dry-run
+bash skills/bootstrap-dev-machine/scripts/install-pi-config.sh
+```
+
+This preserves existing files and settings (including package lists), backs up `settings.json` before filling missing defaults, and links Pi to shared Codex instructions if available. Restart Pi or run `/reload` to load the profile. Pi resolves configured packages on startup; log in separately. The footer's quota display needs a locally authenticated Codex CLI. Credentials, sessions, caches, Orca-managed extensions, and separately managed Trail of Bits hooks are excluded.
+
 On Alibaba Cloud DSW, run its installer with `--enable-dsw-persistent-prompt` to back up and append the OSS persistence rule to `~/.codex/AGENTS.md`:
 
 ```bash

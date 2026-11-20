@@ -69,6 +69,7 @@ Consistency rules:
 - `scripts/check-dev-machine.sh`: read-only validation script used by the installer.
 - `scripts/doctor.sh` and `scripts/test-doctor.sh`: machine-vs-repo drift report with `--diff`, `--sync` and `--ignore` (Linux), plus its regression checks.
 - `scripts/install-claude-statusline.sh` and `scripts/test-claude-statusline.sh`: install `assets/claude-statusline.sh` as `~/.claude/statusline-command.sh` when absent and add a missing `statusLine` key to `settings.json` after a backup; honours `CLAUDE_CONFIG_DIR` and needs `jq` plus bash 4.
+- `scripts/install-pi-config.sh` and `scripts/test-pi-config.sh`: opt-in Pi profile from `assets/pi/`. Use `--dry-run` to preview. Honours `PI_CODING_AGENT_DIR`, needs `jq`, preserves existing files, and adds missing settings after a backup.
 - `scripts/bootstrap-dev-machine.ps1` and `scripts/check-dev-machine.ps1`: Windows installer (Scoop CLIs, winget GUI apps, no Conda/zsh/tmux) and its read-only validation.
 - `scripts/test-windows-bootstrap.sh`: Windows installer regression checks; PowerShell parse checks run when PowerShell is available.
 - `scripts/install-tmux-baseline.sh`: idempotent Oh my tmux installer; run it directly for a tmux-only repair. Keeps local customizations and never stops sessions.

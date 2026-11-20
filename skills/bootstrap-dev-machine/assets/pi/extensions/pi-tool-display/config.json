@@ -1,0 +1,9 @@
+{
+  "bashCommandDisplay": "collapsed",
+  "bashOutputMode": "summary",
+  "readOutputMode": "hidden",
+  "searchOutputMode": "hidden",
+  "registerToolOverrides": {
+    "bash": false
+  }
+}

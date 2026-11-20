@@ -51,6 +51,7 @@ The script cannot safely automate account or machine-private state:
 - sing-box subscription/configuration content;
 - GitHub, Hugging Face, Weights & Biases, and Context7 authentication;
 - Powerlevel10k prompt changes beyond the deployed `assets/p10k.zsh` template;
+- the optional Pi profile and Pi account login; see the [repository README](../../../README.md#install) for the profile installer;
 - private or host-specific handoff additions beyond the public generated baseline;
 - cc-switch installation when no supported system package is available.
 
