@@ -28,7 +28,7 @@ To check an already configured Linux or macOS machine against the repo, run `bas
 1. Show the user the report. Relay the printed install commands for missing tools or skills; do not install them unprompted. `EXTRA` is informational only.
 2. For each `DRIFT` or `STALE` item, show `doctor.sh --diff <id>` and ask the user with AskUserQuestion which way to go: repo → machine, machine → repo, or keep it and add it to the ignore list (`doctor.sh --ignore <id>`).
 3. Exact-match items (`statusline-script`, `statusline-setting`, `herdr`, `p10k`) sync with `doctor.sh --sync <id> --to local|repo`; it backs up the target and rechecks.
-   - `ghostty`, `tmux-local`, `zshrc`, `codex-agents` and `readme` mix shared and personal lines, so merge only the parts the user picks, by hand.
+   - Merge only selected lines for `ghostty`, `tmux-local`, `zshrc`, `codex-agents`, `readme`, or a Herdr config with private machine rules. Do not sync private host aliases back to the public template.
    - A `STALE` personal skill is updated by reinstalling it from the checkout.
 4. Repo changes go through `manage-personal-skills`: validate, then commit and push only after the user confirms.
 
@@ -53,7 +53,7 @@ Consistency rules:
 - Let `scripts/install-machine-handoff.sh` create `~/.codex/AGENTS.md` from the bundled templates. Never recreate or summarize those templates manually; preserve an existing file unchanged. No `~/README.md` is generated.
 - The installer creates `~/.codex/AGENTS.md` only when absent and adds one import to `~/.claude/CLAUDE.md`, preserving existing Claude rules. Both tools share the Codex global file. Do not hardcode a workstation username. Restart Claude Code after setup and inspect `/memory` to confirm loading.
 - Keep executable setup logic in `scripts/` or `assets/`; Markdown should explain inputs, boundaries, and recovery rather than duplicate command sequences.
-- Deploy the bundled Herdr TUI configuration on fresh machines without overwriting an existing config. This only configures Herdr; it does not install it or register remote machines.
+- Deploy the [Herdr TUI preset](assets/herdr-config.toml) only when no config exists. It uses a two-line Agents sidebar with color-coded agent names. It does not install Herdr or register machines.
 - Start interactive tmux servers from a real terminal. For missing application colours, inspect inherited `NO_COLOR`, `TERM`, and `COLORTERM` using `references/tmux-baseline.md`; preserve intentional colour preferences.
 - Deploy the Ghostty configuration from `assets/ghostty-config.ghostty`; install Ghostty on apt/dpkg hosts with the documented ghostty-ubuntu installer command only when it is absent. Preserve locally edited configurations and treat unsupported hosts or installer failures as warnings, not blockers.
 - Keep the DSW persistent-storage prompt opt-in; its installer must back up an existing Codex `AGENTS.md` and append the asset exactly once.

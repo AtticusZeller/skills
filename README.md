@@ -16,7 +16,7 @@ Install the development-machine bootstrap skill globally:
 npx skills add AtticusZeller/skills --skill bootstrap-dev-machine -g -a codex -a claude-code -a pi -y --full-depth
 ```
 
-This skill provides an idempotent one-shot installer for the full machine baseline, including shared agent instructions, a Linux workstation `.zshrc`, ripgrep (`rg`) for agent-friendly code and document search, Oh My Zsh, Powerlevel10k, shell plugins, Oh my tmux, a Ghostty terminal baseline, a Claude Code statusline, CUDA, uv, Miniforge/conda/mamba, NVM, proxy variables, and non-systemd sing-box helpers.
+This skill provides an idempotent one-shot installer for the full machine baseline, including shared agent instructions, a Linux workstation `.zshrc`, ripgrep (`rg`) for agent-friendly code and document search, Oh My Zsh, Powerlevel10k, shell plugins, Oh my tmux, a Ghostty terminal baseline, a [Herdr TUI preset](skills/bootstrap-dev-machine/assets/herdr-config.toml), a Claude Code statusline, CUDA, uv, Miniforge/conda/mamba, NVM, proxy variables, and non-systemd sing-box helpers.
 
 Global agent instructions live in `~/.codex/AGENTS.md`; `~/.claude/CLAUDE.md` imports that file with `@../.codex/AGENTS.md`. The installer creates the global file only when absent and preserves existing rules.
 

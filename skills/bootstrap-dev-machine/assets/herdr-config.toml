@@ -6,3 +6,9 @@ directory = "~/worktree"
 [theme]
 name = "dracula"
 auto_switch = false
+
+[ui.sidebar.agents]
+rows = [
+  ["state_icon", { token = "machine", fg = "#8BE9FD", bold = true, dim = false, rules = [{ equals = "Local", hide = true }] }, "workspace", "tab"],
+  [{ token = "agent", fg = "#F8F8F2", bold = true, dim = false, rules = [{ equals = "pi", ignore_case = true, fg = "#BD93F9" }, { starts_with = "claude", ignore_case = true, fg = "#FFB86C" }, { starts_with = "codex", ignore_case = true, fg = "#6EA8FE" }] }],
+]
