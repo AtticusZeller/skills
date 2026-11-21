@@ -171,7 +171,7 @@ External global skills are referenced through `manifests/global-skills.json`.
 
 The [Stop That Shit](https://github.com/lennney/stop-that-shit) upstream provides two separately installed skills: `stop-that-shit` (scope creep and overengineering control) and `stss` (reduce defensive filler while preserving meaningful qualifications). Both are installed by the external-skills script. The `stop-that-shit` skill is advisory on its own; machine-enforced Guard hooks require the upstream plugin/Guard setup and are **not** installed by this script.
 
-The [no-comments](https://github.com/AtticusZeller/no-comments) repository provides `clean-comments`, which cleans up existing code comments and docstrings. It calls the `no-comments` CLI, which the script does not install; install it with `uv tool install git+https://github.com/AtticusZeller/no-comments@<version>`.
+The [no-comments](https://github.com/AtticusZeller/no-comments) repository provides `clean-comments`, which cleans up existing code comments and docstrings. It needs `uv` on the machine and runs the `no-comments` CLI of the same release through `uvx`, so no separate CLI install is needed.
 
 Dry-run the install commands:
 
